@@ -436,7 +436,9 @@
                                         class="px-6 py-2 bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-600 transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
                                         <i class="fa-solid fa-undo"></i> Return
                                     </button>
-                                    {% else %}
+                                    {% endif %}
+                                    {% endif %}
+                                    {% if order.return_request %}
                                     <div class="px-6 py-2 {% if order.return_request.status == 'Completed' %}bg-green-100 border-green-300{% else %}bg-orange-100 border-orange-300{% endif %} border rounded-lg text-xs font-bold uppercase tracking-wider flex flex-col gap-1">
                                         <span class="{% if order.return_request.status == 'Completed' %}text-green-800{% else %}text-orange-800{% endif %} flex items-center gap-2">
                                             {% if order.return_request.status == 'Completed' %}
@@ -457,17 +459,59 @@
                                             <p class="text-green-700 text-xs mt-1">
                                                 <i class="fa-solid fa-user-check"></i> By: {{ order.return_request.assigned_to.get_full_name }}
                                             </p>
+                                            
+                                            {% with refund_payment=order.return_request.payment %}
+                                            {% if refund_payment %}
+                                                {% if refund_payment.status == 'Completed' %}
+                                                <div class="mt-2 bg-green-100 border-2 border-green-400 p-3 rounded-lg">
+                                                    <p class="text-green-900 font-bold text-xs mb-1 flex items-center gap-2">
+                                                        <i class="fa-solid fa-check-double"></i> REFUND COMPLETED
+                                                    </p>
+                                                    <p class="text-green-800 text-xs font-semibold">
+                                                        <i class="fa-solid fa-money-bill-wave"></i> Amount: ₹{{ refund_payment.amount }}
+                                                    </p>
+                                                    <p class="text-green-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-university"></i> 
+                                                        {% if refund_payment.account_number %}
+                                                            Transferred to: ****{{ refund_payment.account_number|slice:"-4:" }}
+                                                        {% else %}
+                                                            Refunded to: {{ order.payment_method }}
+                                                        {% endif %}
+                                                    </p>
+                                                    <p class="text-green-600 text-xs mt-2 italic">
+                                                        <i class="fa-solid fa-info-circle"></i> Refund should reflect in 3-5 business days
+                                                    </p>
+                                                </div>
+                                                {% else %}
+                                                <div class="mt-2 bg-amber-50 border border-amber-300 p-2 rounded">
+                                                    <p class="text-amber-900 font-bold text-xs mb-1">
+                                                        <i class="fa-solid fa-clock"></i> REFUND STATUS: {{ refund_payment.status }}
+                                                    </p>
+                                                    <p class="text-amber-800 text-xs">
+                                                        <i class="fa-solid fa-money-bill-wave"></i> Amount: ₹{{ refund_payment.amount }}
+                                                    </p>
+                                                    <p class="text-amber-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-info-circle"></i> Refund processing in progress
+                                                    </p>
+                                                </div>
+                                                {% endif %}
+                                            {% else %}
                                             <p class="text-green-600 text-xs mt-2 bg-green-50 p-2 rounded">
                                                 <i class="fa-solid fa-info-circle"></i> Refund will be processed within 5-7 business days
                                             </p>
+                                            {% endif %}
+                                            {% endwith %}
                                         </div>
                                         
-                                        {% elif order.return_request.status == 'Approved' and order.return_request.assigned_to %}
+                                        {% elif order.return_request.status == 'Approved' %}
                                         <div class="mt-2 pt-2 border-t border-orange-200">
                                             <p class="text-orange-900 font-bold text-xs mb-1">
-                                                <i class="fa-solid fa-user-tie"></i> Pickup Partner Assigned
+                                                <i class="fa-solid fa-circle-check"></i> Return Approved
                                             </p>
-                                            <p class="text-orange-800 text-xs">{{ order.return_request.assigned_to.get_full_name }}</p>
+                                            {% if order.return_request.assigned_to %}
+                                            <p class="text-orange-800 text-xs">
+                                                <i class="fa-solid fa-user-tie"></i> Pickup Partner Assigned: {{ order.return_request.assigned_to.get_full_name }}
+                                            </p>
                                             <p class="text-orange-700 text-xs">
                                                 <i class="fa-solid fa-phone"></i> {{ order.return_request.assigned_to.phone }}
                                             </p>
@@ -476,10 +520,14 @@
                                                 <i class="fa-solid fa-motorcycle"></i> {{ order.return_request.assigned_to.delivery_profile.vehicle_type }} - {{ order.return_request.assigned_to.delivery_profile.vehicle_number }}
                                             </p>
                                             {% endif %}
+                                            {% else %}
+                                            <p class="text-orange-800 text-xs">
+                                                <i class="fa-solid fa-clock"></i> Pickup partner will be assigned soon.
+                                            </p>
+                                            {% endif %}
                                         </div>
                                         {% endif %}
                                     </div>
-                                    {% endif %}
                                     {% endif %}
                                     <a href="{% url 'invoice_view' order.id %}" target="_blank"
                                         class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
