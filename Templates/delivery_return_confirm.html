@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Return Pickup - SkinCraft{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'delivery_dashboard' %}" class="inline-flex items-center text-[#1A3C34] hover:text-[#0f2419] font-semibold mb-4">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Return Pickup Confirmation</h1>
+            <p class="text-gray-600 mt-2">Order #{{ return_request.order.order_number }}</p>
+        </div>
+
+        <!-- Order Details Card -->
+        <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-package text-[#1A3C34] mr-3"></i> Return Details
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <p class="text-gray-600 text-sm font-semibold uppercase">Customer Name</p>
+                    <p class="text-gray-900 font-bold text-lg">{{ return_request.user.get_full_name }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm font-semibold uppercase">Phone</p>
+                    <p class="text-gray-900 font-bold text-lg">{{ return_request.order.phone }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm font-semibold uppercase">Return Reason</p>
+                    <p class="text-gray-900 font-bold">{{ return_request.get_reason_display }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm font-semibold uppercase">Order Amount</p>
+                    <p class="text-gray-900 font-bold text-lg text-[#1A3C34]">₹{{ return_request.order.total_amount }}</p>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-6">
+                <p class="text-gray-600 text-sm font-semibold uppercase mb-2">Pickup Address</p>
+                <p class="text-gray-900">{{ return_request.order.street_address }}, {{ return_request.order.city }}, {{ return_request.order.state }} - {{ return_request.order.zip_code }}</p>
+            </div>
+
+            {% if return_request.issue %}
+            <div class="border-t border-gray-200 pt-6 mt-6">
+                <p class="text-gray-600 text-sm font-semibold uppercase mb-2">Issue Details</p>
+                <p class="text-gray-900">{{ return_request.issue }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Bank Details Form (only for COD) -->
+        {% if needs_bank_details and is_cod %}
+        <div class="bg-white rounded-lg shadow-md p-8 mb-8 border-2 border-orange-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
+                <i class="fas fa-university text-orange-600 mr-3"></i> Collect Bank Details
+            </h2>
+            <p class="text-orange-700 text-sm mb-6 font-semibold">
+                <i class="fas fa-info-circle mr-1"></i> This order was paid via Cash on Delivery. Please collect the customer's bank details for refund processing.
+            </p>
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Account Holder Name -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-user-circle text-[#1A3C34] mr-2"></i> Account Holder Name *
+                    </label>
+                    {{ form.account_holder_name }}
+                    {% if form.account_holder_name.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.account_holder_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Account Number -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-key text-[#1A3C34] mr-2"></i> Account Number *
+                    </label>
+                    {{ form.account_number }}
+                    <p class="text-gray-500 text-xs mt-1">10-18 digit account number</p>
+                    {% if form.account_number.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.account_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- IFSC Code -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-code text-[#1A3C34] mr-2"></i> IFSC Code *
+                    </label>
+                    {{ form.ifsc_code }}
+                    <p class="text-gray-500 text-xs mt-1">e.g., SBIN0001234</p>
+                    {% if form.ifsc_code.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.ifsc_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Bank Name -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-building text-[#1A3C34] mr-2"></i> Bank Name *
+                    </label>
+                    {{ form.bank_name }}
+                    {% if form.bank_name.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.bank_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- UPI ID (Optional) -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-mobile-alt text-[#1A3C34] mr-2"></i> UPI ID (Optional)
+                    </label>
+                    {{ form.upi_id }}
+                    <p class="text-gray-500 text-xs mt-1">e.g., user@bankname for faster refund processing</p>
+                    {% if form.upi_id.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.upi_id.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex gap-4 mt-8">
+                    <button type="submit" class="flex-1 bg-[#1A3C34] hover:bg-[#0f2419] text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-check-circle mr-2"></i> Confirm Pickup & Save Details
+                    </button>
+                    <a href="{% url 'delivery_dashboard' %}" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-center flex items-center justify-center">
+                        <i class="fas fa-times-circle mr-2"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        {% elif is_cod and not needs_bank_details %}
+        <!-- Bank Details Already Collected -->
+        <div class="bg-green-50 border-2 border-green-200 rounded-lg p-8 mb-8">
+            <h2 class="text-lg font-bold text-green-800 mb-4 flex items-center">
+                <i class="fas fa-check-circle text-green-600 mr-2"></i> Bank Details Already Collected
+            </h2>
+            <div class="bg-white rounded p-4 text-gray-700">
+                <p class="mb-2"><strong>Account Holder:</strong> {{ payment.account_holder_name }}</p>
+                <p class="mb-2"><strong>Account Number:</strong> ****{{ payment.account_number|slice:"-4:" }}</p>
+                <p class="mb-2"><strong>IFSC Code:</strong> {{ payment.ifsc_code }}</p>
+                <p class="mb-2"><strong>Bank:</strong> {{ payment.bank_name }}</p>
+                {% if payment.upi_id %}
+                <p><strong>UPI ID:</strong> {{ payment.upi_id }}</p>
+                {% endif %}
+            </div>
+
+            <form method="POST" class="mt-6">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-[#1A3C34] hover:bg-[#0f2419] text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-check-circle mr-2"></i> Confirm Pickup Completion
+                </button>
+            </form>
+        </div>
+
+        {% elif is_cod and not needs_bank_details %}
+        <!-- Non-COD Payment Method -->
+        <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-8 mb-8">
+            <h2 class="text-lg font-bold text-blue-800 mb-4 flex items-center">
+                <i class="fas fa-credit-card text-blue-600 mr-2"></i> Payment Method: {{ return_request.order.payment_method }}
+            </h2>
+            <p class="text-blue-700 mb-6">Bank details are not required for this payment method. The refund will be processed to the original payment method.</p>
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-[#1A3C34] hover:bg-[#0f2419] text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-check-circle mr-2"></i> Confirm Pickup Completion
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

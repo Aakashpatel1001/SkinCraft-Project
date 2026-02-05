@@ -1,0 +1,1086 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SkinCraft Ayurveda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ayur: {
+                            dark: '#1A3C34',
+                            primary: '#2D5A27',
+                            light: '#E8F3E8',
+                            gold: '#D4AF37',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Poppins"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .nav-item-active {
+            background: linear-gradient(135deg, #E8F3E8 0%, #D4E8D1 100%);
+        }
+
+        .stat-card-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #2D5A27 0%, #1A3C34 100%);
+        }
+
+        @media (-webkit-min-device-pixel-ratio: 0) {
+            .sidebar-nav::-webkit-scrollbar {
+                width: 6px;
+            }
+            .sidebar-nav::-webkit-scrollbar-thumb {
+                background: #D1D5DB;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body class="m-0 p-0 box-border font-sans bg-gray-50">
+    <!-- SIDEBAR -->
+    <aside class="w-[280px] h-screen bg-white fixed left-0 top-0 border-r border-gray-200 flex flex-col shadow-[2px_0_10px_rgba(0,0,0,0.05)] z-[1000]">
+        <!-- Logo Section -->
+        <div class="p-5 border-b border-gray-200">
+            <a href="{% url 'homepage' %}" class="flex items-center gap-2.5 no-underline transition-all duration-500 group">
+                <div class="relative w-[45px] h-[45px] flex items-center justify-center bg-ayur-light rounded-full transition-all duration-500 group-hover:bg-ayur-primary">
+                    <i class="fa-solid fa-leaf text-xl text-ayur-primary transition-all duration-500 group-hover:text-white group-hover:rotate-45"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-serif text-2xl font-bold tracking-[0.03em] leading-none text-ayur-dark">Skin<span class="text-ayur-primary">Craft</span></span>
+                    <span class="text-[0.625rem] uppercase tracking-[0.2em] text-gray-500 transition-colors duration-300 group-hover:text-ayur-gold">Ayurveda</span>
+                </div>
+            </a>
+            <div class="text-center">
+                <span class="inline-block bg-gradient-to-br from-ayur-primary to-ayur-dark text-white px-3 py-1 rounded-xl text-[0.7rem] font-semibold mt-3 tracking-wider uppercase">Admin Panel</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-5 sidebar-nav">
+            <div class="mb-6">
+                <div class="px-5 pb-2.5 text-[0.7rem] font-semibold text-gray-400 uppercase tracking-wide">Overview</div>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative active nav-item-active text-ayur-primary font-semibold hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="dashboard">
+                    <i class="fas fa-chart-line w-6 text-lg mr-3"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="analytics">
+                    <i class="fas fa-chart-pie w-6 text-lg mr-3"></i>
+                    <span>Analytics</span>
+                </a>
+            </div>
+
+            <div class="mb-6">
+                <div class="px-5 pb-2.5 text-[0.7rem] font-semibold text-gray-400 uppercase tracking-wide">Financial</div>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="salary">
+                    <i class="fas fa-money-bill-wave w-6 text-lg mr-3"></i>
+                    <span>Salary Payments</span>
+                    <span class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">5</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="refunds">
+                    <i class="fas fa-undo-alt w-6 text-lg mr-3"></i>
+                    <span>Refunds</span>
+                    <span class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">3</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="revenue">
+                    <i class="fas fa-rupee-sign w-6 text-lg mr-3"></i>
+                    <span>Revenue</span>
+                </a>
+            </div>
+
+            <div class="mb-6">
+                <div class="px-5 pb-2.5 text-[0.7rem] font-semibold text-gray-400 uppercase tracking-wide">Operations</div>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="returns">
+                    <i class="fas fa-exchange-alt w-6 text-lg mr-3"></i>
+                    <span>Returns Approval</span>
+                    <span class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">8</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="orders">
+                    <i class="fas fa-shopping-bag w-6 text-lg mr-3"></i>
+                    <span>Orders</span>
+                    <span class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">12</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="inventory">
+                    <i class="fas fa-boxes w-6 text-lg mr-3"></i>
+                    <span>Inventory</span>
+                </a>
+            </div>
+
+            <div class="mb-6">
+                <div class="px-5 pb-2.5 text-[0.7rem] font-semibold text-gray-400 uppercase tracking-wide">Management</div>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="products">
+                    <i class="fas fa-box w-6 text-lg mr-3"></i>
+                    <span>Products</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="users">
+                    <i class="fas fa-users w-6 text-lg mr-3"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="#" class="flex items-center py-3 px-5 mx-2.5 my-0.5 rounded-[10px] text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-gray-100 hover:text-ayur-primary hover:translate-x-1" data-section="delivery">
+                    <i class="fas fa-truck w-6 text-lg mr-3"></i>
+                    <span>Delivery Partners</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-5 border-t border-gray-200 flex flex-col gap-2.5">
+            <a href="{% url 'homepage' %}" class="flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-white no-underline transition-all duration-300 bg-ayur-primary hover:bg-ayur-dark">
+                <i class="fas fa-globe"></i>
+                <span class="font-medium">View Website</span>
+            </a>
+            <a href="{% url 'logout' %}" class="flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-white no-underline transition-all duration-300 bg-red-500 hover:bg-red-600">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="font-medium">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="ml-[280px] min-h-screen bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-8 py-5 sticky top-0 z-50 shadow-sm">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-ayur-dark m-0 font-serif">Admin Dashboard</h1>
+                    <p class="text-gray-400 text-sm mt-1.5 m-0">Welcome back, {{ user.get_full_name|default:"Admin" }}!</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-ayur-primary to-ayur-dark flex items-center justify-center shadow-md">
+                        <i class="fas fa-user-shield text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-ayur-dark m-0 text-sm">{{ user.get_full_name|default:"Admin User" }}</h4>
+                        <p class="text-gray-400 text-xs m-0">Super Admin</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="p-8">
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard" class="content-section active">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-4 gap-5 mb-8">
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">₹{{ stats.total_revenue|floatformat:0 }}</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Total Revenue</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #DBEAFE; color: #1E40AF;">
+                                <i class="fas fa-rupee-sign"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 12.5% from last month
+                        </div>
+                    </div>
+
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">{{ stats.total_orders }}</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Total Orders</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #D1FAE5; color: #065F46;">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 8.2% increase
+                        </div>
+                    </div>
+
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">{{ stats.active_users }}</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Active Users</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #FEF3C7; color: #92400E;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 5.7% growth
+                        </div>
+                    </div>
+
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">{{ stats.pending_returns }}</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Pending Returns</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #FEE2E2; color: #991B1B;">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-red-500 flex items-center gap-1">
+                            <i class="fas fa-arrow-down"></i> Needs attention
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-2 gap-5 mb-8">
+                    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Revenue Trends</h3>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Order Status</h3>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="orderChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Recent Orders</h3>
+                        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">View All</button>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Product</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Amount</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#{{ order.order_number }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {{ order.full_name|default:order.user.get_full_name|default:order.user.username|default:"Customer" }}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% with first_item=order.items.first %}
+                                        {% if first_item and first_item.product %}
+                                            {{ first_item.product.name }}{% if order.items.count > 1 %}, +{{ order.items.count|add:"-1" }} more{% endif %}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹{{ order.total_amount|floatformat:0 }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold
+                                        {% if order.status == 'Delivered' %}bg-green-100 text-green-700
+                                        {% elif order.status == 'Shipped' %}bg-blue-100 text-blue-700
+                                        {% elif order.status == 'On Way' %}bg-purple-100 text-purple-700
+                                        {% elif order.status == 'Cancelled' %}bg-red-100 text-red-700
+                                        {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">{{ order.created_at|date:"M j, Y" }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View</button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="p-6 text-sm text-gray-500" colspan="7">No recent orders found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SALARY PAYMENTS SECTION -->
+            <div id="salary" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Salary Payments</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-plus"></i> Process Salary
+                        </button>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Employee ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Name</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Role</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Amount</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Period</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#EMP-101</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Rajesh Kumar</td>
+                                <td class="p-4 text-sm text-gray-700">Delivery Partner</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹18,500</strong></td>
+                                <td class="p-4 text-sm text-gray-700">January 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Pay Now</button>
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#EMP-102</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Suresh Patel</td>
+                                <td class="p-4 text-sm text-gray-700">Delivery Partner</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹21,200</strong></td>
+                                <td class="p-4 text-sm text-gray-700">January 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Pay Now</button>
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#EMP-103</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Vikram Singh</td>
+                                <td class="p-4 text-sm text-gray-700">Delivery Partner</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹19,800</strong></td>
+                                <td class="p-4 text-sm text-gray-700">January 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Paid</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View Receipt</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#EMP-104</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Ajay Verma</td>
+                                <td class="p-4 text-sm text-gray-700">Delivery Partner</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹22,400</strong></td>
+                                <td class="p-4 text-sm text-gray-700">January 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Paid</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View Receipt</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#EMP-105</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Dinesh Sharma</td>
+                                <td class="p-4 text-sm text-gray-700">Warehouse Staff</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹16,000</strong></td>
+                                <td class="p-4 text-sm text-gray-700">January 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Pay Now</button>
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RETURNS APPROVAL SECTION -->
+            <div id="returns" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Returns Approval</h3>
+                        <div class="flex gap-2.5">
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                                <i class="fas fa-filter"></i> Filter
+</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Return ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Product</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Reason</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Assigned To</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for return_request in returns %}
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#RET-{{ return_request.id }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">#{{ return_request.order.order_number }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {{ return_request.order.full_name|default:return_request.user.get_full_name|default:return_request.user.username|default:"Customer" }}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% with first_item=return_request.order.items.first %}
+                                        {% if first_item and first_item.product %}
+                                            {{ first_item.product.name }}{% if return_request.order.items.count > 1 %}, +{{ return_request.order.items.count|add:"-1" }} more{% endif %}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">{{ return_request.get_reason_display }}</td>
+                                <td class="p-4 text-sm text-gray-700">{{ return_request.created_at|date:"M j, Y" }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold
+                                        {% if return_request.status == 'Approved' %}bg-green-100 text-green-700
+                                        {% elif return_request.status == 'Rejected' %}bg-red-100 text-red-700
+                                        {% elif return_request.status == 'Completed' %}bg-blue-100 text-blue-700
+                                        {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                        {{ return_request.status }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% if return_request.assigned_to %}
+                                        {{ return_request.assigned_to.get_full_name|default:return_request.assigned_to.username }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex flex-col gap-2">
+                                            {% if return_request.status == 'Initiated' %}
+                                            <form method="post" action="{% url 'approve_return' return_request.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Approve</button>
+                                            </form>
+                                            {% endif %}
+                                            {% if return_request.status != 'Rejected' and return_request.status != 'Completed' %}
+                                            <form method="post" action="{% url 'reject_return' return_request.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="w-full px-4 py-2 bg-red-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-red-600 text-xs border-none cursor-pointer">Reject</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{% url 'return_details' return_request.id %}" class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs inline-block">View Details</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="p-6 text-sm text-gray-500" colspan="9">No return requests found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REFUNDS SECTION -->
+            <div id="refunds" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Refund Management</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-money-check-alt"></i> Process Refund
+                        </button>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Refund ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Amount</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Reason</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Request Date</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#REF-3001</strong></td>
+                                <td class="p-4 text-sm text-gray-700">#ORD-2330</td>
+                                <td class="p-4 text-sm text-gray-700">Pooja Desai</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹1,499</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Product Return Approved</td>
+                                <td class="p-4 text-sm text-gray-700">Feb 3, 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Process</button>
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#REF-3002</strong></td>
+                                <td class="p-4 text-sm text-gray-700">#ORD-2325</td>
+                                <td class="p-4 text-sm text-gray-700">Manish Gupta</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹899</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Order Cancelled</td>
+                                <td class="p-4 text-sm text-gray-700">Feb 2, 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-green-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-green-600 text-xs border-none cursor-pointer">Process</button>
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Details</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#REF-3003</strong></td>
+                                <td class="p-4 text-sm text-gray-700">#ORD-2320</td>
+                                <td class="p-4 text-sm text-gray-700">Sneha Roy</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹1,299</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Duplicate Payment</td>
+                                <td class="p-4 text-sm text-gray-700">Feb 1, 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Processed</span></td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View Receipt</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REVENUE SECTION -->
+            <div id="revenue" class="content-section">
+                <div class="grid grid-cols-4 gap-5 mb-8">
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">₹3,45,680</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Monthly Revenue</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #DBEAFE; color: #1E40AF;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 15.3% growth
+                        </div>
+                    </div>
+
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">₹41,24,580</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Yearly Revenue</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #D1FAE5; color: #065F46;">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 22.7% growth
+                        </div>
+                    </div>
+
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">₹1,285</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Average Order Value</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #FEF3C7; color: #92400E;">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 8.5% increase
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-gradient bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="text-3xl font-bold text-ayur-dark mb-2">2,458</div>
+                                <div class="text-sm text-gray-400 uppercase tracking-wide">Total Transactions</div>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: #E0E7FF; color: #4338CA;">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+                            <i class="fas fa-arrow-up"></i> 11.2% increase
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Revenue Trends (6 Months)</h3>
+                        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                            <i class="fas fa-download"></i> Download Report
+                        </button>
+                    </div>
+                    <div class="relative h-[400px]">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS SECTION -->
+            <div id="orders" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">All Orders</h3>
+                        <div class="flex gap-2.5">
+                            <input type="text" placeholder="Search orders..." class="px-4 py-2 border border-gray-300 rounded-lg w-[250px] focus:outline-none focus:ring-2 focus:ring-ayur-primary">
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg transition-all duration-300 hover:bg-gray-200 text-sm font-medium border-none cursor-pointer">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 mb-5">Manage and track all customer orders</p>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Products</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Total</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Payment</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Date</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#ORD-2345</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Rahul Sharma</td>
+                                <td class="p-4 text-sm text-gray-700">Face Cream, Body Wash</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹1,598</strong></td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Paid</span></td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Delivered</span></td>
+                                <td class="p-4 text-sm text-gray-700">Feb 4, 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View</button></td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#ORD-2344</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Priya Patel</td>
+                                <td class="p-4 text-sm text-gray-700">Body Wash</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹699</strong></td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Paid</span></td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Processing</span></td>
+                                <td class="p-4 text-sm text-gray-700">Feb 4, 2026</td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ANALYTICS SECTION -->
+            <div id="analytics" class="content-section">
+                <div class="grid grid-cols-2 gap-5 mb-8">
+                    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Sales by Category</h3>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Top Products</h3>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="productsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVENTORY SECTION -->
+            <div id="inventory" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Inventory Management</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-plus"></i> Add Stock
+                        </button>
+                    </div>
+                    <p class="text-gray-500 mb-5">Track and manage product inventory</p>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Product</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">SKU</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Category</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Stock</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Price</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>Face Cream</strong></td>
+                                <td class="p-4 text-sm text-gray-700">SKU-FC-001</td>
+                                <td class="p-4 text-sm text-gray-700">Skincare</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>145</strong></td>
+                                <td class="p-4 text-sm text-gray-700">₹899</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">In Stock</span></td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Manage</button></td>
+                            </tr>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>Body Wash</strong></td>
+                                <td class="p-4 text-sm text-gray-700">SKU-BW-002</td>
+                                <td class="p-4 text-sm text-gray-700">Body Care</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>12</strong></td>
+                                <td class="p-4 text-sm text-gray-700">₹699</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">Low Stock</span></td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Manage</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PRODUCTS SECTION -->
+            <div id="products" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Product Management</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-plus"></i> Add Product
+                        </button>
+                    </div>
+                    <p class="text-gray-500 mb-5">Manage your product catalog</p>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Product</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Category</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Price</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Stock</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Sales</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>Ayurvedic Face Cream</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Skincare</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹899</strong></td>
+                                <td class="p-4 text-sm text-gray-700">145</td>
+                                <td class="p-4 text-sm text-gray-700">342</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Active</span></td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">Edit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- USERS SECTION -->
+            <div id="users" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Customer Management</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-user-plus"></i> Add Customer
+                        </button>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Name</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Email</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Phone</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Orders</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Spent</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#CUST-1001</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Rahul Sharma</td>
+                                <td class="p-4 text-sm text-gray-700">rahul@example.com</td>
+                                <td class="p-4 text-sm text-gray-700">+91 98765 43210</td>
+                                <td class="p-4 text-sm text-gray-700">12</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>₹15,480</strong></td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Active</span></td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DELIVERY SECTION -->
+            <div id="delivery" class="content-section">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-ayur-dark m-0 font-serif">Delivery Partners</h3>
+                        <button class="px-5 py-2.5 bg-ayur-primary text-white rounded-lg no-underline transition-all duration-300 hover:bg-ayur-dark font-medium border-none cursor-pointer">
+                            <i class="fas fa-user-plus"></i> Add Partner
+                        </button>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Partner ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Name</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Phone</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Active Orders</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Completed</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Rating</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 transition-all duration-300 hover:bg-gray-50">
+                                <td class="p-4 text-sm text-gray-700"><strong>#DLV-101</strong></td>
+                                <td class="p-4 text-sm text-gray-700">Rajesh Kumar</td>
+                                <td class="p-4 text-sm text-gray-700">+91 98765 43210</td>
+                                <td class="p-4 text-sm text-gray-700">3</td>
+                                <td class="p-4 text-sm text-gray-700">245</td>
+                                <td class="p-4 text-sm text-gray-700">⭐ 4.8</td>
+                                <td class="p-4 text-sm text-gray-700"><span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">Active</span></td>
+                                <td class="p-4 text-sm text-gray-700"><button class="px-4 py-2 bg-blue-500 text-white rounded-lg no-underline transition-all duration-300 hover:bg-blue-600 text-xs border-none cursor-pointer">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Navigation functionality
+        const navItems = document.querySelectorAll('[data-section]');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Remove active styles from all nav items
+                navItems.forEach(nav => nav.classList.remove('nav-item-active', 'text-ayur-primary', 'font-semibold'));
+                // Add active styles to clicked item
+                this.classList.add('nav-item-active', 'text-ayur-primary', 'font-semibold');
+
+                // Hide all content sections
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+
+                // Show selected section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx) {
+            new Chart(revenueCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [28000, 35000, 42000, 38000, 45000, 52000],
+                        borderColor: '#2D5A27',
+                        backgroundColor: 'rgba(45, 90, 39, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Order Status Chart
+        const orderCtx = document.getElementById('orderChart');
+        if (orderCtx) {
+            new Chart(orderCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Delivered', 'Processing', 'Shipped', 'Cancelled'],
+                    datasets: [{
+                        data: [65, 20, 10, 5],
+                        backgroundColor: ['#10B981', '#F59E0B', '#3B82F6', '#EF4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Revenue Trend Chart
+        const revenueTrendCtx = document.getElementById('revenueTrendChart');
+        if (revenueTrendCtx) {
+            new Chart(revenueTrendCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: [320000, 345000, 380000, 365000, 395000, 424580],
+                        backgroundColor: '#2D5A27'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value/1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx) {
+            new Chart(categoryCtx.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Skincare', 'Hair Care', 'Body Care', 'Wellness'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: ['#2D5A27', '#D4AF37', '#1A3C34', '#6B9B37']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Products Chart
+        const productsCtx = document.getElementById('productsChart');
+        if (productsCtx) {
+            new Chart(productsCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Face Cream', 'Body Wash', 'Hair Oil', 'Face Serum', 'Body Lotion'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: [342, 289, 256, 234, 198],
+                        backgroundColor: '#2D5A27'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

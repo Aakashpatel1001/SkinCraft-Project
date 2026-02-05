@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Ritual Guide (FAQ) - SkinCraft Ayurveda{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
+    body {
+        background-color: #FDFBF7;
+        font-family: 'Jost', sans-serif;
+    }
+    .font-serif {
+        font-family: 'Playfair Display', serif;
+    }
+    /* Sidebar Active State */
+    .cat-link.active {
+        background-color: #F0F7F4;
+        color: #1B3022;
+        border-left: 3px solid #C5A023;
+        font-weight: 600;
+    }
+    /* Smooth Scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+    .sidebar-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    /* FAQ Animation */
+    .faq-content {
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+</style>
+
+<section class="relative bg-[#1B3022] py-20 text-center text-white overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-96 h-96 bg-[#C5A023]/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-10 left-6 lg:left-12 z-20 reveal">
+        <a href="/" class="group flex items-center gap-3 text-white/80 hover:text-[#C5A023] transition-all">
+            <i class="fa-solid fa-arrow-left-long transition-transform group-hover:-translate-x-1.5 text-lg"></i>
+            <span class="text-[10px] font-bold uppercase tracking-[0.4em]">Back to Home</span>
+        </a>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <span class="text-[#C5A023] font-bold text-xs uppercase tracking-[0.4em] mb-4 block">
+            Est. 2001 | 25 Years of Care
+        </span>
+        <h1 class="font-serif text-4xl md:text-6xl mb-6">Frequently Asked <span class="italic">Questions</span></h1>
+        <p class="text-white/60 max-w-2xl mx-auto font-light leading-relaxed">
+            Explore everything you need to know about our Ayurvedic rituals, shipping, and the brand philosophy that has guided our journey in Ahmedabad.
+        </p>
+    </div>
+</section>
+
+<div class="container mx-auto px-6 py-16">
+    <div class="flex flex-col lg:flex-row gap-12">
+
+        <aside class="w-full lg:w-1/4 lg:sticky lg:top-28 h-fit">
+            <h2 class="font-serif text-2xl text-[#1B3022] mb-8">Categories</h2>
+            <nav class="flex flex-col space-y-1">
+                <a href="#general"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022] active">General
+                    Questions</a>
+                <a href="#products"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Products
+                    & Ingredients</a>
+                <a href="#safety"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Safety
+                    & Usage</a>
+                <a href="#orders"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Orders
+                    & Payments</a>
+                <a href="#shipping"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Shipping
+                    & Delivery</a>
+                <a href="#returns"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Returns
+                    & Refunds</a>
+                <a href="#legal"
+                    class="cat-link px-4 py-3 text-sm text-gray-400 uppercase tracking-widest transition-all hover:text-[#1B3022]">Legal
+                    & Compliance</a>
+            </nav>
+        </aside>
+
+        <main class="w-full lg:w-3/4 space-y-20">
+
+            <section id="general">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-star text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">General Questions</h2>
+                </div>
+                <div class="space-y-4">
+                    <div
+                        class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm transition-all hover:border-[#C5A023]">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left">
+                            <span class="font-medium text-gray-800">What is SkinCraft Ayurveda's brand
+                                philosophy?</span>
+                            <i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform duration-300 group-[.active]:rotate-180"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">We bridge ancient Vedic wisdom with modern science to
+                                create rituals that heal your skin from within by balancing your Doshas.</p>
+                        </div>
+                    </div>
+                    <div
+                        class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm transition-all hover:border-[#C5A023]">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left">
+                            <span class="font-medium text-gray-800">Is SkinCraft Ayurveda a cruelty-free brand?</span>
+                            <i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform duration-300 group-[.active]:rotate-180"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Yes, we are 100% cruelty-free. We never test on
+                                animals, nor do we source from suppliers who do.</p>
+                        </div>
+                    </div>
+                    <div
+                        class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm transition-all hover:border-[#C5A023]">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left">
+                            <span class="font-medium text-gray-800">Are the products manufactured in India?</span>
+                            <i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform duration-300 group-[.active]:rotate-180"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Yes, all our rituals are handcrafted in specialized
+                                Ayurvedic labs located in Surat, Gujarat, India.</p>
+                        </div>
+                    </div>
+                    <div
+                        class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm transition-all hover:border-[#C5A023]">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left">
+                            <span class="font-medium text-gray-800">Do you use sustainable packaging?</span>
+                            <i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform duration-300 group-[.active]:rotate-180"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">We use 90% recyclable glass and FSC-certified paper to
+                                minimize our environmental impact.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="products">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-leaf text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">Products & Ingredients</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Are your products truly 100% natural?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Absolutely. We use pure botanical extracts, whole
+                                herbs, and cold-pressed oils as dictated by ancient texts like the Charaka Samhita.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Do you use synthetic fragrances or parabens?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">No. We never use parabens, sulfates, or synthetic
+                                fragrances. The scents come purely from steam-distilled essential oils.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Where do you source your ingredients?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">We source directly from certified organic farmers
+                                across the Himalayas and fertile lands of Southern India to ensure the highest 'Prana'
+                                (life force) in our ingredients.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">What is the shelf life of your products?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Most products have a shelf life of 18–24 months. As we
+                                use natural preservatives, we recommend using them within 6 months of opening.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="safety">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-shield-halved text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">Safety & Usage</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Should I perform a patch test?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Yes. We highly recommend a patch test on your inner
+                                arm 24 hours before full use to check for botanical sensitivities.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Are the products safe for sensitive skin?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Yes, but since natural ingredients are potent, we
+                                advise starting with a small amount. Our Pitta-balancing range is specifically designed
+                                for sensitive skin.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Can I use these products during pregnancy?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Most of our rituals are safe, but always consult your
+                                doctor first, especially regarding products containing high concentrations of essential
+                                oils.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="orders">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-credit-card text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">Orders & Payments</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">What payment methods do you accept?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">We accept all major Credit/Debit cards, UPI, Net
+                                Banking, and offer Cash on Delivery (COD) for most PIN codes.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Can I modify or cancel my order?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Cancellations are accepted within 3 hours of placing
+                                the order. Once dispatched, we cannot cancel the order.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="shipping">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-truck text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">Shipping & Delivery</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">How long does shipping take?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Standard delivery takes 3–5 business days for metros
+                                and 5–10 business days for other regions across India.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Do you offer free shipping?</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Yes, enjoy free shipping on all prepaid orders above
+                                ₹999.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="legal">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-[#E8F2EE] flex items-center justify-center text-[#4A7C6D]">
+                        <i class="fa-solid fa-scale-balanced text-sm"></i>
+                    </div>
+                    <h2 class="font-serif text-3xl text-[#4A7C6D]">Legal & Compliance</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Product Results Disclaimer</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">Results vary by individual skin type and Dosha.
+                                Ayurveda is a holistic process; consistent usage over 4–6 weeks is recommended for
+                                visible results.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item group bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
+                        <button class="faq-btn w-full px-8 py-6 flex justify-between items-center text-left"><span
+                                class="font-medium text-gray-800">Compliance with Indian Laws</span><i
+                                class="fa-solid fa-chevron-down text-gray-300 text-xs transition-transform group-[.active]:rotate-180"></i></button>
+                        <div class="faq-content max-h-0 overflow-hidden px-8">
+                            <p class="pb-6 text-gray-500 text-sm">We strictly follow the Consumer Protection
+                                (E-commerce) Rules, 2020. Our formulations are approved by the Ministry of AYUSH.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="bg-[#F0F7F4] py-16 rounded-[3rem] text-center mt-20">
+                <h3 class="font-serif text-3xl text-[#1B3022] mb-4">Can't find what you're looking for?</h3>
+                <p class="text-gray-500 max-w-lg mx-auto mb-10 text-sm">
+                    Reach out to our experts for personalized guidance on your wellness journey.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 px-6">
+                    <a href="https://wa.me/YOUR_NUMBER"
+                        class="w-full sm:w-auto flex items-center justify-center gap-3 bg-[#1B3022] hover:bg-[#2D5A27] text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] transition-all shadow-lg hover:scale-105">
+                        <i class="fa-brands fa-whatsapp text-lg text-[#25D366]"></i>
+                        WhatsApp Chat
+                    </a>
+                    <a href="/contact/"
+                        class="w-full sm:w-auto flex items-center justify-center gap-3 bg-transparent border-2 border-[#C5A023] text-[#1B3022] hover:bg-[#C5A023] hover:text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] transition-all shadow-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        Contact Form
+                    </a>
+                </div>
+                <p class="mt-8 text-[9px] text-[#1B3022]/40 uppercase tracking-[0.5em] font-bold">
+                    Mon — Sat | 10 AM — 6 PM IST
+                </p>
+            </div>
+        </main>
+    </div>
+</div>
+
+
+
+<script>
+    document.querySelectorAll('.faq-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const item = button.parentElement;
+            const content = button.nextElementSibling;
+
+            // Close other items in the same section if desired, or allow multiple
+            item.classList.toggle('active');
+
+            if (item.classList.contains('active')) {
+                content.style.maxHeight = content.scrollHeight + "px";
+            } else {
+                content.style.maxHeight = "0";
+            }
+        });
+    });
+
+    // Sidebar Highlight
+    window.addEventListener('scroll', () => {
+        let current = "";
+        document.querySelectorAll('section[id]').forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 150) {
+                current = section.getAttribute('id');
+            }
+        });
+        document.querySelectorAll('.cat-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

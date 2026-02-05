@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}The Science of SkinCraft{% endblock %}
+
+{% block content %}
+
+<style>
+    /* 1. Global Smooth Scroll */
+    html { scroll-behavior: smooth; }
+
+    /* 2. Parallax Background Utility */
+    .parallax-section {
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    /* 3. Animation Classes */
+    .reveal-up {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.8s ease-out;
+    }
+    .reveal-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* Staggered Animation Delays */
+    .delay-100 { transition-delay: 0.1s; }
+    .delay-200 { transition-delay: 0.2s; }
+    .delay-300 { transition-delay: 0.3s; }
+
+    /* 4. Custom Hover Effects */
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<!-- Hero Section -->
+<section class="relative h-[80vh] flex items-center justify-center parallax-section"
+         style="background-image: url('https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1920&auto=format&fit=crop');">
+    
+    <div class="absolute inset-0 bg-gradient-to-b from-ayur-dark/80 via-ayur-dark/50 to-ayur-dark/90"></div>
+
+    <div class="relative z-10 text-center px-4 max-w-5xl mx-auto reveal-up">
+        <div class="inline-block border border-ayur-gold/50 px-8 py-2 rounded-full mb-8 backdrop-blur-md bg-white/5">
+            <span class="text-ayur-gold tracking-[0.4em] uppercase text-xs font-bold">Pure Botanical Science</span>
+        </div>
+        <h1 class="font-serif text-5xl md:text-7xl text-white font-bold mb-6 leading-tight drop-shadow-2xl">
+            Nature's Cure for <br>
+            <span class="text-ayur-gold italic">Modern Skin</span>
+        </h1>
+        <p class="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed mb-12 text-shadow">
+            We blend 5,000-year-old herbal wisdom with modern formulation standards. No harsh chemicals, just pure, potent plants.
+        </p>
+        
+        <div class="flex flex-col md:flex-row gap-4 justify-center">
+            <a href="#doshas" class="px-10 py-4 bg-ayur-gold text-ayur-dark font-bold rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                Identify Your Skin Type
+            </a>
+            <a href="#process" class="px-10 py-4 border border-white text-white font-bold rounded-full hover:bg-white hover:text-ayur-dark transition-all">
+                Our Formulation
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Introduction Section -->
+<section id="intro" class="py-24 bg-white relative overflow-hidden">
+    <div class="absolute -right-20 top-20 w-96 h-96 bg-ayur-light rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div class="lg:w-1/2 reveal-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ayur-light/50 text-ayur-primary text-xs font-bold uppercase tracking-widest mb-6 border border-ayur-primary/20">
+                    <i class="fa-solid fa-book-open"></i> The Definition
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-ayur-dark mb-6 leading-tight">
+                    What is <span class="text-ayur-gold italic">Ayurveda?</span>
+                </h2>
+                <p class="text-gray-600 text-lg leading-relaxed mb-6">
+                    Simply put, Ayurveda is the <strong>"Science of Life."</strong> It is a 5,000-year-old natural healing system that believes healthy skin comes from balance, not chemicals.
+                </p>
+                <p class="text-gray-600 text-lg leading-relaxed mb-8">
+                    While modern skincare often fights your skin (scrubbing, peeling, stripping oil), Ayurveda feeds your skin. It uses whole plants, oils, and flowers to strengthen your skin's natural barrier so it can heal itself.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                        <div class="w-12 h-12 rounded-full bg-ayur-gold/10 text-ayur-gold flex items-center justify-center text-xl flex-shrink-0">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-ayur-dark text-lg">Balance</h4>
+                            <p class="text-sm text-gray-500 mt-1">Restores your skin's natural pH and oil levels.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                        <div class="w-12 h-12 rounded-full bg-ayur-primary/10 text-ayur-primary flex items-center justify-center text-xl flex-shrink-0">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-ayur-dark text-lg">Purity</h4>
+                            <p class="text-sm text-gray-500 mt-1">100% Edible ingredients. If you can't eat it, don't wear it.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:w-1/2 reveal-up delay-200">
+                <div class="relative">
+                    <div class="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white">
+                        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800&auto=format&fit=crop" 
+                             alt="Natural Skincare Ingredients" 
+                             class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700">
+                    </div>
+                    <div class="absolute -bottom-8 -left-8 z-20 bg-white p-6 rounded-2xl shadow-xl animate-bounce-slow hidden md:block">
+                        <div class="text-center">
+                            <span class="block text-3xl font-serif font-bold text-ayur-gold">100%</span>
+                            <span class="text-xs font-bold text-ayur-dark uppercase tracking-widest">Chemical Free</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Ingredients section -->
+<section id="ingredients" class="py-24 bg-[#F9F8F6]">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16 reveal-up">
+            <span class="text-ayur-primary font-bold text-xs uppercase tracking-[0.25em] mb-3 block">Pure Elements</span>
+            <h2 class="font-serif text-4xl font-bold text-ayur-dark">Nature's Potions</h2>
+            <div class="h-1 w-16 bg-ayur-gold mx-auto rounded-full mt-4 mb-4"></div>
+            <p class="text-gray-500 max-w-xl mx-auto">
+                Powered by the purest botanical ingredients.
+            </p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-6">
+            <div class="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white p-8 rounded-2xl border border-gray-100 hover:border-ayur-primary/50 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group reveal-up">
+                <div class="w-16 h-16 bg-[#2D5A27]/10 rounded-full flex items-center justify-center text-[#2D5A27] text-3xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <h4 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Neem</h4>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Purifies & Detoxes</span>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    A powerful antiseptic that clears acne, purifies the blood, and flushes out toxins for clear skin.
+                </p>
+            </div>
+            <div class="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white p-8 rounded-2xl border border-gray-100 hover:border-orange-400/50 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group reveal-up delay-100">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-500 text-3xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <h4 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Turmeric</h4>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Brightens Skin</span>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Known as "Golden Spice," it reduces inflammation and fades dark spots to reveal a natural glow.
+                </p>
+            </div>
+            <div class="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white p-8 rounded-2xl border border-gray-100 hover:border-[#5D4037]/50 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group reveal-up delay-200">
+                <div class="w-16 h-16 bg-[#5D4037]/10 rounded-full flex items-center justify-center text-[#5D4037] text-3xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-snowflake"></i>
+                </div>
+                <h4 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Sandalwood</h4>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Soothes & Cools</span>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Instantly calms irritated skin, reduces redness, and tightens pores with its cooling properties.
+                </p>
+            </div>
+            <div class="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white p-8 rounded-2xl border border-gray-100 hover:border-pink-400/50 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group reveal-up delay-300">
+                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 text-3xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <h4 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Wild Rose</h4>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Hydrates & Tones</span>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Deeply hydrates dry skin and balances pH levels, leaving skin soft, supple, and refreshed.
+                </p>
+            </div>
+            <div class="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white p-8 rounded-2xl border border-gray-100 hover:border-lime-500/50 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group reveal-up delay-300">
+                <div class="w-16 h-16 bg-lime-100 rounded-full flex items-center justify-center text-lime-600 text-3xl mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h4 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Aloe Vera</h4>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Heals & Moisturizes</span>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Nature's soothing gel. Accelerates healing of blemishes and locks in moisture without feeling greasy.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Dosha Section -->
+<section id="doshas" class="py-20 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-16 reveal-up">
+            <span class="text-ayur-primary font-bold text-xs uppercase tracking-[0.25em] mb-3 block">Personalized Diagnosis</span>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-ayur-dark">Identify Your Skin Type</h2>
+            <div class="h-1 w-20 bg-ayur-gold mx-auto rounded-full mt-6 mb-4"></div>
+            <p class="text-gray-500 mt-4 max-w-xl mx-auto">
+                Understanding your skin's unique needs is the first step to a healthy glow.
+            </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-sky-50 rounded-3xl p-8 hover:-translate-y-3 transition-transform duration-300 reveal-up group cursor-default border border-sky-100/50">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-sky-600 text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-sky-900 mb-2">Dry & Dehydrated</h3>
+                <p class="text-sky-700/80 text-sm leading-relaxed mb-6">
+                    Skin feels tight, rough, or looks flaky? It lacks essential moisture and natural oils.
+                </p>
+                <div class="bg-white/60 rounded-xl p-4 mb-8 backdrop-blur-sm">
+                    <h4 class="text-[10px] font-bold text-sky-900 uppercase tracking-widest mb-3 border-b border-sky-100 pb-2">Recommended For You</h4>
+                    <ul class="space-y-2 text-sm text-sky-800">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-sky-500"></i> Moisture-Locking Oils</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-sky-500"></i> Deep Hydration Creams</li>
+                    </ul>
+                </div>
+                <a href="{% url 'product' %}?q=dry" class="block w-full py-3 text-center bg-sky-600 text-white font-bold rounded-xl hover:bg-sky-700 transition-colors shadow-lg shadow-sky-200">
+                    View Dry Skin Products
+                </a>
+            </div>
+            <div class="bg-orange-50 rounded-3xl p-8 hover:-translate-y-3 transition-transform duration-300 reveal-up delay-100 group cursor-default border border-orange-100/50">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-orange-500 text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-feather"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-orange-900 mb-2">Sensitive & Red</h3>
+                <p class="text-orange-800/80 text-sm leading-relaxed mb-6">
+                    Reacts quickly to sun or products? It needs gentle, cooling care to reduce inflammation.
+                </p>
+                <div class="bg-white/60 rounded-xl p-4 mb-8 backdrop-blur-sm">
+                    <h4 class="text-[10px] font-bold text-orange-900 uppercase tracking-widest mb-3 border-b border-orange-100 pb-2">Recommended For You</h4>
+                    <ul class="space-y-2 text-sm text-orange-800">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-orange-500"></i> Anti-Inflammatory Gels</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-orange-500"></i> Cooling Sandalwood</li>
+                    </ul>
+                </div>
+                <a href="{% url 'product' %}?q=sensitive" class="block w-full py-3 text-center bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200">
+                    View Sensitive Skin Products
+                </a>
+            </div>
+            <div class="bg-emerald-50 rounded-3xl p-8 hover:-translate-y-3 transition-transform duration-300 reveal-up delay-200 group cursor-default border border-emerald-100/50">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-600 text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-emerald-900 mb-2">Oily & Acne Prone</h3>
+                <p class="text-emerald-800/80 text-sm leading-relaxed mb-6">
+                    Excess shine or frequent breakouts? It needs detoxification and balance, not harsh stripping.
+                </p>
+                <div class="bg-white/60 rounded-xl p-4 mb-8 backdrop-blur-sm">
+                    <h4 class="text-[10px] font-bold text-emerald-900 uppercase tracking-widest mb-3 border-b border-emerald-100 pb-2">Recommended For You</h4>
+                    <ul class="space-y-2 text-sm text-emerald-800">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Deep Pore Cleansing</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> Neem & Tea Tree</li>
+                    </ul>
+                </div>
+                <a href="{% url 'product' %}?q=oily" class="block w-full py-3 text-center bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200">
+                    View Oily Skin Products
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Process Section -->
+<section id="process" class="py-16 bg-[#FDFBF7] relative overflow-hidden">
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-12 reveal-up">
+            <span class="text-ayur-primary font-bold text-xs uppercase tracking-[0.25em] mb-3 block">Simple & Pure</span>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-ayur-dark">How We Make It</h2>
+            <div class="h-1 w-20 bg-ayur-gold mx-auto rounded-full mt-4 mb-4"></div>
+            <p class="text-gray-500 max-w-xl mx-auto">
+                No machines. No chemicals. Just hands, herbs, and time.
+            </p>
+        </div>
+        <div class="relative max-w-5xl mx-auto">
+            <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 hidden md:block"></div>
+            <div class="flex flex-col md:flex-row items-center justify-between mb-8 group reveal-up">
+                <div class="md:w-5/12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 relative">
+                    <div class="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-white border-t border-r border-gray-100 transform rotate-45 -translate-y-1/2"></div> 
+                    <span class="text-6xl font-serif font-bold text-ayur-gold/20 absolute top-4 right-6 pointer-events-none">01</span>
+                    <h3 class="font-serif text-2xl font-bold text-ayur-dark mb-3">We Pick Fresh Herbs</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We harvest our plants early in the morning when they are fresh. We use real leaves, roots, and flowers from local farmers, not dried powders.
+                    </p>
+                </div>
+                <div class="md:w-2/12 flex justify-center py-6 md:py-0 relative z-10">
+                    <div class="w-16 h-16 bg-ayur-gold text-white rounded-full flex items-center justify-center text-2xl shadow-lg border-4 border-[#FDFBF7]">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                </div>
+                <div class="md:w-5/12"></div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-between mb-8 group reveal-up delay-100">
+                <div class="md:w-5/12 order-3 md:order-1"></div>
+                <div class="md:w-2/12 flex justify-center py-6 md:py-0 relative z-10 order-1 md:order-2">
+                    <div class="w-16 h-16 bg-ayur-gold text-white rounded-full flex items-center justify-center text-2xl shadow-lg border-4 border-[#FDFBF7]">
+                        <i class="fa-solid fa-fire-burner"></i>
+                    </div>
+                </div>
+                <div class="md:w-5/12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 relative order-2 md:order-3">
+                    <div class="hidden md:block absolute top-1/2 -left-3 w-6 h-6 bg-white border-b border-l border-gray-100 transform rotate-45 -translate-y-1/2"></div>
+                    <span class="text-6xl font-serif font-bold text-ayur-gold/20 absolute top-4 right-6 pointer-events-none">02</span>
+                    <h3 class="font-serif text-2xl font-bold text-ayur-dark mb-3">We Cook Slowly</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We mix herbs with oil and cook them slowly in large copper pots. We never use high heat because it destroys the vitamins. The copper cleans the oil naturally.
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-between group reveal-up delay-200">
+                <div class="md:w-5/12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 relative">
+                    <div class="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-white border-t border-r border-gray-100 transform rotate-45 -translate-y-1/2"></div>
+                    <span class="text-6xl font-serif font-bold text-ayur-gold/20 absolute top-4 right-6 pointer-events-none">03</span>
+                    <h3 class="font-serif text-2xl font-bold text-ayur-dark mb-3">We Let It Rest</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Once cooked, we let the oil sit in sunlight for 21 days. This slow process allows the oil to fully absorb the nutrients, making it powerful and ready for your skin.
+                    </p>
+                </div>
+                <div class="md:w-2/12 flex justify-center py-6 md:py-0 relative z-10">
+                    <div class="w-16 h-16 bg-ayur-gold text-white rounded-full flex items-center justify-center text-2xl shadow-lg border-4 border-[#FDFBF7]">
+                        <i class="fa-solid fa-sun"></i>
+                    </div>
+                </div>
+                <div class="md:w-5/12"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const reveals = document.querySelectorAll(".reveal-up");
+        function checkReveal() {
+            const triggerBottom = window.innerHeight * 0.85; 
+            reveals.forEach(reveal => {
+                const revealTop = reveal.getBoundingClientRect().top;
+                if (revealTop < triggerBottom) {
+                    reveal.classList.add("visible");
+                }
+            });
+        }
+        window.addEventListener("scroll", checkReveal);
+        checkReveal(); 
+    });
+</script>
+{% endblock %}

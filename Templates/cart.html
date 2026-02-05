@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-[#FDFBF7] min-h-screen py-12 font-['Poppins']">
+    <div class="max-w-[1200px] mx-auto px-5">
+        <h1 class="font-['Playfair_Display'] text-4xl font-bold text-[#1A3C34] mb-10 text-center lg:text-left">Your Ritual Bag</h1>
+
+        {% if cart.items.exists %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="lg:col-span-2 space-y-5">
+                {% for item in cart.items.all %}
+                <div class="bg-white rounded-lg p-6 border border-[#E0E0E0] shadow-sm flex items-center gap-6 group hover:shadow-md transition-all">
+                    <div class="w-24 h-32 bg-[#f9f9f9] rounded flex-shrink-0">
+                        <img src="{{ item.product.thumbnail.url }}" class="w-full h-full object-contain p-2">
+                    </div>
+                    
+                    <div class="flex-grow">
+                        <div class="flex justify-between">
+                            <h3 class="font-['Playfair_Display'] text-xl font-bold text-[#1A3C34]">{{ item.product.name }}</h3>
+                            <a href="{% url 'delete_cart_item' item.id %}" class="text-stone-300 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+                        <p class="text-[0.75rem] text-[#D4AF37] font-bold uppercase tracking-wider mt-1">{{ item.variant.unit_value }}{{ item.variant.unit_type }} • Batch #{{ item.variant.batch_number }}</p>
+                        
+                        <div class="flex justify-between items-end mt-6">
+                            <div class="flex items-center border border-[#E0E0E0] rounded-md overflow-hidden">
+                                <a href="{% url 'update_cart_quantity' item.id 'minus' %}" class="px-4 py-2 hover:bg-stone-50 text-[#1A3C34]">-</a>
+                                <span class="px-5 py-2 font-bold bg-stone-50 border-x border-[#E0E0E0]">{{ item.quantity }}</span>
+                                <a href="{% url 'update_cart_quantity' item.id 'plus' %}" class="px-4 py-2 hover:bg-stone-50 text-[#1A3C34]">+</a>
+                            </div>
+                            <span class="text-xl font-bold text-[#1A3C34]">₹{{ item.subtotal }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="bg-white p-8 rounded-lg border border-[#E0E0E0] shadow-xl sticky top-24">
+                    <h2 class="font-['Playfair_Display'] text-2xl font-bold text-[#1A3C34] mb-6">Investment Summary</h2>
+                    <div class="space-y-4 text-sm text-[#777777] border-b border-[#f3f3f3] pb-6">
+                        <div class="flex justify-between"><span>Ritual Value</span><span>₹{{ cart.total_price }}</span></div>
+                        <div class="flex justify-between"><span class="text-emerald-600">Sanctuary Delivery</span><span class="text-emerald-600">COMPLIMENTARY</span></div>
+                    </div>
+                    <div class="flex justify-between items-center my-8">
+                        <span class="font-bold text-[#1A3C34] uppercase tracking-tighter">Total Balance</span>
+                        <span class="text-3xl font-bold text-[#1A3C34]">₹{{ cart.total_price }}</span>
+                    </div>
+                    <a href="{% url 'checkout' %}" class="block w-full bg-[#1A3C34] text-white text-center py-5 rounded-md font-bold uppercase tracking-[3px] text-[0.8rem] hover:bg-[#0e241f] transition-all">Proceed to Checkout</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-32 bg-white rounded-xl border-2 border-dashed border-stone-200">
+            <i class="fas fa-shopping-bag text-5xl text-stone-100 mb-6"></i>
+            <h2 class="font-['Playfair_Display'] text-3xl text-stone-300">Your Ritual Bag is Empty</h2>
+            <a href="{% url 'product' %}" class="mt-10 inline-block bg-[#1A3C34] text-white px-12 py-4 rounded-full font-bold uppercase tracking-widest text-[0.8rem]">Discover Rituals</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

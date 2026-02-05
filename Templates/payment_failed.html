@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-[#FDFBF7] min-h-screen py-20 font-['Poppins'] flex items-center justify-center">
+    <div class="max-w-[600px] mx-auto px-5 text-center">
+        <div class="bg-white p-12 rounded-2xl border border-red-100 shadow-xl">
+            <!-- Error Icon -->
+            <div class="w-24 h-24 mx-auto mb-6 bg-red-50 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-circle-xmark text-red-500 text-5xl"></i>
+            </div>
+
+            <!-- Title -->
+            <h1 class="font-['Playfair_Display'] text-4xl font-bold text-[#1A3C34] mb-3">Payment Failed</h1>
+            <p class="text-stone-500 text-sm mb-8">Unfortunately, your payment could not be processed at this time.</p>
+
+            <!-- Order Details -->
+            {% if order_number %}
+            <div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-8">
+                <p class="text-xs text-stone-500 uppercase tracking-widest mb-1">Order Reference</p>
+                <p class="text-lg font-bold text-[#1A3C34] font-mono">{{ order_number }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Reasons -->
+            <div class="bg-stone-50 rounded-lg p-6 mb-8 text-left">
+                <p class="font-bold text-sm text-[#1A3C34] mb-3">Common Reasons:</p>
+                <ul class="space-y-2 text-xs text-stone-600">
+                    <li><i class="fa-solid fa-check text-red-400 mr-2"></i> Insufficient funds</li>
+                    <li><i class="fa-solid fa-check text-red-400 mr-2"></i> Card declined by bank</li>
+                    <li><i class="fa-solid fa-check text-red-400 mr-2"></i> Incorrect payment details</li>
+                    <li><i class="fa-solid fa-check text-red-400 mr-2"></i> Network timeout</li>
+                    <li><i class="fa-solid fa-check text-red-400 mr-2"></i> Transaction limit exceeded</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <a href="{% url 'checkout' %}" class="block w-full bg-[#1A3C34] text-white py-4 rounded-lg font-bold uppercase tracking-[0.1em] text-sm hover:bg-[#0e241f] transition-all">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Try Again
+                </a>
+                <a href="{% url 'cart_view' %}" class="block w-full bg-stone-200 text-[#1A3C34] py-4 rounded-lg font-bold uppercase tracking-[0.1em] text-sm hover:bg-stone-300 transition-all">
+                    <i class="fa-solid fa-shopping-cart mr-2"></i>Back to Cart
+                </a>
+                <a href="{% url 'homepage' %}" class="block w-full border-2 border-stone-200 text-[#1A3C34] py-3 rounded-lg font-bold uppercase tracking-[0.1em] text-sm hover:bg-stone-50 transition-all">
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Support Info -->
+            <div class="mt-10 pt-6 border-t border-stone-100">
+                <p class="text-xs text-stone-400 mb-3">Need help?</p>
+                <a href="{% url 'contact' %}" class="text-[#1A3C34] font-bold text-sm hover:underline">
+                    <i class="fa-solid fa-headset mr-2"></i>Contact Our Support Team
+                </a>
+            </div>
+        </div>
+
+        <!-- Security Badge -->
+        <div class="mt-8 text-center text-xs text-stone-400">
+            <i class="fa-solid fa-shield-halved text-stone-300 mr-2"></i>
+            Your payment information is secure
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact Us - SkinCraft Ayurveda{% endblock %}
+{% block content %}
+
+<section class="relative bg-ayur-dark text-white py-20 overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-96 h-96 bg-ayur-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-10 left-6 lg:left-12 reveal">
+        <a href="/" class="flex items-center gap-2 text-white/80 hover:text-ayur-gold transition-colors group">
+            <i class="fa-solid fa-arrow-left-long transition-transform group-hover:-translate-x-1"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Back to Home</span>
+        </a>
+    </div>
+    <div class="absolute left-10 bottom-10 text-[10rem] text-white/5 font-serif font-bold leading-none select-none pointer-events-none">
+        Help
+    </div>
+    <div class="container mx-auto px-6 relative z-10 text-center">
+        <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.25em] mb-4 block">We are here for you</span>
+        <h1 class="font-serif text-5xl md:text-6xl font-bold mb-6">Get in Touch</h1>
+        <p class="text-gray-300 text-lg max-w-2xl mx-auto font-light">
+            Have a question about your skin type or a recent order? Our Ayurveda experts are ready to assist you.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-[#FDFBF7]">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row gap-16">
+            
+            <div class="lg:w-1/3 space-y-8">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Talk to Us</h3>
+                    <p class="text-gray-500 text-sm mb-4">For expert skin advice or order queries.</p>
+                    <div class="space-y-2">
+                        <a href="tel:+919998513464" class="flex items-center gap-3 text-gray-700 font-medium hover:text-ayur-primary transition-colors">
+                            <i class="fa-solid fa-phone text-ayur-gold"></i> +91 99985 13464
+                        </a>
+                        <a href="mailto:support@skincraft.com" class="flex items-center gap-3 text-gray-700 font-medium hover:text-ayur-primary transition-colors">
+                            <i class="fa-solid fa-envelope text-ayur-gold"></i> support@skincraft.com
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-3000 group">
+                    <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-brands fa-whatsapp text-3xl text-[#25d366]"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-ayur-dark mb-2">Chat on WhatsApp</h3>
+                    <p class="text-gray-500 text-sm mb-6">Fastest response time (9 AM - 6 PM).</p>
+                    <a href="https://wa.me/919876543210" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors shadow-lg shadow-green-200">
+                        Start Chat <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300">
+                    <div class="p-5 pb-2 flex items-start gap-4">
+                        <div class="w-10 h-10 bg-ayur-dark text-ayur-gold rounded-full flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-location-dot"></i> 
+                        </div>
+                        <div>
+                            <h3 class="font-serif text-lg font-bold text-ayur-dark">Visit Lab</h3>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed"> Surbhi The Royaltown, Pasodara Patia,<br>Surat, Gujarat, India - 395007 </p>
+                        </div>
+                    </div>
+                    <div class="mt-4 rounded-2xl overflow-hidden h-48 border border-gray-100 relative group cursor-pointer">
+                        <iframe src="https://www.google.com/maps?q=Surbhi+The+Royal+Town+Pasodara+Patia+Surat+Gujarat&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"></iframe>
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:w-2/3">
+                <div class="bg-white p-10 md:p-12 rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-ayur-dark via-ayur-primary to-ayur-gold"></div>
+
+                    <div class="mb-10">
+                        <h3 class="font-serif text-3xl md:text-4xl font-bold text-ayur-dark mb-4">Send a Message</h3>
+                        <p class="text-gray-500">Fill out the form below and our team will get back to you within 24 hours.</p>
+                    </div>
+
+                    <form action="#" method="POST" class="space-y-8">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="relative group">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Your Name</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fa-regular fa-user text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                                    </div>
+                                    <input type="text" name="name" required class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block w-full pl-12 p-4 transition-all outline-none placeholder-gray-400" placeholder="John Doe">
+                                </div>
+                            </div>
+
+                            <div class="relative group">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Phone Number</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-phone text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                                    </div>
+                                    <input type="tel" name="phone" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block w-full pl-12 p-4 transition-all outline-none placeholder-gray-400" placeholder="+91 98765 43210">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="relative group">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Email Address</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fa-regular fa-envelope text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                                    </div>
+                                    <input type="email" name="email" required class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block w-full pl-12 p-4 transition-all outline-none placeholder-gray-400" placeholder="john@example.com">
+                                </div>
+                            </div>
+
+                            <div class="relative group">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Subject</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-tag text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                                    </div>
+                                    <select name="subject" class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block w-full pl-12 p-4 appearance-none outline-none cursor-pointer">
+                                        <option>General Inquiry</option>
+                                        <option>Order Status / Tracking</option>
+                                        <option>Product Recommendation</option>
+                                        <option>Returns & Refunds</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="relative group">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Message</label>
+                            <div class="relative">
+                                <div class="absolute top-4 left-4 pointer-events-none">
+                                    <i class="fa-regular fa-comment-dots text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                                </div>
+                                <textarea name="message" rows="5" required class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block w-full pl-12 p-4 transition-all outline-none placeholder-gray-400" placeholder="How can we help you today?"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 bg-ayur-dark text-white font-bold text-lg rounded-xl hover:bg-ayur-primary transition-all shadow-lg hover:shadow-2xl transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <span>Send Message</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="py-12 bg-white border-t border-gray-100">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-ayur-light rounded-full flex items-center justify-center text-ayur-primary text-xl">
+                    <i class="fa-regular fa-circle-question"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-ayur-dark text-lg">Need quick answers?</h4>
+                    <p class="text-gray-500 text-sm">Check our Frequently Asked Questions.</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <a href="/faq" class="px-6 py-3 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:border-ayur-gold hover:text-ayur-dark transition-colors">
+                    View FAQ
+                </a>
+                <a href="/orders" class="px-6 py-3 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:border-ayur-gold hover:text-ayur-dark transition-colors">
+                    Track Order
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% if messages %}
+<div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-md px-4">
+    {% for message in messages %}
+        <div class="toast-msg bg-white border-l-4 
+                    {% if message.tags == 'success' %}border-green-500{% else %}border-red-500{% endif %} 
+                    shadow-2xl rounded-lg p-4 flex items-center gap-4 
+                    transition-all duration-500 ease-in-out opacity-0 -translate-y-10">
+            
+            <div class="flex-shrink-0">
+                {% if message.tags == 'success' %}
+                    <i class="fa-solid fa-circle-check text-green-500 text-xl"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-exclamation text-red-500 text-xl"></i>
+                {% endif %}
+            </div>
+
+            <div class="flex-grow">
+                <p class="font-bold text-gray-800 text-sm">
+                    {% if message.tags == 'success' %}Success{% else %}Error{% endif %}
+                </p>
+                <p class="text-gray-500 text-xs mt-0.5">{{ message }}</p>
+            </div>
+
+            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toasts = document.querySelectorAll('.toast-msg');
+        
+        toasts.forEach((toast, index) => {
+            // 1. Slide In Animation (Staggered slightly)
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', '-translate-y-10');
+            }, 100 * index);
+
+            // 2. Disappear Logic (After 5 Seconds)
+            setTimeout(() => {
+                // Fade out and slide up
+                toast.classList.add('opacity-0', '-translate-y-10');
+                
+                // Remove from DOM after animation finishes (500ms)
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 5000 + (100 * index)); // 5000ms = 5 seconds
+        });
+    });
+</script>
+{% endif %}
+
+{% endblock %}

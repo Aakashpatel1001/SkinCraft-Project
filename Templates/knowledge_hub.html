@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Simple Hero (Reverted) -->
+<section class="bg-stone-50 pt-16 pb-12 text-center relative overflow-hidden">
+    <div class="container mx-auto px-6 relative z-10">
+        <h1 class="font-serif text-4xl md:text-5xl text-ayur-dark mb-4">Discover Your Ritual</h1>
+        <p class="text-gray-500 max-w-xl mx-auto text-sm">
+            Unlock the full potential of nature. Select a category below to reveal expert application tips.
+        </p>
+    </div>
+    <i
+        class="fa-solid fa-leaf text-ayur-gold/5 text-[200px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-12"></i>
+</section>
+
+<!-- Category Selector (Reverted to Icons) -->
+<section class="py-8 bg-white border-b border-gray-100 sticky top-[70px] z-30 shadow-sm backdrop-blur-md bg-white/90">
+    <div class="container mx-auto px-6 max-w-5xl">
+        <div class="grid grid-cols-3 gap-4 md:gap-8">
+            <a href="#skincare" class="group text-center">
+                <div
+                    class="w-12 h-12 md:w-16 md:h-16 mx-auto bg-ayur-light rounded-2xl flex items-center justify-center text-ayur-primary mb-3 group-hover:bg-ayur-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fa-solid fa-face-smile text-xl md:text-2xl"></i>
+                </div>
+                <span
+                    class="block font-serif font-bold text-ayur-dark text-sm md:text-base group-hover:tracking-wider transition-all">Skincare</span>
+            </a>
+            <a href="#haircare" class="group text-center">
+                <div
+                    class="w-12 h-12 md:w-16 md:h-16 mx-auto bg-ayur-light rounded-2xl flex items-center justify-center text-ayur-primary mb-3 group-hover:bg-ayur-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fa-solid fa-droplet text-xl md:text-2xl"></i>
+                </div>
+                <span
+                    class="block font-serif font-bold text-ayur-dark text-sm md:text-base group-hover:tracking-wider transition-all">Haircare</span>
+            </a>
+            <a href="#bodycare" class="group text-center">
+                <div
+                    class="w-12 h-12 md:w-16 md:h-16 mx-auto bg-ayur-light rounded-2xl flex items-center justify-center text-ayur-primary mb-3 group-hover:bg-ayur-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fa-solid fa-spa text-xl md:text-2xl"></i>
+                </div>
+                <span
+                    class="block font-serif font-bold text-ayur-dark text-sm md:text-base group-hover:tracking-wider transition-all">Bodycare</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="bg-stone-50/50">
+
+    <!-- Skincare Section (Reverted to Simple Steps) -->
+    <section id="skincare" class="py-20 container mx-auto px-6 max-w-6xl scroll-mt-28">
+        <div class="flex items-center gap-4 mb-10">
+            <div
+                class="w-10 h-10 rounded-full bg-ayur-primary text-white flex items-center justify-center font-bold text-lg">
+                1</div>
+            <h2 class="font-serif text-3xl text-ayur-dark">Skincare Rituals</h2>
+            <div class="h-px bg-gray-200 flex-grow ml-4"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- Card 1: Face Oil -->
+            <div
+                class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-1/3 flex-shrink-0">
+                    <div class="relative rounded-2xl overflow-hidden aspect-square border border-gray-100">
+                        <img src="https://images.unsplash.com/photo-1608248597279-f99d160bfbc8?q=80&w=2670&auto=format&fit=crop"
+                            alt="Face Oil" class="w-full h-full object-cover">
+                        <div
+                            class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur text-center py-2 text-[10px] uppercase font-bold text-ayur-dark">
+                            Kumkumadi Tailam</div>
+                    </div>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-serif text-xl text-ayur-dark mb-2">The Glow Activator</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-wider font-bold"><i
+                            class="fa-regular fa-moon"></i> Nightly</p>
+
+                    <ul class="space-y-6">
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Cleanse</span>
+                                <p class="text-xs text-gray-500">Wash face with warm water.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Warm Up</span>
+                                <p class="text-xs text-gray-500">3-4 drops on palms.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Massage</span>
+                                <p class="text-xs text-gray-500">Upward circles for 2 mins.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 2: Ubtan -->
+            <div
+                class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-1/3 flex-shrink-0">
+                    <div class="relative rounded-2xl overflow-hidden aspect-square border border-gray-100">
+                        <img src="https://images.unsplash.com/photo-1612817288484-96916a081669?q=80&w=2574&auto=format&fit=crop"
+                            alt="Face Pack" class="w-full h-full object-cover">
+                        <div
+                            class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur text-center py-2 text-[10px] uppercase font-bold text-ayur-dark">
+                            Saundarya Ubtan</div>
+                    </div>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="font-serif text-xl text-ayur-dark mb-2">The Weekly Detox</h3>
+                    <p class="text-xs text-gray-500 mb-6 uppercase tracking-wider font-bold"><i
+                            class="fa-regular fa-calendar"></i> Twice/Week</p>
+
+                    <ul class="space-y-6">
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Mix Paste</span>
+                                <p class="text-xs text-gray-500">Powder + Rose Water.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Apply</span>
+                                <p class="text-xs text-gray-500">Even layer on face/neck.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4 items-start">
+                            <span
+                                class="w-8 h-8 rounded-full bg-ayur-light text-ayur-primary flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
+                            <div>
+                                <span class="block font-bold text-ayur-dark mb-0.5">Rinse</span>
+                                <p class="text-xs text-gray-500">Wash off after 10 mins.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Haircare Section (Reverted to Sidebar Layout) -->
+    <section id="haircare" class="py-20 container mx-auto px-6 max-w-6xl scroll-mt-28 border-t border-gray-200">
+        <div class="flex items-center gap-4 mb-10">
+            <div
+                class="w-10 h-10 rounded-full bg-ayur-gold text-white flex items-center justify-center font-bold text-lg">
+                2</div>
+            <h2 class="font-serif text-3xl text-ayur-dark">Haircare Rituals</h2>
+            <div class="h-px bg-gray-200 flex-grow ml-4"></div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 shadow-lg border border-ayur-gold/20 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-ayur-gold/5 rounded-bl-full pointer-events-none"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1">
+                    <h3 class="font-serif text-2xl text-ayur-dark mb-2">The 'Champi' Ritual</h3>
+                    <p class="text-gray-500 mb-8">Traditional head massage to stimulate roots and relax the mind.</p>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Step 1 -->
+                        <div
+                            class="bg-stone-50 p-5 rounded-2xl border border-stone-100 hover:border-ayur-gold/30 transition-colors">
+                            <span class="text-2xl text-ayur-gold mb-2 block"><i
+                                    class="fa-solid fa-fire-burner"></i></span>
+                            <div class="font-bold text-ayur-dark text-sm">Warm Oil</div>
+                            <p class="text-[10px] text-gray-500 mt-1">Use double boiler method.</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div
+                            class="bg-stone-50 p-5 rounded-2xl border border-stone-100 hover:border-ayur-gold/30 transition-colors">
+                            <span class="text-2xl text-ayur-gold mb-2 block"><i
+                                    class="fa-solid fa-hand-holding-droplet"></i></span>
+                            <div class="font-bold text-ayur-dark text-sm">Apply</div>
+                            <p class="text-[10px] text-gray-500 mt-1">Part hair, oil the scalp.</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div
+                            class="bg-stone-50 p-5 rounded-2xl border border-stone-100 hover:border-ayur-gold/30 transition-colors">
+                            <span class="text-2xl text-ayur-gold mb-2 block"><i
+                                    class="fa-solid fa-hands-bubbles"></i></span>
+                            <div class="font-bold text-ayur-dark text-sm">Massage</div>
+                            <p class="text-[10px] text-gray-500 mt-1">Circular motion, 10 mins.</p>
+                        </div>
+                        <!-- Step 4 -->
+                        <div
+                            class="bg-stone-50 p-5 rounded-2xl border border-stone-100 hover:border-ayur-gold/30 transition-colors">
+                            <span class="text-2xl text-ayur-gold mb-2 block"><i class="fa-solid fa-bed"></i></span>
+                            <div class="font-bold text-ayur-dark text-sm">Rest</div>
+                            <p class="text-[10px] text-gray-500 mt-1">Keep 30 mins or overnight.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Haircare Image -->
+                <div class="order-1 lg:order-2 relative h-64 lg:h-80 rounded-2xl overflow-hidden shadow-md">
+                    <img src="https://images.unsplash.com/photo-1519730722595-a5ff788dea4d?q=80&w=2574&auto=format&fit=crop"
+                        alt="Hair Oiling" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bodycare Section (Reverted to Cards with Step 6 Color) -->
+    <section id="bodycare" class="py-20 container mx-auto px-6 max-w-6xl scroll-mt-28 border-t border-gray-200">
+        <div class="flex items-center gap-4 mb-10">
+            <div
+                class="w-10 h-10 rounded-full bg-ayur-brown text-white flex items-center justify-center font-bold text-lg">
+                3</div>
+            <h2 class="font-serif text-3xl text-ayur-dark">Bodycare Rituals</h2>
+            <div class="h-px bg-gray-200 flex-grow ml-4"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Tip Card 1 -->
+            <div
+                class="bg-orange-50/50 p-6 rounded-2xl border border-orange-100 hover:bg-orange-50 hover:border-orange-200 hover:shadow-lg transition-all duration-300 group">
+                <i
+                    class="fa-solid fa-shower text-3xl text-ayur-brown mb-4 opacity-80 group-hover:scale-110 transition-transform"></i>
+                <h4 class="font-serif text-lg font-bold text-ayur-brown mb-1">Pre-Bath Massage</h4>
+                <p class="text-xs text-gray-600 leading-relaxed font-medium">
+                    Oil *before* shower to lock moisture.
+                </p>
+            </div>
+            <!-- Tip Card 2 -->
+            <div
+                class="bg-orange-50/50 p-6 rounded-2xl border border-orange-100 hover:bg-orange-50 hover:border-orange-200 hover:shadow-lg transition-all duration-300 group">
+                <i
+                    class="fa-solid fa-temperature-three-quarters text-3xl text-ayur-brown mb-4 opacity-80 group-hover:scale-110 transition-transform"></i>
+                <h4 class="font-serif text-lg font-bold text-ayur-brown mb-1">Warm Water</h4>
+                <p class="text-xs text-gray-600 leading-relaxed font-medium">
+                    Warm for body, Cool for head.
+                </p>
+            </div>
+            <!-- Tip Card 3 -->
+            <div
+                class="bg-orange-50/50 p-6 rounded-2xl border border-orange-100 hover:bg-orange-50 hover:border-orange-200 hover:shadow-lg transition-all duration-300 group">
+                <i
+                    class="fa-solid fa-socks text-3xl text-ayur-brown mb-4 opacity-80 group-hover:scale-110 transition-transform"></i>
+                <h4 class="font-serif text-lg font-bold text-ayur-brown mb-1">Foot Therapy</h4>
+                <p class="text-xs text-gray-600 leading-relaxed font-medium">
+                    Ghee on soles = Deep Sleep.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Footer CTA (This is the "Begin Your Journey" section you requested to keep) -->
+<section class="bg-[#1a1a1a] py-24 text-center relative overflow-hidden">
+    <!-- Subtle Pattern -->
+    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+    <div class="container mx-auto px-6 relative z-10">
+        <h2 class="font-serif text-4xl md:text-5xl text-white mb-6">Begin Your Journey</h2>
+        <p class="text-gray-400 mb-10 max-w-lg mx-auto text-lg">Unsure where to start? Our Vaidyas can customize a
+            ritual for your unique Dosha.</p>
+        <a href="{% url 'contact' %}"
+            class="group relative inline-flex items-center justify-center px-8 py-4 bg-ayur-gold text-ayur-dark font-bold uppercase tracking-widest text-sm overflow-hidden transition-all hover:bg-white hover:text-ayur-primary">
+            <span class="relative z-10">Consult an Expert</span>
+            <div
+                class="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300">
+            </div>
+        </a>
+    </div>
+</section>
+
+{% endblock %}

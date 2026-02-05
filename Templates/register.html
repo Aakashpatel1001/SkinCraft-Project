@@ -1,0 +1,137 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | SkinCraft Ayurveda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/script.js' %}"></script>
+
+</head>
+<body class="font-sans min-h-screen flex flex-col items-center justify-center p-4 py-10 bg-[#FAFAF9]">
+
+    <a href="{% url 'homepage' %}" class="absolute top-6 left-6 text-gray-400 hover:text-[#1A3C34] transition-colors flex items-center gap-2 text-sm font-medium z-10">
+        <i class="fa-solid fa-arrow-left"></i> Back
+    </a>
+
+    <div class="text-center mb-6 animate-fade-in-down">
+        <a href="{% url 'homepage' %}" class="inline-block group relative transition-transform transform hover:scale-105 duration-300">
+            <i class="fa-solid fa-leaf absolute -left-3 -top-1 text-[#D4AF37] text-xl opacity-80 rotate-[-15deg]"></i>
+            <span class="font-serif text-3xl font-bold text-[#1A3C34] drop-shadow-sm">
+                Skin<span class="text-[#2D5A27]">Craft</span>
+            </span>
+            <p class="text-[9px] uppercase tracking-[0.3em] text-gray-500 mt-2 font-medium group-hover:text-[#D4AF37] transition-colors">
+                The Essence of Ayurveda
+            </p>
+        </a>
+    </div>
+
+    <div class="w-full max-w-[600px] bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10 relative overflow-hidden animate-fade-in-up">
+        
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#1A3C34] via-[#D4AF37] to-[#1A3C34]"></div>
+
+        <div class="mb-8 text-center">
+            <h2 class="font-serif text-2xl font-bold text-[#1A3C34] mb-1">Join the Family</h2>
+            <p class="text-gray-500 text-sm">Begin your journey to natural wellness.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if forloop.first %}
+                    <div class="p-3 mb-6 text-sm rounded-lg flex items-center gap-3 border-l-4 shadow-sm {% if message.tags == 'error' %}bg-red-50 text-red-600 border-red-500{% else %}bg-green-50 text-green-700 border-green-500{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">Username</label>
+                <input type="text" name="username" class="custom-input w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none placeholder-gray-300 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all" placeholder="Choose a username" required>
+                {% if form.username.errors %}<p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">First Name</label>
+                    <input type="text" name="first_name" class="custom-input w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none placeholder-gray-300 text-sm focus:border-[#D4AF37] transition-all" placeholder="John">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">Last Name</label>
+                    <input type="text" name="last_name" class="custom-input w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none placeholder-gray-300 text-sm focus:border-[#D4AF37] transition-all" placeholder="Doe">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">Email Address</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3.5 text-gray-400"><i class="fa-regular fa-envelope"></i></span>
+                    <input type="email" name="email" class="custom-input w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none placeholder-gray-300 text-sm focus:border-[#D4AF37] transition-all" placeholder="name@example.com" required>
+                </div>
+                {% if form.email.errors %}<p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">Phone Number</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-gray-400"><i class="fa-solid fa-phone"></i></span>
+                        <input type="tel" name="phone" class="custom-input w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none placeholder-gray-300 text-sm focus:border-[#D4AF37] transition-all" placeholder="+91 98765 43210">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">Gender</label>
+                    <div class="relative">
+                        <select name="gender" class="custom-input w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none text-sm appearance-none bg-white focus:border-[#D4AF37] transition-all cursor-pointer">
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-gray-400 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                {% for field in form %}
+                    {% if field.name == 'password' or 'password' in field.name %}
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 mb-1 tracking-wide">{{ field.label }}</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-gray-400"><i class="fa-solid fa-lock"></i></span>
+                                {{ field }}
+                            </div>
+                            {% if field.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-[#1A3C34] text-white font-bold rounded-lg hover:bg-[#255248] transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-[#1A3C34]/30 uppercase tracking-widest text-sm flex justify-center items-center gap-2 group mt-6">
+                Create Account <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center border-t border-gray-50 pt-4">
+            <p class="text-gray-500 text-sm">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="font-bold text-[#1A3C34] hover:text-[#D4AF37] transition-colors ml-1">
+                    Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

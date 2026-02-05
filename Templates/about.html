@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Our Story - SkinCraft Ayurveda{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ayur-dark: #1A2F18;
+        /* Deep Forest Green */
+        --ayur-sage: #4A5D4E;
+        /* Muted Nature */
+        --ayur-gold: #D4AF37;
+        /* Heritage Gold */
+        --ayur-ochre: #E9B949;
+        /* Sunlight Accent */
+        --ayur-cream: #FDFBF7;
+        /* Pure Canvas */
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--ayur-cream);
+        color: var(--ayur-dark);
+    }
+
+    .font-serif {
+        font-family: 'Playfair Display', serif;
+    }
+
+    /* Luxury Scroll Reveal */
+    .reveal {
+        opacity: 0;
+        transform: translateY(25px);
+        transition: all 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Hero Parallax */
+    .about-hero {
+        background: linear-gradient(rgba(26, 47, 24, 0.5), rgba(26, 47, 24, 0.5)),
+            url('https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat fixed;
+        height: 75vh;
+    }
+
+    /* Expert Card: Arched Sun Design */
+    .expert-card {
+        background: white;
+        border-radius: 2.5rem;
+        transition: all 0.5s ease;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .expert-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 30px 60px -12px rgba(26, 47, 24, 0.12);
+        border-color: var(--ayur-gold);
+    }
+
+    .expert-header-arch {
+        height: 110px;
+        background: var(--ayur-ochre);
+        position: relative;
+        clip-path: ellipse(90% 100% at 50% 0%);
+    }
+
+    .expert-img-container {
+        width: 140px;
+        height: 140px;
+        margin: -70px auto 0;
+        position: relative;
+        z-index: 10;
+    }
+
+    .expert-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 6px solid white;
+        object-fit: cover;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        filter: grayscale(100%);
+        transition: all 0.6s ease;
+    }
+
+    .expert-card:hover .expert-img {
+        filter: grayscale(0%);
+        transform: scale(1.05);
+    }
+
+    /* Benefits Glow */
+    .benefit-circle {
+        border: 1px solid var(--ayur-gold);
+        transition: all 0.4s ease;
+        background: white;
+    }
+
+    .benefit-item:hover .benefit-circle {
+        background: var(--ayur-gold);
+        color: white;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Modern Timeline */
+    .timeline-path {
+        position: absolute;
+        left: 50%;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, var(--ayur-gold), transparent);
+        transform: translateX(-50%);
+    }
+</style>
+
+<section class="about-hero flex items-center justify-center text-center px-6 relative">
+    <div class="absolute top-10 left-6 lg:left-12 reveal">
+        <a href="/" class="flex items-center gap-2 text-white/80 hover:text-ayur-gold transition-colors group">
+            <i class="fa-solid fa-arrow-left-long transition-transform group-hover:-translate-x-1"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Back to Home</span>
+        </a>
+    </div>
+    <div class="max-w-4xl reveal">
+        <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.5em] mb-4 block">
+            Pure Care Since 2001
+        </span>
+        <h1 class="text-white font-serif text-5xl md:text-8xl mb-8 leading-tight">
+            Old Traditions <br>
+            <span class="italic text-ayur-gold">New Care</span>
+        </h1>
+        <p class="text-white/70 text-lg md:text-xl font-light tracking-wide max-w-2xl mx-auto mb-10 leading-relaxed">
+            We use 25 years of experience to bring you the best natural products, 
+            made carefully in our labs for your modern lifestyle.
+        </p>
+        <div class="w-24 h-0.5 bg-ayur-gold mx-auto"></div>
+    </div>
+</section>
+
+<section class="py-24 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row gap-20 items-center">
+            <div class="lg:w-1/2 reveal">
+                <div class="relative group">
+                    <div
+                        class="absolute inset-0 border border-ayur-gold rounded-[2rem] translate-x-6 translate-y-6 transition-transform group-hover:translate-x-4 group-hover:translate-y-4">
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&q=80&w=1000"
+                        class="relative z-10 rounded-[2rem] shadow-2xl h-[550px] w-full object-cover"
+                        alt="Heritage Lab">
+                </div>
+            </div>
+            <div class="lg:w-1/2 reveal">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-px bg-ayur-gold"></div>
+                    <span class="text-ayur-gold font-bold text-xs uppercase tracking-widest">Our Legacy</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-6xl mb-8 leading-tight text-ayur-dark">We Are Here With <br>25
+                    Years Of Experience</h2>
+                <p class="text-ayur-sage text-lg leading-relaxed mb-8">
+                    Established in 2016, SkinCraft was born out of a simple realization: the modern world has lost its
+                    rhythm with nature. Our journey began in traditional Ayurvedic labs, bridging ancient herbal alchemy
+                    with contemporary skincare.
+                </p>
+                <div class="grid grid-cols-2 gap-8 border-t border-gray-100 pt-8">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-ayur-cream flex items-center justify-center text-ayur-gold">
+                            <i class="fa-solid fa-microscope"></i>
+                        </div>
+                        <span class="font-bold text-sm tracking-tight">Lab-Tested Purity</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-ayur-cream flex items-center justify-center text-ayur-gold">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <span class="font-bold text-sm tracking-tight">Ethical Sourcing</span>
+                    </div>
+                    <div class="mt-6"> 
+                        <a href="/ayurveda/" class="inline-flex items-center gap-4 text-ayur-dark font-bold text-sm uppercase tracking-widest group">
+                            Discover Our Philosophy 
+                            <span class="w-12 h-12 rounded-full border border-ayur-gold/30 flex items-center justify-center transition-all duration-500 group-hover:bg-ayur-gold group-hover:text-white">
+                                <i class="fa-solid fa-arrow-right-long transition-transform group-hover:translate-x-1"></i>
+                            </span> 
+                        </a> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Benefits Section -->
+<section class="py-24 bg-[#FDFBF7] overflow-hidden relative">
+    <div class="absolute top-0 left-0 w-64 h-64 bg-ayur-gold/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2">
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-20 reveal">
+            <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.5em] mb-4 block">Crafted with
+                Love</span>
+            <h2 class="font-serif text-4xl md:text-6xl text-ayur-dark leading-tight">Better Care for a Better You</h2>
+            <div class="w-24 h-1 bg-ayur-gold/30 mx-auto mt-6"></div>
+        </div>
+        <div class="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-0">
+            <div class="flex flex-col gap-20 text-right w-full lg:w-1/3 order-2 lg:order-1">
+                <div class="benefit-item flex items-center justify-end gap-6 reveal group">
+                    <div class="transition-transform duration-500 group-hover:-translate-x-2">
+                        <h4 class="font-serif text-2xl text-ayur-dark mb-1">Natural Glow</h4>
+                        <p class="text-xs text-ayur-sage font-bold uppercase tracking-widest">Real Saffron for Bright
+                            Skin</p>
+                    </div>
+                    <div
+                        class="benefit-circle min-w-[70px] h-[70px] rounded-full border border-ayur-gold/30 flex items-center justify-center text-ayur-gold text-2xl bg-white shadow-sm transition-all duration-500 group-hover:bg-ayur-gold group-hover:text-white group-hover:rotate-[360deg]">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                </div>
+                <div class="benefit-item flex items-center justify-end gap-6 reveal group"
+                    style="transition-delay: 0.1s;">
+                    <div class="transition-transform duration-500 group-hover:-translate-x-2">
+                        <h4 class="font-serif text-2xl text-ayur-dark mb-1">Healing Oils</h4>
+                        <p class="text-xs text-ayur-sage font-bold uppercase tracking-widest">Deep Repair from Nature
+                        </p>
+                    </div>
+                    <div
+                        class="benefit-circle min-w-[70px] h-[70px] rounded-full border border-ayur-gold/30 flex items-center justify-center text-ayur-gold text-2xl bg-white shadow-sm transition-all duration-500 group-hover:bg-ayur-gold group-hover:text-white group-hover:rotate-[360deg]">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full lg:w-1/3 order-1 lg:order-2 reveal flex justify-center relative">
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-64 h-64 border border-ayur-gold/10 rounded-full animate-ping"></div>
+                </div>
+                <div class="relative animate-float">
+                    <div class="absolute inset-0 bg-ayur-gold/10 rounded-full blur-[100px]"></div>
+                    <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=800"
+                        class="relative z-10 h-[400px] md:h-[500px] object-contain drop-shadow-2xl"
+                        alt="SkinCraft Best Seller">
+                </div>
+            </div>
+            <div class="flex flex-col gap-20 text-left w-full lg:w-1/3 order-3">
+                <div
+                    class="benefit-item flex flex-row-reverse lg:flex-row items-center justify-end lg:justify-start gap-6 reveal group">
+                    <div
+                        class="benefit-circle min-w-[70px] h-[70px] rounded-full border border-ayur-gold/30 flex items-center justify-center text-ayur-gold text-2xl bg-white shadow-sm transition-all duration-500 group-hover:bg-ayur-gold group-hover:text-white group-hover:rotate-[360deg]">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="transition-transform duration-500 group-hover:translate-x-2">
+                        <h4 class="font-serif text-2xl text-ayur-dark mb-1">Soft Lips</h4>
+                        <p class="text-xs text-ayur-sage font-bold uppercase tracking-widest">Fresh & Hydrated Always
+                        </p>
+                    </div>
+                </div>
+                <div class="benefit-item flex flex-row-reverse lg:flex-row items-center justify-end lg:justify-start gap-6 reveal group"
+                    style="transition-delay: 0.1s;">
+                    <div
+                        class="benefit-circle min-w-[70px] h-[70px] rounded-full border border-ayur-gold/30 flex items-center justify-center text-ayur-gold text-2xl bg-white shadow-sm transition-all duration-500 group-hover:bg-ayur-gold group-hover:text-white group-hover:rotate-[360deg]">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div class="transition-transform duration-500 group-hover:translate-x-2">
+                        <h4 class="font-serif text-2xl text-ayur-dark mb-1">Trusted Quality</h4>
+                        <p class="text-xs text-ayur-sage font-bold uppercase tracking-widest">25 Years of Pure Care</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Experts Section -->
+<section class="py-24 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-20 reveal">
+            <span class="text-ayur-gold uppercase tracking-[0.4em] text-xs font-bold mb-3 block">Expertise
+                Matters</span>
+            <h2 class="font-serif text-5xl text-ayur-dark">Meet Our Alchemists</h2>
+            <div class="w-20 h-0.5 bg-ayur-gold/30 mx-auto mt-6"></div>
+            <p class="text-gray-500 mt-6 max-w-2xl mx-auto">Our team of specialists combines 25 years of Ayurvedic
+                legacy with modern laboratory precision to craft your skincare rituals.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            <div class="expert-card reveal group">
+                <div class="expert-header-arch"></div>
+                <div class="expert-img-container">
+                    <img src="https://images.unsplash.com/photo-1559839734-2b71f1536783?auto=format&fit=crop&w=400"
+                        class="expert-img" alt="Lead Lab Manager">
+                </div>
+                <div class="pt-10 pb-12 text-center px-6">
+                    <h4 class="font-serif text-2xl mb-1 group-hover:text-ayur-gold transition-colors">Jessica Walkar
+                    </h4>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-widest mb-4">Lead Lab Manager</p>
+                    <p class="text-gray-500 text-sm mb-6 italic">Mastering the science of herbal extraction for maximum
+                        purity.</p>
+                    <div class="flex justify-center gap-4">
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expert-card reveal group shadow-xl" style="transition-delay: 0.1s;">
+                <div class="expert-header-arch" style="background: var(--ayur-dark);"></div>
+                <div class="expert-img-container">
+                    <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400"
+                        class="expert-img border-ayur-dark" alt="Chief Vaidya">
+                </div>
+                <div class="pt-10 pb-12 text-center px-6">
+                    <h4 class="font-serif text-2xl mb-1 group-hover:text-ayur-gold transition-colors">Roman Willimes
+                    </h4>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-widest mb-4">Chief Vaidya</p>
+                    <p class="text-gray-500 text-sm mb-6 italic">Guardian of ancient Vedic scriptures and traditional
+                        formulations.</p>
+                    <div class="flex justify-center gap-4">
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="expert-card reveal group" style="transition-delay: 0.2s;">
+                <div class="expert-header-arch"></div>
+                <div class="expert-img-container">
+                    <img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?auto=format&fit=crop&w=400"
+                        class="expert-img" alt="Product Alchemist">
+                </div>
+                <div class="pt-10 pb-12 text-center px-6">
+                    <h4 class="font-serif text-2xl mb-1 group-hover:text-ayur-gold transition-colors">Thomas Marlo</h4>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-widest mb-4">Product Alchemist</p>
+                    <p class="text-gray-500 text-sm mb-6 italic">Designing contemporary textures for time-tested
+                        remedies.</p>
+                    <div class="flex justify-center gap-4">
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-instagram"></i></a>
+                        <a href="#"
+                            class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-ayur-gold hover:text-white transition-all"><i
+                                class="fa-brands fa-facebook-f"></i></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- stats section -->
+<section class="py-24 bg-ayur-dark relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+        <i class="fa-solid fa-seedling text-[30rem] absolute -top-20 -left-20 rotate-12 text-white"></i>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+            <div class="reveal space-y-4">
+                <div
+                    class="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-ayur-gold border border-white/10 shadow-xl">
+                    <i class="fa-solid fa-trophy text-2xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-5xl font-serif text-white counter" data-target="25">0</h4>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Years of Experience
+                    </p>
+                </div>
+            </div>
+            <div class="reveal space-y-4" style="transition-delay: 0.1s;">
+                <div
+                    class="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-ayur-gold border border-white/10 shadow-xl">
+                    <i class="fa-solid fa-hands-holding-child text-2xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center justify-center">
+                        <h4 class="text-5xl font-serif text-white counter" data-target="10">0</h4>
+                        <span class="text-5xl font-serif text-ayur-gold ml-1">k+</span>
+                    </div>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Happy Customers</p>
+                </div>
+            </div>
+            <div class="reveal space-y-4" style="transition-delay: 0.2s;">
+                <div
+                    class="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-ayur-gold border border-white/10 shadow-xl">
+                    <i class="fa-solid fa-leaf text-2xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-5xl font-serif text-white counter" data-target="200">0</h4>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Pure Formulations
+                    </p>
+                </div>
+            </div>
+            <div class="reveal space-y-4" style="transition-delay: 0.3s;">
+                <div
+                    class="w-16 h-16 mx-auto rounded-full bg-white/5 flex items-center justify-center text-ayur-gold border border-white/10 shadow-xl">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center justify-center">
+                        <h4 class="text-5xl font-serif text-white counter" data-target="100">0</h4>
+                        <span class="text-5xl font-serif text-ayur-gold ml-1">%</span>
+                    </div>
+                    <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Purity Verified</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Timeline section -->
+<section class="py-24 bg-white overflow-hidden">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-20">
+            <h2 class="font-serif text-5xl text-ayur-dark">The Evolution</h2>
+            <p class="text-ayur-gold mt-4 uppercase tracking-[0.3em] text-xs font-bold">Bridging Timeless Ages</p>
+        </div>
+        <div class="relative max-w-5xl mx-auto">
+            <div class="timeline-path hidden md:block"></div>
+            <div class="space-y-32">
+                <div class="flex flex-col md:flex-row items-center gap-16 reveal">
+                    <div class="md:w-1/2 md:text-right">
+                        <span class="font-serif text-ayur-gold text-4xl mb-4 block">2016</span>
+                        <h3 class="font-serif text-3xl mb-4">How it Began</h3>
+                        <p class="text-ayur-sage leading-relaxed">Our first lab was established with 3 traditional oil
+                            formulas in the heart of our family garden, focusing on pure cold-pressed extraction.</p>
+                    </div>
+                    <div class="md:w-1/2">
+                        <img src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=600"
+                            class="rounded-[2.5rem] shadow-xl h-64 w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                            alt="2016">
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row-reverse items-center gap-16 reveal">
+                    <div class="md:w-1/2 md:text-left">
+                        <span class="font-serif text-ayur-gold text-4xl mb-4 block">2024</span>
+                        <h3 class="font-serif text-3xl mb-4">High-Quality Produce</h3>
+                        <p class="text-ayur-sage leading-relaxed">Incorporating modern extraction potency while scaling
+                            to global markets, serving 40+ countries with lab-verified authentic Ayurveda.</p>
+                    </div>
+                    <div class="md:w-1/2">
+                        <img src="https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=600"
+                            class="rounded-[2.5rem] shadow-xl h-64 w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                            alt="2024">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const observerOptions = { threshold: 0.3 };
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    const counter = entry.target.querySelector('.counter');
+                    if (counter) {
+                        animateValue(counter);
+                    }
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => statsObserver.observe(el));
+
+        function animateValue(obj) {
+            const target = +obj.getAttribute('data-target');
+            let startTimestamp = null;
+            const duration = 2000;
+
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * target);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = target; // Ensure it ends exactly on the target
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    });
+</script>
+{% endblock %}

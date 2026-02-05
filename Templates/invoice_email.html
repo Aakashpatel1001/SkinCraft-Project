@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ order.order_number }} - SkinCraft</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Poppins', Arial, sans-serif; background-color: #f5f7fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 600px;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1A3C34 0%, #2d5a4a 100%); padding: 40px 30px; position: relative;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <h1 style="font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700; color: #ffffff; margin: 0 0 10px 0;">SkinCraft</h1>
+                                        <p style="font-size: 16px; color: #ffffff; opacity: 0.9; margin: 0 0 20px 0;">Ayurvedic Wellness Products</p>
+                                        <div style="font-size: 13px; color: #ffffff; opacity: 0.8; line-height: 1.6;">
+                                            <p style="margin: 5px 0;">📍 Surbhi The Royaltown, Kamrej Road, Surat-394185</p>
+                                            <p style="margin: 5px 0;">📞 +91 99985 13464</p>
+                                            <p style="margin: 5px 0;">✉️ support@skincraft.com</p>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: right; vertical-align: top;">
+                                        <div style="background-color: #D4AF37; color: #1A3C34; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 16px; display: inline-block; margin-bottom: 15px;">INVOICE</div>
+                                        <div style="font-size: 13px; color: #ffffff;">
+                                            <p style="font-size: 18px; font-weight: 700; margin: 5px 0;">#{{ order.order_number }}</p>
+                                            <p style="opacity: 0.8; margin: 5px 0;">{{ order.created_at|date:"F d, Y" }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- Bill To and Order Details -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td width="48%" style="vertical-align: top; padding-right: 10px;">
+                                        <div style="background-color: #f9fafb; border-radius: 12px; padding: 20px; border-left: 4px solid #D4AF37;">
+                                            <h3 style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 15px 0;">Bill To</h3>
+                                            <p style="font-weight: 700; font-size: 16px; color: #1f2937; margin: 0 0 8px 0;">{{ order.full_name }}</p>
+                                            <p style="font-size: 13px; color: #4b5563; margin: 0 0 5px 0;">{{ order.email|default:user.email }}</p>
+                                            <p style="font-size: 13px; color: #4b5563; margin: 0 0 15px 0;">{{ order.phone|default:"N/A" }}</p>
+                                            <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+                                                <p style="font-size: 13px; color: #374151; line-height: 1.6; margin: 0;">
+                                                    {{ order.street_address|default:"N/A" }}<br>
+                                                    {{ order.city }}, {{ order.state }} {{ order.zip_code }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td width="48%" style="vertical-align: top; padding-left: 10px;">
+                                        <div style="background-color: #f9fafb; border-radius: 12px; padding: 20px; border-left: 4px solid #1A3C34;">
+                                            <h3 style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 15px 0;">Order Details</h3>
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Order Number:</td>
+                                                    <td style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: right; padding: 5px 0;">{{ order.order_number }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Date:</td>
+                                                    <td style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: right; padding: 5px 0;">{{ order.created_at|date:"M d, Y" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Status:</td>
+                                                    <td style="text-align: right; padding: 5px 0;">
+                                                        <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; 
+                                                        {% if order.status == 'Delivered' %}background-color: #d1fae5; color: #065f46;
+                                                        {% elif order.status == 'Cancelled' %}background-color: #fee2e2; color: #991b1b;
+                                                        {% elif order.status == 'Shipped' or order.status == 'On Way' %}background-color: #dbeafe; color: #1e40af;
+                                                        {% else %}background-color: #fef3c7; color: #92400e;{% endif %}">
+                                                            {{ order.status }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Payment:</td>
+                                                    <td style="font-size: 13px; font-weight: 700; color: #1f2937; text-align: right; padding: 5px 0;">{{ order.payment_method|default:"Cash on Delivery" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Payment Status:</td>
+                                                    <td style="text-align: right; padding: 5px 0;">
+                                                        <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; 
+                                                        {% if order.payment_status == 'Paid' %}background-color: #d1fae5; color: #065f46;
+                                                        {% elif order.payment_status == 'Failed' %}background-color: #fee2e2; color: #991b1b;
+                                                        {% else %}background-color: #fef3c7; color: #92400e;{% endif %}">
+                                                            {{ order.payment_status|default:"Pending" }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Order Items -->
+                            <div style="margin-bottom: 30px;">
+                                <h3 style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 20px 0;">Order Items</h3>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #1A3C34 0%, #2d5a4a 100%);">
+                                            <th style="text-align: left; padding: 12px 15px; font-size: 12px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">Product</th>
+                                            <th style="text-align: center; padding: 12px 15px; font-size: 12px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">Variant</th>
+                                            <th style="text-align: center; padding: 12px 15px; font-size: 12px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">Qty</th>
+                                            <th style="text-align: right; padding: 12px 15px; font-size: 12px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">Price</th>
+                                            <th style="text-align: right; padding: 12px 15px; font-size: 12px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em;">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="background-color: #ffffff;">
+                                        {% for item in order.items.all %}
+                                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                                            <td style="padding: 12px 15px;">
+                                                <p style="font-weight: 600; font-size: 14px; color: #1f2937; margin: 0;">{{ item.product.name|default:"N/A" }}</p>
+                                            </td>
+                                            <td style="text-align: center; padding: 12px 15px; font-size: 13px; color: #4b5563;">
+                                                {% if item.variant %}{{ item.variant.unit_value }}{{ item.variant.unit_type }}{% else %}N/A{% endif %}
+                                            </td>
+                                            <td style="text-align: center; padding: 12px 15px; font-size: 14px; font-weight: 600; color: #1f2937;">{{ item.quantity }}</td>
+                                            <td style="text-align: right; padding: 12px 15px; font-size: 13px; color: #374151;">₹{{ item.price_at_purchase|floatformat:2 }}</td>
+                                            <td style="text-align: right; padding: 12px 15px; font-size: 14px; font-weight: 700; color: #1f2937;">₹{{ item.get_subtotal|floatformat:2 }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Total Section -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                                <tr>
+                                    <td width="60%"></td>
+                                    <td width="40%">
+                                        <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 12px; padding: 20px; border: 2px solid #e5e7eb;">
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Subtotal:</td>
+                                                    <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹{{ order.total_amount|floatformat:2 }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Tax (0%):</td>
+                                                    <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹0.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Shipping:</td>
+                                                    <td style="font-size: 13px; font-weight: 600; color: #16a34a; text-align: right; padding: 5px 0;">FREE</td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2" style="padding: 10px 0; border-top: 2px solid #d1d5db;"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 16px; font-weight: 700; color: #1f2937; padding: 5px 0;">Total Amount:</td>
+                                                    <td style="font-size: 20px; font-weight: 700; color: #1A3C34; text-align: right; padding: 5px 0;">₹{{ order.total_amount|floatformat:2 }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Payment Information -->
+                            <div style="{% if order.payment_status == 'Paid' %}background-color: #f0fdf4; border-left: 4px solid #16a34a;{% else %}background-color: #fffbeb; border-left: 4px solid #D4AF37;{% endif %} border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="font-size: 14px; font-weight: 700; color: #1f2937; margin: 0 0 10px 0;">
+                                    {% if order.payment_status == 'Paid' %}✅ Payment Completed{% else %}💳 Payment Information{% endif %}
+                                </h4>
+                                <p style="font-size: 13px; color: #4b5563; line-height: 1.6; margin: 0;">
+                                    {% if order.payment_status == 'Paid' %}
+                                        Payment has been successfully received! This invoice has been paid via <strong>{{ order.payment_method|default:"Cash on Delivery" }}</strong>.
+                                    {% else %}
+                                        This invoice is pending payment via <strong>{{ order.payment_method|default:"Cash on Delivery" }}</strong>.
+                                    {% endif %}
+                                    All amounts are in Indian Rupees (₹).
+                                </p>
+                            </div>
+
+                            <!-- Thank You -->
+                            <div style="text-align: center; padding: 20px 0; border-top: 1px solid #e5e7eb;">
+                                <p style="font-size: 14px; color: #4b5563; margin: 0 0 10px 0;">Thank you for choosing SkinCraft!</p>
+                                <p style="font-size: 12px; color: #6b7280; margin: 0 0 15px 0;">For any queries regarding this invoice, please contact us at support@skincraft.com</p>
+                                <div style="font-size: 11px; color: #9ca3af;">
+                                    <span style="margin: 0 10px;">📞 +91 98765 43210</span>
+                                    <span style="margin: 0 10px;">🌐 www.skincraft.com</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1A3C34 0%, #2d5a4a 100%); padding: 15px 30px; text-align: center;">
+                            <p style="font-size: 13px; color: #ffffff; opacity: 0.8; margin: 0;">Powered by SkinCraft • Ayurvedic Excellence Since 2020</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<div class="container mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="innerGrid">
+    {% for product in products %}
+    <div class="group bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full shadow-sm hover:shadow-lg transition-all">
+        <div class="relative h-64 bg-ayur-light/40 flex items-center justify-center overflow-hidden">
+            <button onclick="toggleWishlist(this)"
+                data-product-id="{{ product.id }}"
+                class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                aria-label="Toggle wishlist">
+                <i class="{% if product.id in wishlisted_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+            </button>
+
+            <div class="absolute top-3 left-3 z-10">
+                <span class="px-2 py-1 text-xs font-bold rounded-md bg-ayur-dark text-ayur-sand uppercase">{{ product.category.name }}</span>
+            </div>
+
+            <a href="{% url 'product_detail' product.id %}" class="block w-full h-full">
+                {% if product.thumbnail %}
+                <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-gray-200"><i class="fa-solid fa-leaf text-3xl opacity-20"></i></div>
+                {% endif %}
+            </a>
+        </div>
+
+        <div class="p-4 flex-grow flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    {% if product.subcategory %}
+                    <span class="text-xs text-ayur-gold font-bold uppercase tracking-wider">{{ product.subcategory.name }}</span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center text-yellow-400 text-sm">
+                    {% if product.average_rating > 0 %}
+                        <div class="flex text-yellow-400 text-xs">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.average_rating|floatformat:0 %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="text-gray-600 text-sm font-semibold ml-1">{{ product.average_rating|floatformat:1 }}</span>
+                        <span class="text-gray-400 text-xs ml-0.5">({{ product.reviews.count }})</span>
+                    {% else %}
+                        <span class="text-gray-400 text-xs">No reviews yet</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h3 class="font-serif text-lg font-bold text-ayur-dark line-clamp-1 mb-3">
+                <a href="{% url 'product_detail' product.id %}" class="hover:text-ayur-primary transition-colors">{{ product.name }}</a>
+            </h3>
+
+            <div class="mt-auto">
+                <div class="flex items-baseline justify-between mb-4">
+                    <span class="text-lg font-bold text-ayur-dark bg-ayur-light/40 px-2 py-1 rounded-md">₹{{ product.get_starting_price }}</span>
+                    {% if product.variants.exists %}
+                        {% with first_variant=product.variants.first %}
+                            {% if first_variant.stock > 0 %}
+                                <span class="text-xs text-green-700 font-bold uppercase tracking-tighter bg-green-100 px-2 py-1 rounded-md">In Stock</span>
+                            {% else %}
+                                <span class="text-xs text-red-700 font-bold uppercase tracking-tighter bg-red-100 px-2 py-1 rounded-md">Out of Stock</span>
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <span class="text-xs text-gray-400 font-bold uppercase tracking-tighter bg-gray-100 px-2 py-1 rounded-md">No Variants</span>
+                    {% endif %}
+                </div>
+
+                {% with first_variant=product.variants.first %}
+                <div class="flex gap-2">
+                    {% if first_variant and first_variant.stock > 0 %}
+                        <button
+                            onclick="addToBag(this)"
+                            data-product-id="{{ product.id }}"
+                            data-variant-id="{{ first_variant.id }}"
+                            class="flex-1 bg-white border border-gray-200 text-ayur-dark py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:border-ayur-gold transition-all">
+                            <i class="fa-solid fa-basket-shopping mr-1"></i> Add To Bag
+                        </button>
+                        <button onclick="buyNow(this)"
+                            data-product-id="{{ product.id }}"
+                            data-variant-id="{{ first_variant.id }}"
+                            class="flex-1 bg-ayur-dark text-white py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-center hover:bg-ayur-primary transition-all shadow-md">
+                            Buy Now
+                        </button>
+                    {% else %}
+                        <button disabled
+                            class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-xs font-bold uppercase tracking-widest cursor-not-allowed">
+                            <i class="fa-solid fa-ban mr-1"></i> Out of Stock
+                        </button>
+                    {% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full py-16 text-center text-gray-400">
+        <i class="fa-solid fa-leaf text-4xl mb-3 opacity-20"></i>
+        <p>No products available.</p>
+    </div>
+    {% endfor %}
+    </div>
+
+    <div class="mt-12 flex items-center justify-center gap-4">
+        <button {% if products.has_previous %}onclick="goToPage({{ products.previous_page_number }})"
+            class="p-2 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-ayur-dark hover:text-white transition-all"
+            {% else %}class="p-2 w-10 h-10 rounded-full border border-gray-100 text-gray-200 cursor-not-allowed" {% endif %}>
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <span class="text-xs font-bold text-gray-500">{{ products.number }} / {{ products.paginator.num_pages }}</span>
+        <button {% if products.has_next %} onclick="goToPage({{ products.next_page_number }})"
+            class="p-2 w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-ayur-dark hover:text-white transition-all"
+            {% else %}class="p-2 w-10 h-10 rounded-full border border-gray-100 text-gray-200 cursor-not-allowed" {% endif %}>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function toggleWishlist(button) {
+    const productId = button.getAttribute('data-product-id');
+    const icon = button.querySelector('i');
+
+    fetch(`/wishlist/toggle/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'variant_id=' // Optional if you want to wishlist specific sizes later
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'added') {
+            // Success Ritual: Product saved to Sanctuary
+            // preserve existing classes but mirror new design
+            button.classList.remove('text-gray-400');
+            button.classList.add('text-red-500');
+            icon.classList.remove('fa-regular');
+            icon.classList.add('fa-solid');
+        } else if (data.status === 'removed') {
+            // Ritual: Product removed from Sanctuary
+            button.classList.remove('text-red-500');
+            button.classList.add('text-gray-400');
+            icon.classList.remove('fa-solid');
+            icon.classList.add('fa-regular');
+            
+            // If the user is ON the sanctuary page, remove the card immediately
+            const sanctuaryCard = document.getElementById(`wishlist-card-${productId}`);
+            if (sanctuaryCard) {
+                sanctuaryCard.style.opacity = '0';
+                sanctuaryCard.style.transform = 'scale(0.9)';
+                setTimeout(() => sanctuaryCard.remove(), 300);
+            }
+        }
+    })
+    .catch(err => console.error("Sanctuary Toggle Error:", err));
+}
+
+function buyNow(button) {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+
+    const formData = new FormData();
+    formData.append('variant_id', variantId);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch(`/cart/add/${productId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            window.location.href = "{% url 'checkout' %}";
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(err => console.error("Buy Now Error:", err));
+}
+</script>

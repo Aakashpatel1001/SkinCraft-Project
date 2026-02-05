@@ -1,0 +1,673 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .ritual-chip.active { background-color: #1A3C34; color: white; border-color: #1A3C34; }
+    .ritual-chip.disabled { background-color: #f9f9f9; color: #ddd; border-color: #eee; cursor: not-allowed; text-decoration: line-through; }
+    .main-image-container:hover img { transform: scale(1.1); }
+    
+    /* Simple Thumbnail Gallery */
+    .thumb-gallery {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 110px;
+        overflow-y: auto;
+    }
+    
+    .thumb-wrapper {
+        width: 100%;
+        height: 130px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .thumb-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Main Image Container - Fixed Static Size */
+    .main-image-container {
+        width: 100%;
+        height: 550px !important;
+        min-height: 550px !important;
+        max-height: 550px !important;
+    }
+    
+    @media (max-width: 1024px) {
+        .main-image-container {
+            height: 400px !important;
+            min-height: 400px !important;
+            max-height: 400px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .main-image-container {
+            height: 300px !important;
+            min-height: 300px !important;
+            max-height: 300px !important;
+        }
+    }
+</style>
+
+<div class="max-w-[1200px] mx-auto pt-8 px-5">
+    <nav class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#777777]">
+        <a href="/" class="hover:text-[#1A3C34] transition-colors">Home</a>
+        <span class="opacity-30">/</span>
+        <a href="{% url 'product' %}" class="hover:text-[#1A3C34] transition-colors">Products</a>
+        <span class="opacity-30">/</span>
+        <span class="text-[#D4AF37] font-black tracking-[0.3em]">{{ product.name }}</span>
+    </nav>
+</div>
+
+<section class="bg-[#FDFBF7] font-['Poppins'] text-[#333333] py-12">
+    <div class="max-w-[1200px] mx-auto px-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 bg-white rounded-2xl shadow-sm border border-[#E0E0E0] overflow-hidden">
+            
+            <div class="p-6 flex gap-4 lg:border-r border-[#E0E0E0] h-auto lg:h-[680px]">
+                <div class="thumb-gallery no-scrollbar">
+                    {% if product.thumbnail %}
+                    <div class="thumb-wrapper active" onclick="syncImage(this, '{{ product.thumbnail.url }}')">
+                        <img src="{{ product.thumbnail.url }}" alt="Thumbnail" class="thumb-item">
+                    </div>
+                    {% endif %}
+                    {% for img in product.images.all %}
+                    <div class="thumb-wrapper" onclick="syncImage(this, '{{ img.image.url }}')">
+                        <img src="{{ img.image.url }}" alt="Thumbnail" class="thumb-item">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="flex-grow main-image-container relative rounded-xl overflow-hidden bg-[#FAFAFA] flex items-center justify-center p-8">
+                    {% if product.thumbnail %}
+                    <img id="mainImage" src="{{ product.thumbnail.url }}" alt="{{ product.name }}" class="w-full h-full object-contain transition-all duration-500">
+                    {% else %}
+                    <div class="text-[#aaa] italic">No Image Available</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="p-10 flex flex-col overflow-y-auto no-scrollbar lg:max-h-[680px]">
+                <!-- Product Header -->
+                <div class="mb-8">
+                    <span class="text-[11px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-3 block">Premium Ayurvedic Care</span>
+                    <h1 class="font-['Playfair_Display'] text-[2.5rem] font-bold leading-snug text-[#1A3C34] mb-5">{{ product.name }}</h1>
+                    
+                    <!-- Rating Section -->
+                    <div class="flex items-center gap-5">
+                        <div class="flex items-center gap-2">
+                            <div class="flex gap-1">
+                                {% for i in "12345" %}
+                                <i class="{% if forloop.counter <= product.average_rating|default:0 %}fa-solid{% else %}fa-regular{% endif %} fa-star text-[#D4AF37] text-sm"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="text-sm font-bold text-[#1A3C34]">{{ product.average_rating|default:"0.0" }}</span>
+                        </div>
+                        <a href="#reviews-anchor" class="text-[12px] text-[#777] hover:text-[#D4AF37] font-medium transition-colors">{{ reviews.count|default:0 }} Reviews</a>
+                    </div>
+                </div>
+
+                <!-- Price Section -->
+                <div class="mb-8 p-6 bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] rounded-2xl border border-[#E8DCC8]">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-[2.2rem] font-bold text-[#1A3C34]">₹<span id="display-sale-price">--</span></span>
+                        <span class="text-[10px] text-[#999] uppercase tracking-wider font-bold">Inclusive of all taxes</span>
+                    </div>
+                    <p class="text-[11px] text-[#999] leading-relaxed">Premium quality guaranteed with authentic Ayurvedic ingredients</p>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="mb-8">
+                    <label class="text-[11px] font-bold text-[#1A3C34] uppercase tracking-widest mb-4 block">Select Ritual Size</label>
+                    <div class="flex flex-wrap gap-3" id="size-container"></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <form id="ritual-details-form" class="space-y-4 mb-8">
+                    {% csrf_token %}
+                    <input type="hidden" name="variant_id" id="selected-variant-id" required>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button type="button" id="add-bag-btn" onclick="handleDetailPurchase('add_to_bag')" class="py-4 px-5 border-2 border-[#1A3C34] text-[#1A3C34] font-['Poppins'] rounded-xl text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 hover:bg-[#1A3C34] hover:text-white flex items-center justify-center gap-2 group">
+                            <i class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i> Add Bag
+                        </button>
+                        <button type="button" id="buy-now-btn" onclick="handleDetailPurchase('buy_now')" class="py-4 px-5 bg-[#1A3C34] text-white font-['Poppins'] rounded-xl text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 hover:bg-[#0f2319] shadow-lg shadow-[#1A3C34]/25 flex items-center justify-center gap-2 hover:shadow-xl">
+                            <i class="fas fa-bolt"></i> Buy Now
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Product Details -->
+                <div class="pt-8 border-t border-[#E8E0D0]">
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-[#1A3C34] mb-6">Product Details</h4>
+                    <div class="grid grid-cols-2 gap-6 text-[12px]">
+                        <div class="bg-[#F9F7F4] p-4 rounded-lg">
+                            <div class="font-bold text-[#999] uppercase tracking-wider text-[10px] mb-2">Batch No.</div>
+                            <div id="info-batch" class="text-[#333] font-semibold">--</div>
+                        </div>
+                        <div class="bg-[#F9F7F4] p-4 rounded-lg">
+                            <div class="font-bold text-[#999] uppercase tracking-wider text-[10px] mb-2">Manufacturing</div>
+                            <div id="info-mfg" class="text-[#333] font-semibold">--</div>
+                        </div>
+                        <div class="bg-[#F9F7F4] p-4 rounded-lg">
+                            <div class="font-bold text-[#999] uppercase tracking-wider text-[10px] mb-2">Expiry Date</div>
+                            <div id="info-expiry" class="text-[#333] font-semibold">--</div>
+                        </div>
+                        <div class="bg-[#F9F7F4] p-4 rounded-lg" id="status-box">
+                            <div class="font-bold text-[#999] uppercase tracking-wider text-[10px] mb-2">Availability</div>
+                            <div class="flex items-center gap-2">
+                                <span id="stock-indicator" class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                <span id="stock-text" class="font-bold text-emerald-700">In Stock</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Description -->
+                {% if product.description %}
+                <div class="mt-10 pt-10 border-t border-[#E8E0D0]">
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-[#1A3C34] mb-4">About This Product</h4>
+                    <p class="text-[13px] text-[#555] leading-relaxed font-light">{{ product.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Additional Information -->
+                {% if product.tags.all %}
+                <div class="mt-10 pt-10 border-t border-[#E8E0D0]">
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-[#1A3C34] mb-4">Key Benefits</h4>
+                    <div class="flex flex-wrap gap-3">
+                        {% for tag in product.tags.all %}
+                        <span class="inline-block px-4 py-2 bg-[#D4AF37]/10 text-[#1A3C34] text-[11px] font-semibold rounded-full border border-[#D4AF37]/30">
+                            <i class="fas fa-leaf mr-1.5"></i>{{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Category & Subcategory -->
+                <div class="mt-10 pt-10 border-t border-[#E8E0D0]">
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-[#1A3C34] mb-4">Product Classification</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <span class="text-[#D4AF37] mt-1"><i class="fas fa-tag text-xs"></i></span>
+                            <div>
+                                <div class="text-[10px] text-[#999] font-bold uppercase tracking-wider">Category</div>
+                                <div class="text-[13px] text-[#1A3C34] font-semibold">{{ product.category.name }}</div>
+                            </div>
+                        </div>
+                        {% if product.subcategory %}
+                        <div class="flex items-start gap-3">
+                            <span class="text-[#D4AF37] mt-1"><i class="fas fa-folder-open text-xs"></i></span>
+                            <div>
+                                <div class="text-[10px] text-[#999] font-bold uppercase tracking-wider">Sub-Category</div>
+                                <div class="text-[13px] text-[#1A3C34] font-semibold">{{ product.subcategory.name }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="reviews-anchor" class="py-20 bg-white">
+    <div class="max-w-[1200px] mx-auto px-5">
+        <h3 class="font-['Playfair_Display'] text-3xl text-[#1A3C34] mb-12 text-center">Community Experiences</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-16">
+            <div class="lg:sticky lg:top-10 h-fit text-center lg:text-left">
+                <div class="bg-gradient-to-br from-[#FDFBF7] to-white border border-[#EAD9B7] rounded-2xl p-8 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-widest text-[#8A7B5D] font-bold">Overall Rating</p>
+                            {% if reviews.count > 0 %}
+                                <div class="text-5xl font-bold text-[#1A3C34] mt-2">{{ product.average_rating|floatformat:1 }}</div>
+                            {% else %}
+                                <div class="text-2xl font-bold text-[#1A3C34] mt-2">No ratings yet</div>
+                            {% endif %}
+                        </div>
+                        <div class="w-14 h-14 rounded-full bg-[#1A3C34] text-white flex items-center justify-center shadow-md">
+                            <i class="fa-solid fa-star text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center lg:justify-start text-[#D4AF37] text-xl mt-5">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= product.average_rating|floatformat:0 %}
+                                <i class="fa-solid fa-star"></i>
+                            {% else %}
+                                <i class="fa-regular fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="text-stone-400 text-sm mt-4">Based on {{ reviews.count }} verified review{{ reviews.count|pluralize }}</p>
+                    <div class="mt-6 flex items-center justify-center lg:justify-start gap-2 text-[11px] text-[#6B7280]">
+                        <span class="inline-flex items-center gap-1 bg-white border border-[#EAD9B7] rounded-full px-3 py-1">
+                            <i class="fa-solid fa-circle-check text-green-600"></i> Trusted Reviews
+                        </span>
+                        <span class="inline-flex items-center gap-1 bg-white border border-[#EAD9B7] rounded-full px-3 py-1">
+                            <i class="fa-solid fa-badge-check text-[#1A3C34]"></i> Verified Buyers
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                {% if user.is_authenticated and can_review %}
+                    {% if not user_review %}
+                    <button onclick="toggleReviewForm()" class="block w-full py-3 bg-[#1A3C34] text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#D4AF37] transition-all text-center">
+                        <i class="fa-solid fa-star mr-2"></i>Write a Review
+                    </button>
+                    {% else %}
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-green-700 font-bold mb-2"><i class="fa-solid fa-check-circle mr-1"></i> You reviewed this</p>
+                        <button onclick="toggleReviewForm()" class="text-xs text-green-600 hover:underline">Edit Review</button>
+                    </div>
+                    {% endif %}
+                {% elif user.is_authenticated %}
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <p class="text-xs text-amber-700">Purchase this product to write a review</p>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="block w-full py-3 bg-stone-200 text-stone-600 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-stone-300 transition-all text-center">
+                    Login to Review
+                </a>
+                {% endif %}
+                </div>
+            </div>
+
+            <div class="space-y-10">
+                <!-- Review Form (Hidden by default) -->
+                {% if user.is_authenticated and can_review %}
+                <div id="reviewFormContainer" class="hidden bg-gradient-to-br from-stone-50 to-stone-100 rounded-2xl p-8 border-2 border-[#D4AF37] shadow-xl mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="font-serif text-2xl font-bold text-[#1A3C34]">Share Your Experience</h4>
+                        <button onclick="toggleReviewForm()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fa-solid fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form method="POST" action="{% url 'submit_product_review' product.id %}" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <!-- Star Rating -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Your Rating</label>
+                            <div class="flex gap-3" id="starRating">
+                                {% for i in "12345" %}
+                                <label class="cursor-pointer group star-item" data-rating="{{ forloop.counter }}" onmouseenter="highlightStars({{ forloop.counter }}, 'product')" onmouseleave="unhighlightStars('product')">
+                                    <input type="radio" name="rating" value="{{ forloop.counter }}" class="sr-only" {% if user_review and user_review.rating == forloop.counter %}checked{% endif %} required onchange="selectStars({{ forloop.counter }}, 'product')">
+                                    <i class="fa-solid fa-star text-5xl star-icon transition-all group-hover:scale-110" style="color: {% if user_review and user_review.rating >= forloop.counter %}#FBBF24{% else %}#D1D5DB{% endif %}"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Comment -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Your Review</label>
+                            <textarea name="comment" rows="5" 
+                                class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl resize-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all font-medium text-gray-700" 
+                                placeholder="Share your thoughts about this product... What did you love? How did it work for you?" required>{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
+                        </div>
+                        
+                        <!-- Image Upload -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                                <i class="fa-solid fa-image mr-2"></i>Add Photos (Optional)
+                            </label>
+                            <div class="relative">
+                                <input type="file" name="review_images" id="reviewImages" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
+                                <label for="reviewImages" class="block w-full px-6 py-8 bg-white border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#D4AF37] hover:bg-stone-50 transition-all text-center">
+                                    <i class="fa-solid fa-cloud-upload-alt text-4xl text-gray-300 mb-3 block"></i>
+                                    <span class="text-sm text-gray-600 font-medium">Click to upload images</span>
+                                    <span class="text-xs text-gray-400 block mt-1">Max 5 images, up to 5MB each</span>
+                                </label>
+                            </div>
+                            <div id="imagePreview" class="grid grid-cols-5 gap-3 mt-4"></div>
+                        </div>
+                        
+                        <div class="flex gap-4 pt-4">
+                            <button type="submit" class="flex-1 bg-[#1A3C34] text-white px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-[#D4AF37] hover:text-[#1A3C34] transition-all shadow-lg flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Review
+                            </button>
+                            <button type="button" onclick="toggleReviewForm()" class="flex-1 bg-white border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Reviews List -->
+                {% for review in reviews %}
+                <div class="border-b border-stone-100 pb-10 hover:bg-stone-50/50 transition-colors rounded-xl p-6 -m-6 mb-4">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#1A3C34] text-white rounded-full flex items-center justify-center font-bold text-lg">
+                                {{ review.user.first_name|first|upper|default:review.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <div class="font-bold text-base text-[#333]">{{ review.user.first_name|default:review.user.username|title }}</div>
+                                    {% if review.order %}
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold uppercase rounded-full border border-green-200">
+                                        <i class="fa-solid fa-circle-check"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-[10px] text-stone-400 uppercase tracking-widest mt-1">{{ review.created_at|date:"F d, Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <div class="text-[#D4AF37] text-lg">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if user.is_authenticated and user == review.user %}
+                            <button onclick="toggleReviewForm()" class="text-xs text-[#1A3C34] hover:text-[#D4AF37] font-bold uppercase flex items-center gap-1 transition-colors group">
+                                <i class="fa-solid fa-pen-to-square group-hover:scale-110 transition-transform"></i> Edit Review
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-[#555] leading-relaxed mb-4">{{ review.comment }}</p>
+                    
+                    <!-- Review Images -->
+                    {% if review.images.all %}
+                    <div class="grid grid-cols-6 gap-3 mt-4">
+                        {% for image in review.images.all %}
+                        <div class="w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#D4AF37] transition-all cursor-pointer shadow-sm hover:shadow-md group" onclick="openImageModal('{{ image.image.url }}')">
+                            <img src="{{ image.image.url }}" alt="Review image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-20 bg-[#FDFBF7] rounded-2xl border-2 border-dashed border-stone-200">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-[#D4AF37]">
+                        <i class="fa-solid fa-star text-2xl"></i>
+                    </div>
+                    <p class="text-stone-500 italic font-light mb-2">Be the first to share your experience!</p>
+                    <p class="text-xs text-stone-400">Purchase this product to write a review</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Image Modal -->
+<div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+    <div class="relative max-w-4xl w-full">
+        <button class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300">
+            <i class="fa-solid fa-times"></i>
+        </button>
+        <img id="modalImage" src="" alt="Review image" class="w-full h-auto rounded-lg">
+    </div>
+</div>
+
+<script>
+    // Logic for Variants
+    const allVariants = [
+        {% for v in product.variants.all %}
+        {
+            id: "{{ v.id }}",
+            size: "{{ v.unit_value }}{{ v.unit_type }}",
+            price: "{{ v.price }}",
+            stock: {{ v.stock|default:0 }},
+            batch: "{{ v.batch_number }}",
+            mfg: "{{ v.manufacturing_date|date:'M Y' }}",
+            expiry: "{{ v.expiry_date|date:'M Y' }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function renderSizeChips() {
+        const container = document.getElementById('size-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        let firstInStockVariant = null;
+        let firstVariant = null;
+
+        allVariants.forEach((v, index) => {
+            const chip = document.createElement('div');
+            chip.className = 'ritual-chip px-5 py-2.5 border border-[#E0E0E0] bg-white text-[#333] text-[0.8rem] font-bold cursor-pointer transition-all duration-300 rounded-full hover:border-[#1A3C34]';
+            chip.innerText = v.size;
+
+            // Store first variant for fallback
+            if (!firstVariant) {
+                firstVariant = { variant: v, chip: chip };
+            }
+
+            if (v.stock < 1) {
+                chip.classList.add('disabled');
+                chip.style.opacity = '0.5';
+                chip.style.cursor = 'not-allowed';
+                container.appendChild(chip);
+            } else {
+                chip.onclick = () => selectSize(v, chip);
+                container.appendChild(chip);
+                if (!firstInStockVariant) {
+                    firstInStockVariant = { variant: v, chip: chip };
+                }
+            }
+        });
+
+        // Initialize with first in-stock variant, or first variant if all out of stock
+        const variantToSelect = firstInStockVariant || firstVariant;
+        if (variantToSelect) {
+            selectSize(variantToSelect.variant, variantToSelect.chip);
+        }
+    }
+
+    function selectSize(variant, chipElement) {
+        document.getElementById('selected-variant-id').value = variant.id;
+        document.querySelectorAll('.ritual-chip').forEach(c => c.classList.remove('active'));
+        chipElement.classList.add('active');
+
+        // Update stock status
+        const stockIndicator = document.getElementById('stock-indicator');
+        const stockText = document.getElementById('stock-text');
+        const statusBox = document.getElementById('status-box');
+        const addBagBtn = document.getElementById('add-bag-btn');
+        const buyNowBtn = document.getElementById('buy-now-btn');
+
+        if (variant.stock > 0) {
+            stockIndicator.className = 'w-2 h-2 bg-emerald-500 rounded-full animate-pulse';
+            stockText.className = 'text-emerald-700 font-bold';
+            stockText.textContent = 'In Stock';
+            statusBox.className = 'bg-[#F9F7F4] p-4 rounded-lg';
+            addBagBtn.disabled = false;
+            buyNowBtn.disabled = false;
+            addBagBtn.style.opacity = '1';
+            buyNowBtn.style.opacity = '1';
+            addBagBtn.style.cursor = 'pointer';
+            buyNowBtn.style.cursor = 'pointer';
+        } else {
+            stockIndicator.className = 'w-2 h-2 bg-red-500 rounded-full';
+            stockText.className = 'text-red-700 font-bold';
+            stockText.textContent = 'Out of Stock';
+            statusBox.className = 'bg-red-50 p-4 rounded-lg border border-red-200';
+            addBagBtn.disabled = true;
+            buyNowBtn.disabled = true;
+            addBagBtn.style.opacity = '0.5';
+            buyNowBtn.style.opacity = '0.5';
+            addBagBtn.style.cursor = 'not-allowed';
+            buyNowBtn.style.cursor = 'not-allowed';
+        }
+
+        document.getElementById('display-sale-price').innerText = variant.price;
+        document.getElementById('info-batch').innerText = variant.batch || '--';
+        document.getElementById('info-mfg').innerText = variant.mfg || 'Not Specified';
+        document.getElementById('info-expiry').innerText = variant.expiry || '--';
+    }
+
+    function handleDetailPurchase(actionType) {
+        const variantId = document.getElementById('selected-variant-id').value;
+        if (!variantId) { alert("Please select a ritual size first."); return; }
+
+        const formData = new FormData();
+        formData.append('variant_id', variantId);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch(`/cart/add/{{ product.id }}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const badge = document.getElementById('cart-count');
+                if (badge) badge.innerText = data.cart_count;
+
+                if (actionType === 'buy_now') {
+                    window.location.href = "{% url 'checkout' %}";
+                } else {
+                    alert("The ritual has been added to your bag.");
+                }
+            } else {
+                alert("Ritual Error: " + data.message);
+            }
+        });
+    }
+
+    function syncImage(wrapper, src) {
+        const main = document.getElementById('mainImage');
+        main.style.opacity = '0';
+        setTimeout(() => {
+            main.src = src;
+            main.style.opacity = '1';
+        }, 300);
+        document.querySelectorAll('.thumb-wrapper').forEach(thumb => thumb.classList.remove('active'));
+        wrapper.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', renderSizeChips);
+    
+    // Star Rating - Dynamic Fill
+    function highlightStars(rating, context) {
+        const container = context === 'product' ? document.getElementById('starRating') : null;
+        if (container) {
+            container.querySelectorAll('.star-item').forEach((item, index) => {
+                const icon = item.querySelector('.star-icon');
+                if (index < rating) {
+                    icon.style.color = '#FBBF24'; // Yellow
+                } else {
+                    icon.style.color = '#D1D5DB'; // Gray
+                }
+            });
+        }
+    }
+    
+    function unhighlightStars(context) {
+        const container = context === 'product' ? document.getElementById('starRating') : null;
+        if (container) {
+            const checkedInput = container.querySelector('input[type="radio"]:checked');
+            const rating = checkedInput ? parseInt(checkedInput.value) : 0;
+            
+            container.querySelectorAll('.star-item').forEach((item, index) => {
+                const icon = item.querySelector('.star-icon');
+                if (index < rating) {
+                    icon.style.color = '#FBBF24'; // Yellow
+                } else {
+                    icon.style.color = '#D1D5DB'; // Gray
+                }
+            });
+        }
+    }
+    
+    function selectStars(rating, context) {
+        const container = context === 'product' ? document.getElementById('starRating') : null;
+        if (container) {
+            container.querySelectorAll('.star-item').forEach((item, index) => {
+                const icon = item.querySelector('.star-icon');
+                if (index < rating) {
+                    icon.style.color = '#FBBF24'; // Yellow
+                } else {
+                    icon.style.color = '#D1D5DB'; // Gray
+                }
+            });
+        }
+    }
+    
+    // Review Form Toggle
+    function toggleReviewForm() {
+        const formContainer = document.getElementById('reviewFormContainer');
+        formContainer.classList.toggle('hidden');
+        if (!formContainer.classList.contains('hidden')) {
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+    
+    // Image Preview
+    function previewImages(input) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        
+        if (input.files) {
+            const files = Array.from(input.files).slice(0, 5); // Limit to 5 images
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200">
+                        <button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-times text-xs"></i>
+                        </button>
+                    `;
+                    preview.appendChild(div);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+    
+    function removeImage(index) {
+        const input = document.getElementById('reviewImages');
+        const dt = new DataTransfer();
+        const files = Array.from(input.files);
+        
+        files.forEach((file, i) => {
+            if (i !== index) {
+                dt.items.add(file);
+            }
+        });
+        
+        input.files = dt.files;
+        previewImages(input);
+    }
+    
+    // Image Modal
+    function openImageModal(src) {
+        document.getElementById('modalImage').src = src;
+        document.getElementById('imageModal').classList.remove('hidden');
+    }
+    
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

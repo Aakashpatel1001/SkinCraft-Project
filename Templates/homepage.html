@@ -1,0 +1,783 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}SkinCraft Ayurveda | Natural Skincare{% endblock %}
+{% block content %}
+<html class="scroll-smooth">
+
+<head>
+  <title>SkinCraft Ayurveda | Natural Skincare</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ayur: {
+              dark: '#1A3C34' /* Deep Forest Green */,
+              primary: '#2D5A27' /* Herbal Green */,
+              light: '#E8F3E8' /* Very Light Green Background */,
+              gold: '#D4AF37' /* Premium Gold */,
+              sand: '#F5F5DC' /* Beige */,
+              brown: '#5D4037' /* Earthy Brown */
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['"Poppins"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<!-- main body section -->
+
+<body class="font-sans text-gray-700 bg-stone-50">
+  <section id="home" class="relative h-screen overflow-hidden">
+    <img src="{% static 'images/home1.jpg' %}" alt="Hero Background"
+      class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-black/40 z-10"></div>
+    <div class="relative z-20 h-full flex items-center justify-center text-center px-4 max-w-4xl mx-auto">
+      <div>
+        <span
+          class="text-ayur-light bg-ayur-dark/40 px-4 py-1 rounded-full text-xs uppercase tracking-widest backdrop-blur-sm mb-4 inline-block border border-ayur-light/30">100%
+          Natural Ayurveda</span>
+        <h1 class="font-serif text-5xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+          Ancient Wisdom for <br />
+          <span class="italic text-ayur-gold">Timeless Beauty</span>
+        </h1>
+        <p class="text-gray-100 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light">Restore your skin's natural glow
+          with our hand-crafted herbal formulations.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="{% url 'product' %}"
+            class="px-8 py-4 bg-ayur-gold text-ayur-dark font-semibold rounded-full hover:bg-white transition-all shadow-lg">Explore
+            Remedies</a>
+          <a href="#about"
+            class="px-8 py-4 border border-white text-white font-semibold rounded-full hover:bg-white hover:text-ayur-dark transition-all">Our
+            Philosophy</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-stone-50 border-b border-[#e5e7eb]">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div class="flex flex-col items-center text-center group cursor-default">
+          <div
+            class="w-20 h-20 rounded-full bg-white border border-[#E8F3E8] shadow-sm flex items-center justify-center mb-4 transition-all duration-500 ease-out group-hover:bg-[#1A3C34] group-hover:border-[#1A3C34] group-hover:-translate-y-2 group-hover:shadow-lg">
+            <i
+              class="fa-solid fa-leaf text-2xl text-[#2D5A27] transition-colors duration-300 group-hover:text-[#D4AF37]"></i>
+          </div>
+          <h3 class="font-serif font-bold text-lg text-[#1A3C34] mb-1">100% Natural</h3>
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 group-hover:text-[#D4AF37] transition-colors">
+            Plant-Based Actives</p>
+        </div>
+
+        <div class="flex flex-col items-center text-center group cursor-default">
+          <div
+            class="w-20 h-20 rounded-full bg-white border border-[#E8F3E8] shadow-sm flex items-center justify-center mb-4 transition-all duration-500 ease-out group-hover:bg-[#1A3C34] group-hover:border-[#1A3C34] group-hover:-translate-y-2 group-hover:shadow-lg">
+            <i
+              class="fa-solid fa-mortar-pestle text-2xl text-[#2D5A27] transition-colors duration-300 group-hover:text-[#D4AF37]"></i>
+          </div>
+          <h3 class="font-serif font-bold text-lg text-[#1A3C34] mb-1">Ancient Recipes</h3>
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 group-hover:text-[#D4AF37] transition-colors">
+            5000-Year Heritage</p>
+        </div>
+
+        <div class="flex flex-col items-center text-center group cursor-default">
+          <div
+            class="w-20 h-20 rounded-full bg-white border border-[#E8F3E8] shadow-sm flex items-center justify-center mb-4 transition-all duration-500 ease-out group-hover:bg-[#1A3C34] group-hover:border-[#1A3C34] group-hover:-translate-y-2 group-hover:shadow-lg">
+            <i
+              class="fa-solid fa-hand-holding-heart text-2xl text-[#2D5A27] transition-colors duration-300 group-hover:text-[#D4AF37]"></i>
+          </div>
+          <h3 class="font-serif font-bold text-lg text-[#1A3C34] mb-1">Ethically Sourced</h3>
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 group-hover:text-[#D4AF37] transition-colors">
+            Cruelty Free & Vegan</p>
+        </div>
+
+        <div class="flex flex-col items-center text-center group cursor-default">
+          <div
+            class="w-20 h-20 rounded-full bg-white border border-[#E8F3E8] shadow-sm flex items-center justify-center mb-4 transition-all duration-500 ease-out group-hover:bg-[#1A3C34] group-hover:border-[#1A3C34] group-hover:-translate-y-2 group-hover:shadow-lg">
+            <i
+              class="fa-solid fa-shield-halved text-2xl text-[#2D5A27] transition-colors duration-300 group-hover:text-[#D4AF37]"></i>
+          </div>
+          <h3 class="font-serif font-bold text-lg text-[#1A3C34] mb-1">Toxin Free</h3>
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 group-hover:text-[#D4AF37] transition-colors">No
+            Parabens or Sulfates</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section id="products" class="py-20 bg-stone-50">
+    <div class="container mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-20 relative">
+        <span
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl md:text-9xl font-serif text-[#1A3C34]/5 pointer-events-none select-none whitespace-nowrap z-0">
+          Ayurveda
+        </span>
+        <div class="inline-block relative mb-3 z-10">
+          <span
+            class="text-[#D4AF37] font-bold text-[10px] md:text-xs uppercase tracking-[0.3em] px-6 py-1 bg-white relative">
+            Pure & Potent
+          </span>
+          <div class="absolute top-1/2 left-0 w-full h-px bg-[#D4AF37]/40 -z-10"></div>
+        </div>
+        <h2 class="font-serif text-4xl md:text-5xl font-bold text-[#1A3C34] mb-5 leading-tight relative z-10">
+          Curated Rituals
+        </h2>
+        <div class="flex items-center justify-center gap-3 mb-6 opacity-80 relative z-10">
+          <div class="h-px w-10 bg-gradient-to-r from-transparent to-[#1A3C34]"></div>
+          <i class="fa-solid fa-leaf text-[#D4AF37] text-sm rotate-12"></i>
+          <div class="h-px w-10 bg-gradient-to-l from-transparent to-[#1A3C34]"></div>
+        </div>
+        <p class="text-gray-500 text-sm md:text-base leading-relaxed font-light max-w-xl mx-auto relative z-10">
+          Discover our range of handcrafted treatments, designed to <span
+            class="text-[#1A3C34] font-medium italic">balance your doshas</span> and reveal your natural radiance
+          through
+          the power of ancient herbs.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {% for product in featured_products %}
+        <div
+          class="group bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full shadow-sm hover:shadow-lg transition-all">
+          <div class="relative h-64 bg-ayur-light/40 flex items-center justify-center overflow-hidden">
+            <button onclick="toggleWishlist(this)" data-product-id="{{ product.id }}"
+              class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+              aria-label="Toggle wishlist">
+              <i
+                class="{% if product.id in wishlisted_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+            </button>
+
+            <div class="absolute top-3 left-3 z-10">
+              <span class="px-2 py-1 text-xs font-bold rounded-md bg-ayur-dark text-ayur-sand uppercase">{{ product.category.name }}</span>
+            </div>
+
+            <a href="{% url 'product_detail' product.id %}" class="block w-full h-full">
+              {% if product.thumbnail %}
+              <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center text-gray-200"><i
+                  class="fa-solid fa-leaf text-3xl opacity-20"></i></div>
+              {% endif %}
+            </a>
+          </div>
+
+          <div class="p-4 flex-grow flex flex-col">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                {% if product.subcategory %}
+                <span class="text-xs text-ayur-gold font-bold uppercase tracking-wider">{{ product.subcategory.name }}</span>
+                {% endif %}
+              </div>
+              <div class="flex items-center text-yellow-400 text-sm">
+                {% if product.average_rating > 0 %}
+                <div class="flex text-yellow-400 text-xs">
+                  {% for i in "12345" %}
+                  {% if forloop.counter <= product.average_rating|floatformat:0 %} <i class="fas fa-star"></i>
+                    {% else %}
+                    <i class="far fa-star"></i>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-gray-600 text-sm font-semibold ml-1">{{ product.average_rating|floatformat:1 }}</span>
+                <span class="text-gray-400 text-xs ml-0.5">({{ product.reviews.count }})</span>
+                {% else %}
+                <span class="text-gray-400 text-xs">No reviews</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <h3 class="font-serif text-lg font-bold text-ayur-dark line-clamp-1 mb-3">
+              <a href="{% url 'product_detail' product.id %}" class="hover:text-ayur-primary transition-colors">{{ product.name }}</a>
+            </h3>
+
+            <div class="mt-auto">
+              <div class="flex items-baseline justify-between mb-4">
+                <span class="text-lg font-bold text-ayur-dark bg-ayur-light/40 px-2 py-1 rounded-md">₹<span>{{ product.get_starting_price }}</span></span>
+                <span class="text-xs text-green-700 font-bold uppercase tracking-tighter bg-green-100 px-2 py-1 rounded-md">In Stock</span>
+              </div>
+
+              <div class="flex gap-2">
+                <button onclick="addToBag(this)" data-product-id="{{ product.id }}"
+                  data-variant-id="{{ product.variants.first.id }}"
+                  class="flex-1 bg-white border border-gray-200 text-ayur-dark py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:border-ayur-gold transition-all">
+                  <i class="fa-solid fa-basket-shopping mr-1"></i> Add To Bag
+                </button>
+                <button onclick="buyNow(this)" data-product-id="{{ product.id }}"
+                  data-variant-id="{{ product.variants.first.id }}"
+                  class="flex-1 bg-ayur-dark text-white py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-center hover:bg-ayur-primary transition-all shadow-md">
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-12">
+        <a href="{% url 'product' %}"
+          class="inline-block border-b-2 border-ayur-dark text-ayur-dark font-semibold pb-1 hover:text-ayur-primary hover:border-ayur-primary transition-colors">View
+          All Products</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="py-24 bg-[#FDFBF7] relative overflow-hidden">
+    <div class="absolute inset-0 opacity-30 pointer-events-none"
+      style="background-image: radial-gradient(#D4AF37 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+    <div
+      class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2">
+    </div>
+    <div
+      class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#1A3C34]/5 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2">
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <div class="relative group">
+          <div class="relative z-10 rounded-[2rem] overflow-hidden shadow-2xl border-[4px] border-white">
+            <img src="{% static 'images/home1.jpg' %}" alt="Ayurvedic Preparation"
+              class="w-full h-auto object-cover transform scale-100 group-hover:scale-105 transition-transform duration-[2s] ease-out">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1A3C34]/40 to-transparent"></div>
+          </div>
+          <div
+            class="absolute bottom-8 left-8 z-20 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-white/50 flex items-center gap-4 max-w-xs animate-float">
+            <div class="flex -space-x-3">
+              <img class="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1"
+                alt="User">
+              <img class="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=5"
+                alt="User">
+              <img class="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=9"
+                alt="User">
+            </div>
+            <div>
+              <div class="flex text-[#D4AF37] text-[10px]">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                  class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              </div>
+              <p class="text-xs font-bold text-[#1A3C34] mt-0.5">Trusted by 3k+ Users</p>
+            </div>
+          </div>
+          <div
+            class="absolute -top-6 -right-6 z-30 w-28 h-28 bg-[#1A3C34] rounded-full flex items-center justify-center border-4 border-white shadow-xl animate-spin-slow hidden md:flex">
+            <div class="text-center relative z-10">
+              <span class="block text-[#D4AF37] text-xs font-bold uppercase tracking-widest">100%</span>
+              <span class="block text-white text-[9px] uppercase tracking-wider opacity-80">Pure</span>
+            </div>
+            <svg class="absolute w-24 h-24 text-white/10 animate-spin-reverse-slow" viewBox="0 0 100 100">
+              <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent" />
+              <text>
+                <textPath xlink:href="#circlePath" class="text-[10px] uppercase font-bold tracking-widest"
+                  fill="currentColor">
+                  • Natural • Organic • Certified •
+                </textPath>
+              </text>
+            </svg>
+          </div>
+        </div>
+        <div class="lg:pl-8 pt-4">
+          <div class="mb-10">
+            <span
+              class="text-[#D4AF37] font-bold text-xs uppercase tracking-[0.25em] mb-3 block flex items-center gap-2">
+              <span class="w-8 h-px bg-[#D4AF37]"></span> The Wisdom
+            </span>
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-[#1A3C34] leading-tight mb-6">
+              Unlock the Secrets <br><span class="italic font-light text-[#D4AF37]">of Your Skin.</span>
+            </h2>
+            <p class="text-gray-500 text-sm leading-relaxed max-w-md">
+              Ayurveda isn't one-size-fits-all. Dive deeper into our philosophy and understand how our blends work in
+              harmony with your biology.
+            </p>
+          </div>
+          <div class="space-y-4">
+            <div
+              class="accordion-item bg-white rounded-xl shadow-sm overflow-hidden border border-transparent transition-all duration-300 hover:shadow-md"
+              data-active="true">
+              <button class="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                onclick="toggleAccordion(this)">
+                <div class="flex items-center gap-4">
+                  <span class="number font-serif text-2xl text-[#D4AF3]/40 font-bold">01</span>
+                  <span class="font-serif text-lg font-bold text-[#1A3C34]">How do I identify my Dosha?</span>
+                </div>
+                <span
+                  class="icon w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-[#1A3C34] transition-all duration-300">
+                  <i class="fa-solid fa-minus"></i>
+                </span>
+              </button>
+              <div class="accordion-content transition-all duration-500 ease-in-out" style="max-height: 500px;">
+                <div class="px-5 pb-6 pl-[4.5rem] pr-6">
+                  <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                    Your Dosha is your unique energy footprint. Vata is air (dry), Pitta is fire (sensitive), and Kapha
+                    is earth (oily).
+                  </p>
+                  <a href="{% if herbal_oil_product %}{% url 'product_detail' herbal_oil_product.id %}{% else %}{% url 'product' %}?search=herbal+oil{% endif %}" 
+                    class="bg-[#FDFBF7] p-3 rounded-lg border border-[#D4AF37]/20 flex items-center gap-4 relative overflow-hidden group/card cursor-pointer hover:border-[#D4AF37] transition-all hover:shadow-lg">
+                    <div
+                      class="absolute right-0 top-0 w-16 h-16 bg-[#D4AF37]/10 rounded-bl-full transition-transform group-hover/card:scale-150 duration-500">
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-md flex items-center justify-center shadow-sm text-2xl group-hover/card:scale-110 transition-transform">
+                      <img src="{% static 'images/product1/Herbal Oil.png' %}" alt="Herbal Oil" class="w-8 h-8 object-contain">
+                    </div>
+                    <div class="flex-grow z-10">
+                      <h4 class="font-serif text-[#1A3C34] font-bold text-sm group-hover/card:text-[#D4AF37] transition-colors">SkinCraft Herbal Oil</h4>
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wider">Ayurvedic Formula</p>
+                    </div>
+                    <div class="z-10">
+                      <span class="text-[1.1rem] font-bold text-[#1A3C34]">₹<span>{% if herbal_oil_product %}{{ herbal_oil_product.get_starting_price }}{% else %}499{% endif %}</span></span>
+                      <i class="fa-solid fa-arrow-right text-[#D4AF37] ml-2 text-xs group-hover/card:translate-x-1 transition-transform"></i>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div
+              class="accordion-item bg-white rounded-xl shadow-sm overflow-hidden border border-transparent transition-all duration-300 hover:shadow-md">
+              <button class="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                onclick="toggleAccordion(this)">
+                <div class="flex items-center gap-4">
+                  <span class="number font-serif text-2xl text-gray-200 font-bold">02</span>
+                  <span class="font-serif text-lg font-bold text-[#1A3C34]">Are your ingredients truly clean?</span>
+                </div>
+                <span
+                  class="icon w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 transition-all duration-300">
+                  <i class="fa-solid fa-plus"></i>
+                </span>
+              </button>
+              <div class="accordion-content max-h-0 transition-all duration-500 ease-in-out overflow-hidden">
+                <div class="px-5 pb-6 pl-[4.5rem] pr-6 text-gray-500 text-sm leading-relaxed">
+                  Absolutely. We source directly from organic farms in the Himalayas. Our extraction process uses
+                  traditional copper vessels to ensure zero toxin contamination.
+                </div>
+              </div>
+            </div>
+            <div
+              class="accordion-item bg-white rounded-xl shadow-sm overflow-hidden border border-transparent transition-all duration-300 hover:shadow-md">
+              <button class="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                onclick="toggleAccordion(this)">
+                <div class="flex items-center gap-4">
+                  <span class="number font-serif text-2xl text-gray-200 font-bold">03</span>
+                  <span class="font-serif text-lg font-bold text-[#1A3C34]">Can I layer these oils?</span>
+                </div>
+                <span
+                  class="icon w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 transition-all duration-300">
+                  <i class="fa-solid fa-plus"></i>
+                </span>
+              </button>
+              <div class="accordion-content max-h-0 transition-all duration-500 ease-in-out overflow-hidden">
+                <div class="px-5 pb-6 pl-[4.5rem] pr-6 text-gray-500 text-sm leading-relaxed">
+                  Yes! Ayurvedic layering is an art. Start with the lightest serum (Kumkumadi) and seal it with a
+                  heavier moisturizer or facial oil for maximum absorption.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ingredients Section -->
+  <section id="ingredients" class="py-20 bg-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="font-serif text-4xl font-bold text-ayur-dark">Nature's Potions</h2>
+        <p class="text-gray-500 mt-3">Powered by the purest botanical ingredients.</p>
+      </div>
+      <div class="flex flex-wrap justify-center gap-8">
+        <div class="flex flex-col items-center group w-40">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-ayur-light group-hover:border-ayur-gold transition-colors duration-300">
+            <img src="https://placehold.co/200x200/2D5A27/ffffff?text=Neem" class="w-full h-full object-cover"
+              alt="Neem" />
+          </div>
+          <h4 class="mt-4 font-serif font-bold text-ayur-dark text-lg">Neem</h4>
+          <p class="text-xs text-gray-500 text-center">Purifies & Detoxes</p>
+        </div>
+        <div class="flex flex-col items-center group w-40">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-ayur-light group-hover:border-ayur-gold transition-colors duration-300">
+            <img src="https://placehold.co/200x200/F59E0B/ffffff?text=Turmeric" class="w-full h-full object-cover"
+              alt="Turmeric" />
+          </div>
+          <h4 class="mt-4 font-serif font-bold text-ayur-dark text-lg">Turmeric</h4>
+          <p class="text-xs text-gray-500 text-center">Brightens Skin</p>
+        </div>
+        <div class="flex flex-col items-center group w-40">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-ayur-light group-hover:border-ayur-gold transition-colors duration-300">
+            <img src="https://placehold.co/200x200/5D4037/ffffff?text=Sandalwood" class="w-full h-full object-cover"
+              alt="Sandalwood" />
+          </div>
+          <h4 class="mt-4 font-serif font-bold text-ayur-dark text-lg">Sandalwood</h4>
+          <p class="text-xs text-gray-500 text-center">Soothes & Cools</p>
+        </div>
+        <div class="flex flex-col items-center group w-40">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-ayur-light group-hover:border-ayur-gold transition-colors duration-300">
+            <img src="https://placehold.co/200x200/EC4899/ffffff?text=Rose" class="w-full h-full object-cover"
+              alt="Rose" />
+          </div>
+          <h4 class="mt-4 font-serif font-bold text-ayur-dark text-lg">Wild Rose</h4>
+          <p class="text-xs text-gray-500 text-center">Hydrates & Tones</p>
+        </div>
+        <div class="flex flex-col items-center group w-40">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-ayur-light group-hover:border-ayur-gold transition-colors duration-300">
+            <img src="https://placehold.co/200x200/84CC16/ffffff?text=Aloe" class="w-full h-full object-cover"
+              alt="Aloe Vera" />
+          </div>
+          <h4 class="mt-4 font-serif font-bold text-ayur-dark text-lg">Aloe Vera</h4>
+          <p class="text-xs text-gray-500 text-center">Heals & Moisturizes</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Testimonials Section -->
+  <section class="py-24 bg-[#F9F8F6] relative overflow-hidden">
+
+    <div
+      class="absolute top-0 left-0 text-[#1A3C34] opacity-[0.03] text-[12rem] -translate-x-1/4 -translate-y-1/4 pointer-events-none select-none">
+      <i class="fa-solid fa-quote-left"></i>
+    </div>
+
+    <div
+      class="absolute bottom-0 right-0 text-[#D4AF37] opacity-[0.03] text-[12rem] translate-x-1/4 translate-y-1/4 pointer-events-none select-none">
+      <i class="fa-solid fa-quote-right"></i>
+    </div>
+
+    <div class="relative z-10 text-center mb-16 px-4">
+      <span class="text-[#D4AF37] font-bold text-xs uppercase tracking-[0.25em] mb-2 block">Community Love</span>
+      <h2 class="font-serif text-4xl md:text-5xl font-bold text-[#1A3C34]">Stories of Transformation</h2>
+      <div class="h-1 w-16 bg-[#D4AF37]/30 mx-auto rounded-full mt-4 mb-4"></div>
+      <p class="text-gray-500 text-sm">Real rituals, real results from our SkinCraft family.</p>
+    </div>
+
+    <div class="relative w-full max-w-[95%] mx-auto overflow-hidden px-2 md:px-0">
+
+      <div id="reviewTrack" class="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] gap-6"
+        style="transform: translateX(0px);">
+
+        <div
+          class="min-w-[100%] md:min-w-[calc(33.333%-16px)] bg-white p-10 rounded-3xl shadow-sm border border-gray-100 relative group hover:-translate-y-2 hover:shadow-2xl transition-all duration-500">
+          <div
+            class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-100 group-hover:text-[#D4AF37]/20 transition-all duration-500 text-6xl font-serif text-gray-200">
+            "</div>
+
+          <div class="text-[#D4AF37] text-xs mb-6 flex gap-1">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+
+          <p class="text-gray-600 mb-8 italic font-serif text-lg leading-relaxed relative z-10">
+            The Kumkumadi Tailam has transformed my skin. The glow is real, and it smells so earthy and pure. It feels
+            like a nightly ritual I can't live without.
+          </p>
+
+          <div class="flex items-center gap-4 border-t border-gray-50 pt-6">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop"
+              alt="User" class="w-14 h-14 rounded-full object-cover border-4 border-[#F9F8F6]">
+            <div>
+              <h5 class="font-bold text-base text-[#1A3C34]">Anjali P.</h5>
+              <div class="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                <i class="fa-solid fa-circle-check text-green-500"></i> Verified Buyer
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="min-w-[100%] md:min-w-[calc(33.333%-16px)] bg-white p-10 rounded-3xl shadow-sm border border-gray-100 relative group hover:-translate-y-2 hover:shadow-2xl transition-all duration-500">
+          <div
+            class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-100 group-hover:text-[#D4AF37]/20 transition-all duration-500 text-6xl font-serif text-gray-200">
+            "</div>
+
+          <div class="text-[#D4AF37] text-xs mb-6 flex gap-1">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+
+          <p class="text-gray-600 mb-8 italic font-serif text-lg leading-relaxed relative z-10">
+            Finally, products that don't irritate my sensitive skin. The Neem face wash is gentle yet effective. Truly
+            chemical-free and soothing.
+          </p>
+
+          <div class="flex items-center gap-4 border-t border-gray-50 pt-6">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
+              alt="User" class="w-14 h-14 rounded-full object-cover border-4 border-[#F9F8F6]">
+            <div>
+              <h5 class="font-bold text-base text-[#1A3C34]">Rahul S.</h5>
+              <div class="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                <i class="fa-solid fa-circle-check text-green-500"></i> Verified Buyer
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="min-w-[100%] md:min-w-[calc(33.333%-16px)] bg-white p-10 rounded-3xl shadow-sm border border-gray-100 relative group hover:-translate-y-2 hover:shadow-2xl transition-all duration-500">
+          <div
+            class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-100 group-hover:text-[#D4AF37]/20 transition-all duration-500 text-6xl font-serif text-gray-200">
+            "</div>
+
+          <div class="text-[#D4AF37] text-xs mb-6 flex gap-1">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+
+          <p class="text-gray-600 mb-8 italic font-serif text-lg leading-relaxed relative z-10">
+            Premium packaging and even better results. It feels like a spa treatment at home. Love the sustainability
+            aspect—zero plastic!
+          </p>
+
+          <div class="flex items-center gap-4 border-t border-gray-50 pt-6">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
+              alt="User" class="w-14 h-14 rounded-full object-cover border-4 border-[#F9F8F6]">
+            <div>
+              <h5 class="font-bold text-base text-[#1A3C34]">Priya K.</h5>
+              <div class="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                <i class="fa-solid fa-circle-check text-green-500"></i> Verified Buyer
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="min-w-[100%] md:min-w-[calc(33.333%-16px)] bg-white p-10 rounded-3xl shadow-sm border border-gray-100 relative group hover:-translate-y-2 hover:shadow-2xl transition-all duration-500">
+          <div
+            class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-100 group-hover:text-[#D4AF37]/20 transition-all duration-500 text-6xl font-serif text-gray-200">
+            "</div>
+
+          <div class="text-[#D4AF37] text-xs mb-6 flex gap-1">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+              class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+
+          <p class="text-gray-600 mb-8 italic font-serif text-lg leading-relaxed relative z-10">
+            I've recommended SkinCraft to all my friends. The Saffron cream cleared my pigmentation in just 4 weeks.
+            Best investment ever.
+          </p>
+
+          <div class="flex items-center gap-4 border-t border-gray-50 pt-6">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop"
+              alt="User" class="w-14 h-14 rounded-full object-cover border-4 border-[#F9F8F6]">
+            <div>
+              <h5 class="font-bold text-base text-[#1A3C34]">Sneha M.</h5>
+              <div class="flex items-center gap-1 text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                <i class="fa-solid fa-circle-check text-green-500"></i> Verified Buyer
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-center gap-3 mt-12" id="sliderDots">
+        <button onclick="goToReviewSlide(0)"
+          class="w-3 h-3 rounded-full bg-[#1A3C34] transition-all duration-300 hover:scale-125 hover:bg-[#D4AF37]"></button>
+        <button onclick="goToReviewSlide(1)"
+          class="w-3 h-3 rounded-full bg-[#1A3C34]/20 transition-all duration-300 hover:scale-125 hover:bg-[#D4AF37]"></button>
+        <button onclick="goToReviewSlide(2)"
+          class="w-3 h-3 rounded-full bg-[#1A3C34]/20 transition-all duration-300 hover:scale-125 hover:bg-[#D4AF37] md:hidden"></button>
+        <button onclick="goToReviewSlide(3)"
+          class="w-3 h-3 rounded-full bg-[#1A3C34]/20 transition-all duration-300 hover:scale-125 hover:bg-[#D4AF37] md:hidden"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-ayur-primary relative overflow-hidden">
+    <div class="container mx-auto px-6 text-center relative z-10">
+      <h2 class="font-serif text-3xl md:text-5xl font-bold text-white mb-6">Embrace Your Natural Glow</h2>
+      <p class="text-ayur-light mb-8 text-lg">Join 10,000+ others who have switched to chemical-free skincare.</p>
+      <a href="{% url 'product' %}"
+        class="inline-block px-10 py-4 bg-white text-ayur-primary font-bold rounded-full hover:bg-ayur-gold hover:text-white transition-all shadow-lg">Start
+        Your Journey</a>
+    </div>
+  </section>
+</body>
+
+</html>
+
+
+
+<Script>
+  // Accordion Logic script for FAQ section
+  function toggleAccordion(button) {
+    const item = button.parentElement;
+    const content = button.nextElementSibling;
+    const icon = button.querySelector('.fa-solid');
+    const isActive = item.getAttribute('data-active') === 'true';
+
+    // 1. Close ALL items first (Accordion behavior)
+    document.querySelectorAll('.accordion-item').forEach(el => {
+      el.setAttribute('data-active', 'false');
+      el.querySelector('.accordion-content').style.maxHeight = '0';
+      const i = el.querySelector('.icon .fa-solid');
+      i.classList.remove('fa-minus');
+      i.classList.add('fa-plus');
+
+      // Reset number color
+      el.querySelector('.number').classList.remove('text-[#D4AF37]/40');
+      el.querySelector('.number').classList.add('text-gray-200');
+    });
+
+    // 2. If it wasn't active, Open it
+    if (!isActive) {
+      item.setAttribute('data-active', 'true');
+      content.style.maxHeight = content.scrollHeight + "px";
+      icon.classList.remove('fa-plus');
+      icon.classList.add('fa-minus');
+
+      // Highlight number
+      item.querySelector('.number').classList.remove('text-gray-200');
+      item.querySelector('.number').classList.add('text-[#D4AF37]/40');
+    }
+  }
+
+
+  // Review Slider Logic script
+  let currentReviewSlide = 0;
+  const reviewTrack = document.getElementById('reviewTrack');
+  const reviewDots = document.querySelectorAll('#sliderDots button');
+  const maxDesktopSlides = 2;
+  function updateReviewSlider() {
+    const movePercentage = window.innerWidth >= 768 ? 33.333 : 100;
+    const gapSize = window.innerWidth >= 768 ? 24 : 0;
+    const moveAmount = currentReviewSlide * movePercentage;
+    const gapAdjustment = currentReviewSlide * gapSize;
+
+    if (window.innerWidth >= 768) {
+      reviewTrack.style.transform = `translateX(calc(-${moveAmount}% - ${gapAdjustment}px))`;
+    } else {
+      reviewTrack.style.transform = `translateX(-${moveAmount}%)`;
+    }
+    reviewDots.forEach((dot, index) => {
+      if (index === currentReviewSlide) {
+        dot.classList.remove('bg-[#1A3C34]/20');
+        dot.classList.add('bg-[#1A3C34]');
+      } else {
+        dot.classList.add('bg-[#1A3C34]/20');
+        dot.classList.remove('bg-[#1A3C34]');
+      }
+    });
+  }
+  function goToReviewSlide(index) {
+    currentReviewSlide = index;
+    updateReviewSlider();
+  }
+  setInterval(() => {
+    currentReviewSlide++;
+    if (window.innerWidth >= 768) {
+      if (currentReviewSlide >= maxDesktopSlides) currentReviewSlide = 0;
+    } else {
+      if (currentReviewSlide > 3) currentReviewSlide = 0;
+    }
+    updateReviewSlider();
+  }, 3500);
+  function toggleWishlist(button) {
+    const productId = button.getAttribute('data-product-id');
+    const icon = button.querySelector('i');
+
+    fetch(`/wishlist/toggle/${productId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'variant_id='
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'added') {
+          button.classList.remove('text-gray-400');
+          button.classList.add('text-red-500');
+          icon.classList.remove('fa-regular');
+          icon.classList.add('fa-solid');
+        } else if (data.status === 'removed') {
+          button.classList.remove('text-red-500');
+          button.classList.add('text-gray-400');
+          icon.classList.remove('fa-solid');
+          icon.classList.add('fa-regular');
+        }
+      })
+      .catch(err => console.error("Sanctuary Toggle Error:", err));
+  }
+
+  function addToBag(button) {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+    const originalContent = button.innerHTML;
+
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Adding...';
+    button.disabled = true;
+
+    fetch(`/cart/add/${productId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: `variant_id=${variantId}`
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Server ritual failed');
+        return res.json();
+      })
+      .then(data => {
+        if (data.status === 'success') {
+          button.innerHTML = '<i class="fa-solid fa-check mr-1 text-emerald-500"></i> Added';
+          // Update all cart counters on page
+          const badges = document.querySelectorAll('#cart-count, a i.fa-basket-shopping + span');
+          badges.forEach(b => b.innerText = data.cart_count);
+
+          setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+          }, 2000);
+        } else {
+          throw new Error('Logic error');
+        }
+      })
+      .catch(err => {
+        console.error("Cart Error:", err);
+        button.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1 text-red-500"></i> Error';
+        setTimeout(() => {
+          button.innerHTML = originalContent;
+          button.disabled = false;
+        }, 2000);
+      });
+  }
+
+  function buyNow(button) {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+
+    const formData = new FormData();
+    formData.append('variant_id', variantId);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch(`/cart/add/${productId}/`, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          window.location.href = "{% url 'checkout' %}";
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch(err => console.error("Buy Now Error:", err));
+  }
+</script>
+{% endblock %}

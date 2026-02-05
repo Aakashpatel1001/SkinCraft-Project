@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Shop Collection - SkinCraft Ayurveda{% endblock %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       GLOBAL & UTILITIES
+       ========================================= */
+    :root {
+        --color-gold: #D4AF37;
+        --color-dark: #2D2D2D;
+        --color-bg: #FDFBF7;
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #FAFAFA;
+    }
+
+    /* Hide Scrollbar */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Search Box Focus */
+    #searchInput {
+        transition: var(--transition);
+        border: 1px solid #E5E7EB;
+    }
+
+    #searchInput:focus {
+        border-color: var(--color-gold);
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+    }
+
+    /* Category Items */
+    .cat-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: var(--transition);
+    }
+
+    .cat-item:hover {
+        background-color: #F9FAFB;
+    }
+
+    /* Active Category State */
+    .cat-radio:checked+.cat-content {
+        background-color: var(--color-bg);
+        border-color: var(--color-gold);
+    }
+
+    .cat-radio:checked+.cat-content .cat-name {
+        color: var(--color-dark);
+        font-weight: 700;
+    }
+
+    .cat-radio:checked+.cat-content .cat-circle {
+        border-color: var(--color-gold);
+    }
+
+    .cat-radio:checked+.cat-content .cat-circle::after {
+        transform: scale(1);
+    }
+
+    /* Custom Circle Radio */
+    .cat-circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #D1D5DB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.2s;
+        background: white;
+    }
+
+    .cat-circle::after {
+        content: '';
+        width: 10px;
+        height: 10px;
+        background-color: var(--color-gold);
+        border-radius: 50%;
+        transform: scale(0);
+        transition: transform 0.2s;
+    }
+
+    /* Category Badge */
+    .cat-badge {
+        background-color: #F3F4F6;
+        color: #6B7280;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+    }
+
+    .cat-radio:checked+.cat-content .cat-badge {
+        color: var(--color-gold);
+        background-color: #FFFBEB;
+    }
+
+    /* Sub-Category Tags */
+    input[name="subcategory"]:checked+span {
+        background-color: var(--color-gold) !important;
+        color: white !important;
+        border-color: var(--color-gold) !important;
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Range Slider Styling */
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        height: 6px;
+        cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        background: #E5E7EB;
+        border-radius: 99px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid var(--color-gold);
+        margin-top: -7px;
+    }
+
+    /* Loader */
+    .loader {
+        border-top-color: var(--color-gold);
+        animation: spinner 0.8s linear infinite;
+    }
+
+    @keyframes spinner {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+</style>
+
+<div class="bg-ayur-dark relative py-12 md:py-20 overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute -right-20 -top-20 w-64 h-64 md:w-96 md:h-96 bg-ayur-gold/10 rounded-full blur-3xl"></div>
+        <div class="absolute -left-20 bottom-0 w-48 h-48 md:w-72 md:h-72 bg-ayur-primary/10 rounded-full blur-3xl">
+        </div>
+    </div>
+    <div class="container mx-auto px-6 relative z-10 text-center text-white">
+        <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.3em] mb-4 block animate-fade-in-up">Pure &
+            Authentic</span>
+        <h1 class="font-serif text-4xl md:text-6xl font-bold mb-4 drop-shadow-sm">Our Collections</h1>
+        <p class="text-gray-300 max-w-lg mx-auto font-light text-base md:text-lg">Handcrafted remedies for modern
+            wellness.</p>
+    </div>
+</div>
+
+<section class="bg-[#FDFBF7] py-8 md:py-16 min-h-screen">
+    <div class="container mx-auto px-4 md:px-6">
+
+        <div class="lg:hidden mb-6">
+            <button onclick="toggleMobileFilters()"
+                class="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl flex justify-between items-center shadow-sm">
+                <span class="font-bold text-ayur-dark flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-ayur-gold"></i> Filters & Categories
+                </span>
+                <i id="filterCaret" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-10 xl:gap-16">
+
+            <aside id="sidebarContent" class="hidden lg:block w-full lg:w-1/4 space-y-8 animate-fade-in-up">
+
+                <div class="relative group">
+                    <div class="absolute pl-4 pt-4 flex items-center pointer-events-none">
+                        <i
+                            class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-ayur-gold transition-colors"></i>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Search for products..."
+                        class="w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-xl py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-ayur-gold/20 focus:border-ayur-gold outline-none shadow-sm transition-all">
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="font-serif font-bold text-ayur-dark mb-5 text-lg pb-3 border-b border-gray-50">Categories
+                    </h3>
+                    <div class="flex flex-col gap-1">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="category" value="all" checked onchange="resetAndApply()"
+                                class="cat-radio peer sr-only">
+                            <div class="cat-content cat-item">
+                                <div class="flex items-center gap-3">
+                                    <div class="cat-circle"></div>
+                                    <span class="text-sm font-medium text-gray-600 cat-name">All Products</span>
+                                </div>
+                                <span class="cat-badge">{{ total_products }}</span>
+                            </div>
+                        </label>
+                        {% for cat in categories %}
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="category" value="{{ cat.id }}" onchange="resetAndApply()"
+                                class="cat-radio peer sr-only">
+                            <div class="cat-content cat-item">
+                                <div class="flex items-center gap-3">
+                                    <div class="cat-circle"></div>
+                                    <span class="text-sm font-medium text-gray-600 cat-name">{{ cat.name }}</span>
+                                </div>
+                                <span class="cat-badge">{{ cat.product_count }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if all_subcategories %}
+                <div class="bg-white p-6 md:p-7 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <i class="fa-solid fa-tags text-ayur-gold text-lg"></i>
+                        <h3 class="font-serif font-bold text-ayur-dark text-lg">Filter by Type</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 md:gap-3">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="subcategory" value="" onchange="resetAndApply()"
+                                class="peer sr-only">
+                            <span
+                                class="inline-block px-4 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold bg-ayur-light/50 text-ayur-dark border border-ayur-primary/10 peer-checked:bg-ayur-gold peer-checked:text-white peer-checked:border-ayur-gold transition-all shadow-sm hover:shadow-md group-hover:border-ayur-gold/30">
+                                All Types
+                            </span>
+                        </label>
+                        {% for sub in all_subcategories %}
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="subcategory" value="{{ sub.id }}" onchange="resetAndApply()"
+                                class="peer sr-only">
+                            <span
+                                class="inline-block px-4 md:px-5 py-2.5 rounded-lg text-[10px] md:text-xs font-bold bg-white border border-gray-200 text-gray-600 peer-checked:bg-ayur-primary peer-checked:text-white peer-checked:border-ayur-primary transition-all shadow-sm hover:shadow-md hover:border-ayur-primary/30 group-hover:bg-ayur-light/20">
+                                {{ sub.name }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="font-serif font-bold text-ayur-dark mb-6 text-lg">Price Range</h3>
+                    <div class="relative mb-2">
+                        <input type="range" id="priceRange" min="0" max="5000" value="5000" step="50"
+                            oninput="document.getElementById('priceVal').innerText=this.value"
+                            onchange="resetAndApply()">
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-400 mt-2">
+                        <span>₹0</span>
+                        <div
+                            class="bg-ayur-gold/10 text-ayur-dark px-4 py-1.5 rounded-full font-bold shadow-sm border border-ayur-gold/20">
+                            Max: ₹<span id="priceVal">5000</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="w-full lg:w-3/4">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 md:mb-8 p-0 md:p-4 gap-4">
+                    <div class="text-gray-500 text-xs md:text-sm font-medium order-2 sm:order-1">
+                        {% if products.paginator.count > 0 %}
+                        Showing <span class="text-ayur-dark font-bold">{{ products.start_index }} - {{ products.end_index }}</span> of 
+                        <span class="text-ayur-dark font-bold">{{ products.paginator.count }}</span> results
+                        {% else %}
+                        Showing <span class="text-ayur-dark font-bold">0</span> results
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
+                        <span
+                            class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider hidden md:block">Sort
+                            By:</span>
+                        <div class="relative w-full sm:w-48">
+                            <select id="sortSelect" onchange="resetAndApply()"
+                                class="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-xs md:text-sm font-bold rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-ayur-gold/20 transition-all shadow-sm">
+                                <option value="newest">Newest Arrivals</option>
+                                <option value="price_low">Price: Low to High</option>
+                                <option value="price_high">Price: High to Low</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="loadingIndicator" class="hidden flex items-center justify-center py-12">
+                    <div class="loader ease-linear rounded-full border-2 border-t-2 border-gray-200 h-8 w-8"></div>
+                </div>
+                <div id="productGridContainer" class="min-h-[400px] md:min-h-[600px]">
+                    {% include 'product_grid.html' %}
+                </div>
+            </main>
+        </div>
+    </div>
+</section>
+
+<script>
+    let currentPage = 1;
+    let searchTimeout = null;
+
+    // Mobile Toggle Logic
+    function toggleMobileFilters() {
+        const sidebar = document.getElementById('sidebarContent');
+        const caret = document.getElementById('filterCaret');
+        if (sidebar.classList.contains('hidden')) {
+            sidebar.classList.remove('hidden');
+            caret.classList.add('rotate-180');
+        } else {
+            sidebar.classList.add('hidden');
+            caret.classList.remove('rotate-180');
+        }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(resetAndApply, 500);
+    });
+
+    function resetAndApply() {
+        currentPage = 1;
+        applyFilters(true);
+    }
+
+    function goToPage(page) {
+        if (!page) return;
+        currentPage = page;
+        applyFilters(false);
+    }
+
+    function applyFilters(isReset) {
+        const grid = document.getElementById('productGridContainer');
+        const loader = document.getElementById('loadingIndicator');
+        const innerGrid = document.getElementById('innerGrid');
+
+        loader.classList.remove('hidden');
+        if (innerGrid) innerGrid.style.opacity = '0.4';
+
+        const q = document.getElementById('searchInput').value;
+        const cat = document.querySelector('input[name="category"]:checked')?.value || 'all';
+        const subCat = document.querySelector('input[name="subcategory"]:checked')?.value || '';
+        const sort = document.getElementById('sortSelect').value;
+        const price = document.getElementById('priceRange').value;
+
+        const params = new URLSearchParams({
+            q: q, category: cat, subcategory: subCat, sort: sort, max_price: price, page: currentPage
+        });
+        const url = `${window.location.pathname}?${params.toString()}`;
+
+        window.history.pushState({}, '', url);
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                loader.classList.add('hidden');
+                grid.innerHTML = html;
+                if (window.innerWidth < 1024 && isReset) {
+                    document.getElementById('sidebarContent').classList.add('hidden');
+                    document.getElementById('filterCaret').classList.remove('rotate-180');
+                }
+                if (!isReset) {
+                    const gridTop = grid.getBoundingClientRect().top + window.scrollY - 120;
+                    window.scrollTo({ top: gridTop, behavior: 'smooth' });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                loader.classList.add('hidden');
+            });
+    }
+    
+    window.onpopstate = function () { location.reload(); };
+    
+    // 1. Filtering Ritual
+let ayurCurrentPage = 1;
+let ayurSearchTimeout = null;
+
+function ayurApplyFilters(isReset = false) {
+    if (isReset) ayurCurrentPage = 1;
+    
+    const container = document.getElementById('productGridContainer');
+    const loader = document.getElementById('loadingIndicator');
+    
+    loader.classList.remove('hidden');
+    container.style.opacity = '0.5';
+
+    // Get values from your named inputs
+    const params = new URLSearchParams({
+        q: document.getElementById('ayurSearchInput').value,
+        category: document.querySelector('input[name="ayur-category"]:checked')?.value || 'all',
+        max_price: document.getElementById('ayurPriceRange').value,
+        page: ayurCurrentPage
+    });
+
+    fetch(`${window.location.pathname}?${params.toString()}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.text())
+    .then(html => {
+        loader.classList.add('hidden');
+        container.style.opacity = '1';
+        container.innerHTML = html; // Replaces grid and pagination
+    })
+    .catch(err => console.error("Ritual Error:", err));
+}
+
+// 3. Add to Bag Ritual
+function addToBag(button) {
+    const productId = button.getAttribute('data-product-id');
+    const variantId = button.getAttribute('data-variant-id');
+    const originalContent = button.innerHTML;
+
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Adding...';
+    button.disabled = true;
+
+    fetch(`/cart/add/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `variant_id=${variantId}`
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Server ritual failed');
+        return res.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            button.innerHTML = '<i class="fa-solid fa-check mr-1 text-emerald-500"></i> Added';
+            const badge = document.getElementById('cart-count');
+            if (badge) badge.innerText = data.cart_count;
+
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }, 2000);
+        } else {
+            throw new Error('Logic error');
+        }
+    })
+    .catch(err => {
+        console.error("Cart Error:", err);
+        button.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1 text-red-500"></i> Error';
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 2000);
+    });
+}
+</script>
+
+{% endblock %}

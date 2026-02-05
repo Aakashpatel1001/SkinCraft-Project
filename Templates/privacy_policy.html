@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy - SkinCraft Ayurveda{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --color-gold: #D4AF37;
+        --color-dark: #1A2F18; /* Deep Forest Green */
+        --color-sage: #4A5D4E;
+        --color-cream: #FDFBF7;
+    }
+
+    .glass-header {
+        background: linear-gradient(rgba(26, 47, 24, 0.85), rgba(26, 47, 24, 0.95)),
+                    url('https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=2000');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .trust-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(212, 175, 55, 0.1);
+    }
+
+    .trust-card:hover {
+        border-color: var(--color-gold);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .policy-nav-link {
+        display: block;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        color: var(--color-sage);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .policy-nav-link:hover {
+        background: var(--color-cream);
+        color: var(--color-gold);
+        padding-left: 1.5rem;
+    }
+
+    /* Scroll Margin for Smooth Anchors */
+    h2 { scroll-margin-top: 100px; }
+</style>
+
+<div class="glass-header py-24 relative overflow-hidden text-center text-white">
+    <div class="absolute top-10 left-6 lg:left-12 reveal">
+        <a href="/" class="flex items-center gap-2 text-white/80 hover:text-ayur-gold transition-colors group">
+            <i class="fa-solid fa-arrow-left-long transition-transform group-hover:-translate-x-1"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Back to Home</span>
+        </a>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.5em] mb-4 block">A 25-Year Legacy of Care</span>
+        <h1 class="font-serif text-5xl md:text-7xl font-bold mb-6">Privacy & Transparency</h1>
+        <p class="text-white/70 text-lg max-w-2xl mx-auto leading-relaxed">
+            At SkinCraft, we treat your data with the same purity as our 25-year Ayurvedic legacy. 
+            Your privacy isn't just a policy—it's a promise of safety.
+        </p>
+        <div class="mt-10 flex justify-center flex-wrap gap-4 text-[9px] font-bold tracking-[0.2em] uppercase">
+            <span class="bg-white/5 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-xl flex items-center gap-2">
+                <i class="fa-solid fa-lock text-ayur-gold"></i> Fully Secured
+            </span>
+            <span class="bg-white/5 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-xl flex items-center gap-2">
+                <i class="fa-solid fa-eye-slash text-ayur-gold"></i> No Data Selling
+            </span>
+        </div>
+    </div>
+</div>
+
+<section class="bg-white py-20">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row gap-16">
+            <aside class="lg:w-1/4 hidden lg:block sticky top-24 h-fit">
+                <div class="bg-gray-50 p-8 rounded-3xl">
+                    <h4 class="font-serif text-xl mb-6 text-ayur-dark">Quick Navigation</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#collection" class="policy-nav-link">1. Data Collection</a>
+                        <a href="#usage" class="policy-nav-link">2. Usage Rights</a>
+                        <a href="#security" class="policy-nav-link">3. Security Standards</a>
+                        <a href="#cookies" class="policy-nav-link">4. Cookie Policy</a>
+                        <a href="#third-party" class="policy-nav-link">5. Trusted Partners</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="lg:w-3/4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                    <div class="trust-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-user-shield text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Private</h4>
+                        <p class="text-xs text-gray-500">We never sell your contact info to third-party marketers.</p>
+                    </div>
+                    <div class="trust-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-lock text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Secure</h4>
+                        <p class="text-xs text-gray-500">Bank-grade SSL encryption for every transaction.</p>
+                    </div>
+                    <div class="trust-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-eye-slash text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Transparent</h4>
+                        <p class="text-xs text-gray-500">Easily request or delete your data at any time.</p>
+                    </div>
+                </div>
+                <div class="prose prose-stone max-w-none">
+                    <h2 id="collection" class="font-serif text-3xl text-ayur-dark mb-6">1. What Information Do We Collect?</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        To provide you with the best Ayurvedic skincare rituals, we collect information you share with us during your journey.
+                    </p>
+                    <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+                        <ul class="space-y-4">
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">01</span>
+                                <div><span class="font-bold text-ayur-dark">Identities:</span> Your name, shipping address, and phone number for delivery.</div>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">02</span>
+                                <div><span class="font-bold text-ayur-dark">Consultation Data:</span> Details provided in skin quizzes or support chats to personalize your care.</div>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">03</span>
+                                <div><span class="font-bold text-ayur-dark">Payments:</span> We use encrypted gateways (Razorpay/Stripe). Your card details are never seen by our staff.</div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h2 id="usage" class="font-serif text-3xl text-ayur-dark mb-6">2. How We Use Your Data</h2>
+                    <p class="text-gray-600 mb-8 leading-relaxed">
+                        Your information allows us to bridge the gap between ancient alchemy and your contemporary needs. We use it to:
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                        <div class="border-l-2 border-ayur-gold pl-6">
+                            <h5 class="font-bold text-ayur-dark mb-1">Ritual Personalization</h5>
+                            <p class="text-sm text-gray-500">Recommending products based on your specific Dosha and skin concerns.</p>
+                        </div>
+                        <div class="border-l-2 border-ayur-gold pl-6">
+                            <h5 class="font-bold text-ayur-dark mb-1">Legacy Communication</h5>
+                            <p class="text-sm text-gray-500">Sending you Ayurvedic tips and order status updates since 2001.</p>
+                        </div>
+                    </div>
+                    
+                    <h2 id="security" class="font-serif text-3xl text-ayur-dark mb-6">3. Our Security Standards</h2>
+                    <p class="text-gray-600 mb-12">
+                        Our systems are scanned daily for vulnerabilities. Your personal data is stored behind secured networks and is only accessible by authorized personnel bound by strict confidentiality agreements.
+                    </p>
+
+                    <h2 id="cookies" class="font-serif text-3xl text-ayur-dark mb-6">4. Cookie Policy</h2>
+                    <p class="text-gray-600 mb-12">
+                        We use "Cookies" to remember your shopping cart items and understand your preferences. This helps us refine our online selling system for a smoother experience. 
+                        <span class="italic text-ayur-gold">You may disable cookies in your browser, but the cart feature may not function.</span>
+                    </p>
+                </div>
+
+                <div class="mt-20 bg-ayur-dark p-12 rounded-[3rem] text-center text-white">
+                    <h3 class="font-serif text-3xl mb-4">Request Your Data</h3>
+                    <p class="text-white/60 mb-8 max-w-lg mx-auto italic">
+                        "Transparency is the soul of trust." You have the right to request, edit, or delete your personal info at any time.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-8">
+                        <a href="mailto:support@skincraft.com" class="flex items-center gap-3 text-ayur-gold hover:text-white transition-colors">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span>support@skincraft.com</span>
+                        </a>
+                        <div class="flex items-center gap-3 text-ayur-gold">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>Surat, Gujarat, India</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
