@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils import timezone
 from .models import *
 
 
@@ -70,6 +71,11 @@ admin.site.register(ProductTag)
 admin.site.register(ProductVariant)
 admin.site.register(Wishlist)
 admin.site.register(Address)
+@admin.register(BankDetails)
+class BankDetailsAdmin(admin.ModelAdmin):
+    list_display = ('user', 'account_holder_name', 'bank_name', 'account_number', 'ifsc_code', 'upi_id', 'updated_at')
+    search_fields = ('user__username', 'user__email', 'account_holder_name', 'account_number', 'ifsc_code', 'bank_name', 'upi_id')
+    readonly_fields = ('updated_at',)
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -101,7 +107,22 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(DeliveryProfile)
 admin.site.register(Delivery)
-admin.site.register(DeliveryHelpDeskTicket)
+@admin.register(DeliveryHelpDeskTicket)
+class DeliveryHelpDeskTicketAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'reason', 'status', 'created_at', 'replied_at')
+    list_filter = ('status', 'reason', 'created_at')
+    search_fields = ('user__username', 'user__email', 'remarks', 'admin_reply')
+    readonly_fields = ('created_at', 'replied_at', 'replied_by')
+    fields = ('user', 'reason', 'remarks', 'status', 'admin_reply', 'replied_at', 'replied_by', 'created_at')
+
+    def save_model(self, request, obj, form, change):
+        if obj.admin_reply and not obj.replied_at:
+            obj.replied_at = timezone.now()
+            obj.replied_by = request.user
+            if obj.status == 'Open':
+                obj.status = 'Resolved'
+        super().save_model(request, obj, form, change)
+admin.site.register(Coupon)
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
@@ -147,38 +168,25 @@ class ReturnAdmin(admin.ModelAdmin):
     
     def refund_payment_status(self, obj):
         """Show refund payment status"""
-        try:
-            payment = obj.payment
-            if payment.status == 'Completed':
-                return '✓ Refund Details Collected'
-            return f'- {payment.status}'
-        except:
-            return '- No Payment'
+        refund = getattr(obj, 'refund_record', None)
+        if refund:
+            return f'- {refund.status}'
+        return '- No Refund'
     refund_payment_status.short_description = 'Refund Status'
     
     def payment_details_display(self, obj):
         """Display collected payment details"""
-        try:
-            payment = obj.payment
-            if payment.payment_method == 'COD':
-                return f"""
-                <div style="background: #f0f0f0; padding: 15px; border-radius: 5px;">
-                    <p><strong>Type:</strong> COD Refund</p>
-                    <p><strong>Amount:</strong> ₹{payment.amount}</p>
-                    <p><strong>Status:</strong> {payment.get_status_display()}</p>
-                    <hr style="margin: 10px 0;">
-                    <p><strong>Account Holder:</strong> {payment.account_holder_name}</p>
-                    <p><strong>Bank:</strong> {payment.bank_name}</p>
-                    <p><strong>Account Number:</strong> ****{payment.account_number[-4:]}</p>
-                    <p><strong>IFSC Code:</strong> {payment.ifsc_code}</p>
-                    {f'<p><strong>UPI ID:</strong> {payment.upi_id}</p>' if payment.upi_id else ''}
-                    <p><strong>Collected By:</strong> {payment.collected_by.get_full_name()}</p>
-                    <p><strong>Date:</strong> {payment.completed_at.strftime('%d %B %Y, %I:%M %p')}</p>
-                </div>
-                """
-            return '<em>No refund payment details collected yet</em>'
-        except:
-            return '<em>No refund payment details collected yet</em>'
+        refund = getattr(obj, 'refund_record', None)
+        if refund:
+            return f"""
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 5px;">
+                <p><strong>Status:</strong> {refund.get_status_display()}</p>
+                <p><strong>Amount:</strong> &#8377;{refund.amount}</p>
+                <p><strong>Processed At:</strong> {refund.processed_at or '-'} </p>
+                <p><strong>Notes:</strong> {refund.notes or '-'} </p>
+            </div>
+            """
+        return '<em>No refund record yet</em>'
     payment_details_display.short_description = 'Payment Details'
     payment_details_display.allow_tags = True
     
@@ -191,27 +199,20 @@ class ReturnAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('order', 'payment_type', 'payment_method', 'amount', 'status', 'collected_by', 'created_at')
-    list_filter = ('payment_type', 'payment_method', 'status', 'created_at')
-    search_fields = ('order__order_number', 'return_request__order__order_number', 'account_holder_name', 'razorpay_payment_id')
+    list_display = ('order', 'payment_method', 'amount', 'status', 'created_at')
+    list_filter = ('payment_method', 'status', 'created_at')
+    search_fields = ('order__order_number', 'razorpay_payment_id')
     readonly_fields = ('created_at', 'updated_at', 'completed_at')
     
     fieldsets = (
         ('Payment Information', {
-            'fields': ('order', 'return_request', 'payment_type', 'payment_method', 'amount', 'status')
+            'fields': ('order', 'payment_method', 'amount', 'status')
         }),
         ('Online Payment (Razorpay)', {
             'fields': ('razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature'),
             'classes': ('collapse',)
         }),
-        ('Bank Details (COD Refunds)', {
-            'fields': ('account_holder_name', 'account_number', 'ifsc_code', 'bank_name', 'upi_id'),
-            'classes': ('collapse',)
-        }),
-        ('Collection Information', {
-            'fields': ('collected_by',)
-        }),
-        ('Timestamps', {
+                ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'completed_at'),
             'classes': ('collapse',)
         }),
@@ -220,4 +221,25 @@ class PaymentAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         """Payments are only created by system/delivery partners"""
         return False
+
+
+@admin.register(Refund)
+class RefundAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'return_request', 'amount', 'damage_amount', 'status', 'processed_by', 'processed_at')
+    list_filter = ('status', 'processed_at', 'created_at')
+    search_fields = ('order__order_number', 'return_request__order__order_number', 'processed_by__username')
+    readonly_fields = ('created_at', 'processed_at')
+
+    fieldsets = (
+        ('Refund Information', {
+            'fields': ('order', 'return_request', 'amount', 'damage_amount', 'status')
+        }),
+        ('Processing', {
+            'fields': ('processed_by', 'processed_at', 'notes')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
 

@@ -102,3 +102,9 @@ DEFAULT_FROM_EMAIL = 'SkinCraft <aakashsavaliya16@gmail.com>'
 # Razorpay Configuration
 RAZORPAY_KEY_ID='rzp_test_RksTz1xSamkg4r'
 RAZORPAY_KEY_SECRET='049Ey19sBZd9AIIdnWqWJMIx'
+# Custom admin dashboard path: change this to your secret admin URL segment (no leading/trailing slashes)
+ADMIN_DASHBOARD_PATH = 'secret-admin'
+# Ensure @login_required redirects to our custom admin entry instead of default '/accounts/login/'
+LOGIN_URL = '/' + ADMIN_DASHBOARD_PATH + '/'
+# After login, redirect to admin dashboard by default
+LOGIN_REDIRECT_URL = '/admin_dashboard/'

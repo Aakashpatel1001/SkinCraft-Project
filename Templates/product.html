@@ -179,6 +179,35 @@
     .animate-fade-in-up {
         animation: fadeInUp 0.6s ease-out forwards;
     }
+
+    .rating-wrap {
+        position: relative;
+        display: inline-block;
+        line-height: 1;
+    }
+
+    .rating-back,
+    .rating-front {
+        display: flex;
+        gap: 2px;
+    }
+
+    .rating-front {
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        width: calc((var(--rating, 0) / 5) * 100%);
+        white-space: nowrap;
+    }
+
+    .rating-back i {
+        color: #E5E7EB;
+    }
+
+    .rating-front i {
+        color: var(--color-gold);
+    }
 </style>
 
 <div class="bg-ayur-dark relative py-12 md:py-20 overflow-hidden">
@@ -465,22 +494,24 @@ function addToBag(button) {
         },
         body: `variant_id=${variantId}`
     })
-    .then(res => {
-        if (!res.ok) throw new Error('Server ritual failed');
-        return res.json();
-    })
-    .then(data => {
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+        if (data.status === 'auth_required' && data.redirect_url) {
+            window.location.href = data.redirect_url;
+            return;
+        }
+        if (!ok || data.status !== 'success') {
+            throw new Error(data.message || 'Server ritual failed');
+        }
         if (data.status === 'success') {
             button.innerHTML = '<i class="fa-solid fa-check mr-1 text-emerald-500"></i> Added';
-            const badge = document.getElementById('cart-count');
+            const badge = document.getElementById('cartCount');
             if (badge) badge.innerText = data.cart_count;
 
             setTimeout(() => {
                 button.innerHTML = originalContent;
                 button.disabled = false;
             }, 2000);
-        } else {
-            throw new Error('Logic error');
         }
     })
     .catch(err => {

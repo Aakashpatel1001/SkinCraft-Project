@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
+from django.core.exceptions import ValidationError
 from .models import *
 from .models import Address
 
@@ -47,6 +48,25 @@ class UserLoginForm(AuthenticationForm):
             # ✅ FIX: Apply icon padding to the login password field too
             if "password" in field:
                 self.fields[field].widget.attrs["class"] += " pl-10"
+
+
+class BankDetailsForm(forms.ModelForm):
+    class Meta:
+        model = BankDetails
+        fields = ['account_holder_name', 'account_number', 'ifsc_code', 'bank_name', 'upi_id']
+
+    def __init__(self, *args, **kwargs):
+        super(BankDetailsForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update(
+                {
+                    "class": "custom-input w-full px-4 py-2.5 border border-gray-200 rounded-lg text-gray-700 focus:outline-none text-sm",
+                    "placeholder": self.fields[field].label,
+                }
+            )
+            if field in ["account_holder_name", "account_number", "ifsc_code", "bank_name", "upi_id"]:
+                existing_class = self.fields[field].widget.attrs.get("class", "")
+                self.fields[field].widget.attrs["class"] = existing_class + " pl-10"
                 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
@@ -87,40 +107,12 @@ class AddressForm(forms.ModelForm):
         if 'address_type' in self.fields:
             self.fields['address_type'].choices = [('', 'Select Address Type')] + list(self.fields['address_type'].choices)
 
+    def clean_city(self):
+        city = (self.cleaned_data.get('city') or '').strip()
+        if city and city.lower() != 'surat':
+            raise ValidationError('We currently deliver only in Surat.')
+        return city
 
-class PaymentForm(forms.ModelForm):
-    """Form for collecting payment details (bank details for COD refunds)"""
-    class Meta:
-        model = Payment
-        fields = ['account_holder_name', 'account_number', 'ifsc_code', 'bank_name', 'upi_id']
-        widgets = {
-            'account_holder_name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#1A3C34] transition-colors',
-                'placeholder': 'Full Name',
-                'required': True
-            }),
-            'account_number': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#1A3C34] transition-colors',
-                'placeholder': '10-18 digit account number',
-                'required': True
-            }),
-            'ifsc_code': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#1A3C34] transition-colors',
-                'placeholder': 'e.g., SBIN0001234',
-                'required': True
-            }),
-            'bank_name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#1A3C34] transition-colors',
-                'placeholder': 'Bank Name',
-                'required': True
-            }),
-            'upi_id': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-[#1A3C34] transition-colors',
-                'placeholder': 'user@bankname (Optional)',
-                'required': False
-            }),
-        }
-            
 class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage

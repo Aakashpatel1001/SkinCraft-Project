@@ -30,19 +30,26 @@
                     <span class="text-xs text-ayur-gold font-bold uppercase tracking-wider">{{ product.subcategory.name }}</span>
                     {% endif %}
                 </div>
-                <div class="flex items-center text-yellow-400 text-sm">
+                <div class="flex items-center text-sm">
                     {% if product.average_rating > 0 %}
-                        <div class="flex text-yellow-400 text-xs">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= product.average_rating|floatformat:0 %}
-                                    <i class="fas fa-star"></i>
-                                {% else %}
-                                    <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <span class="text-gray-600 text-sm font-semibold ml-1">{{ product.average_rating|floatformat:1 }}</span>
-                        <span class="text-gray-400 text-xs ml-0.5">({{ product.reviews.count }})</span>
+                        <span class="rating-wrap text-xs" style="--rating: {{ product.average_rating|floatformat:1 }};">
+                            <span class="rating-back">
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                            </span>
+                            <span class="rating-front">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </span>
+                        </span>
+                        <span class="text-gray-600 text-sm font-semibold ml-2">{{ product.average_rating|floatformat:1 }}</span>
+                        <span class="text-gray-400 text-xs ml-1">({{ product.reviews.count }})</span>
                     {% else %}
                         <span class="text-gray-400 text-xs">No reviews yet</span>
                     {% endif %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Track Your Order - SkinCraft{% endblock %}
+
+{% block content %}
+<div class="bg-stone-50 min-h-[60vh] py-16 font-sans">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <div class="text-center mb-10">
+            <h1 class="font-serif text-4xl font-bold text-ayur-dark mb-4">Track Your Ritual</h1>
+            <p class="text-gray-500">Enter your order number to see the current status of your wellness package.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                <div class="relative group">
+                    <label
+                        class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 group-focus-within:text-ayur-gold transition-colors">Order
+                        Number</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i
+                                class="fa-solid fa-box text-gray-400 group-focus-within:text-ayur-gold transition-colors text-lg"></i>
+                        </div>
+                        <input type="text" name="order_number" required placeholder="e.g., SC-12345678"
+                            class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-1 focus:ring-ayur-gold focus:border-ayur-gold block pl-12 p-4 transition-all outline-none placeholder-gray-400"
+                            value="{{ request.POST.order_number }}">
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-ayur-dark text-white font-bold text-lg rounded-xl hover:bg-ayur-primary transition-all shadow-lg hover:shadow-2xl transform hover:-translate-y-1">
+                    Track Status
+                </button>
+            </form>
+        </div>
+
+        {% if order %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
+            <!-- Order Header -->
+            <div
+                class="bg-stone-50 px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Order
+                        Number</span>
+                    <span class="font-bold text-ayur-dark text-xl">#{{ order.order_number }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider
+                        {% if order.status == 'Delivered' %}bg-green-100 text-green-700
+                        {% elif order.status == 'Cancelled' %}bg-red-100 text-red-700
+                        {% elif order.status == 'Shipped' %}bg-blue-100 text-blue-700
+                        {% else %}bg-amber-100 text-amber-700{% endif %}">
+                        {{ order.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="px-8 py-8 border-b border-gray-100">
+                <div class="flex items-center justify-between relative">
+                    <!-- Progress Line -->
+                    <div class="absolute top-5 left-0 right-0 h-1 bg-gray-200 z-0">
+                        <div class="h-full bg-green-500 transition-all duration-500"
+                            style="width: {% if order.status == 'Delivered' %}100%{% elif order.status == 'Shipped' or order.status == 'On Way' %}66%{% elif order.status == 'Pending' %}33%{% else %}0%{% endif %}">
+                        </div>
+                    </div>
+
+                    <!-- Status Steps -->
+                    <div class="flex-1 text-center relative z-10">
+                        <div
+                            class="w-10 h-10 mx-auto rounded-full {% if order.status in 'Pending,Shipped,On Way,Delivered' %}bg-green-500 text-white{% else %}bg-gray-300 text-gray-500{% endif %} flex items-center justify-center mb-2 border-4 border-white shadow-md">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-700">Ordered</p>
+                        <p class="text-[10px] text-gray-400 mt-1">{{ order.created_at|date:"M d" }}</p>
+                    </div>
+                    <div class="flex-1 text-center relative z-10">
+                        <div
+                            class="w-10 h-10 mx-auto rounded-full {% if order.status in 'Shipped,On Way,Delivered' %}bg-green-500 text-white{% else %}bg-gray-300 text-gray-500{% endif %} flex items-center justify-center mb-2 border-4 border-white shadow-md">
+                            <i class="fa-solid fa-box text-sm"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-700">Shipped</p>
+                    </div>
+                    <div class="flex-1 text-center relative z-10">
+                        <div
+                            class="w-10 h-10 mx-auto rounded-full {% if order.status in 'On Way,Delivered' %}bg-green-500 text-white{% else %}bg-gray-300 text-gray-500{% endif %} flex items-center justify-center mb-2 border-4 border-white shadow-md">
+                            <i class="fa-solid fa-truck text-sm"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-700">On Way</p>
+                    </div>
+                    <div class="flex-1 text-center relative z-10">
+                        <div
+                            class="w-10 h-10 mx-auto rounded-full {% if order.status == 'Delivered' %}bg-green-500 text-white{% else %}bg-gray-300 text-gray-500{% endif %} flex items-center justify-center mb-2 border-4 border-white shadow-md">
+                            <i class="fa-solid fa-house text-sm"></i>
+                        </div>
+                        <p class="text-xs font-bold text-gray-700">Delivered</p>
+                        {% if order.delivered_at %}
+                        <p class="text-[10px] text-gray-400 mt-1">{{ order.delivered_at|date:"M d" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details Grid -->
+            <div class="p-8">
+                <h4 class="text-xs font-bold text-gray-500 uppercase mb-6 tracking-widest">Order Details</h4>
+                <div class="space-y-4">
+                    {% for item in order.items.all %}
+                    <div class="flex items-center gap-4 bg-stone-50 p-4 rounded-xl border border-gray-100">
+                        <a href="{% if user.is_authenticated and order.user == user %}{% url 'profile' %}?tab=orders{% else %}{% url 'product_detail' item.product.id %}{% endif %}"
+                            class="w-16 h-16 bg-white rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 block hover:opacity-80 transition-opacity">
+                            {% if item.product.thumbnail %}
+                            <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}"
+                                class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+                            {% endif %}
+                        </a>
+                        <div class="flex-1">
+                            <a href="{% if user.is_authenticated and order.user == user %}{% url 'profile' %}?tab=orders{% else %}{% url 'product_detail' item.product.id %}{% endif %}"
+                                class="font-bold text-gray-800 text-sm hover:text-ayur-dark transition-colors block">{{item.product.name }}</a>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-xs text-ayur-primary font-semibold">{{ item.product.category.name }}</span>
+                                <span class="text-gray-300">•</span>
+                                <span class="text-xs text-gray-600">{{ item.variant.unit_value }}{{ item.variant.unit_type }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-ayur-dark text-sm">₹{{ item.variant.price|floatformat:2 }}</p>
+                            <p class="text-xs text-gray-500 mt-1">x{{ item.quantity }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Amount</span>
+                    <span class="text-2xl font-bold text-ayur-dark font-sans">₹{{ order.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="bg-gray-50 px-8 py-6 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Shipping Address</p>
+                        <p class="text-sm text-gray-800 leading-relaxed font-medium">{{ order.street_address }}</p>
+                        <p class="text-sm text-gray-600">{{ order.city }}, {{ order.state }} - {{ order.zip_code }}</p>
+                        <p class="text-sm text-gray-600 mt-1"><i class="fa-solid fa-phone text-xs mr-2"></i>{{ order.phone }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Payment Method</p>
+                        <p class="text-sm text-gray-800 font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-credit-card text-ayur-gold"></i>
+                            {{ order.payment_method }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

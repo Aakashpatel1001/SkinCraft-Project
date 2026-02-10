@@ -193,6 +193,12 @@
         .helpdesk-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
         .helpdesk-btn { background: #2f6bff; color: #fff; border: none; }
         .helpdesk-btn:hover { filter: brightness(0.95); }
+        .conversation-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; }
+        .bubble { max-width: 100%; padding: 10px 12px; border-radius: 12px; font-size: 0.88rem; line-height: 1.45; }
+        .bubble-user { background: #ffffff; border: 1px solid #e5e7eb; }
+        .bubble-admin { background: #edf4ff; border: 1px solid #cfe0ff; }
+        .bubble-meta { font-size: 0.7rem; color: #6b7280; margin-top: 6px; }
+        .bubble-header { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.75rem; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
 
         @media (max-width: 900px) {
             .helpdesk-wrap { grid-template-columns: 1fr; }
@@ -228,13 +234,22 @@
         </div>
         
         <ul class="nav-links">
-            <li class="nav-item active" onclick="showTab('dashboard', this)">
+            <li class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard', this)">
                 <i class="fas fa-th-large"></i> Dashboard
             </li>
-            <li class="nav-item" onclick="showTab('history', this)">
+            <li class="nav-item" data-tab="salary" onclick="showTab('salary', this)">
+                <i class="fas fa-wallet"></i> Salary
+            </li>
+            <li class="nav-item" data-tab="history" onclick="showTab('history', this)">
                 <i class="fas fa-history"></i> Order History
             </li>
-            <li class="nav-item" onclick="showTab('helpdesk', this)">
+            <li class="nav-item" data-tab="reviews" onclick="showTab('reviews', this)">
+                <i class="fas fa-star"></i> Reviews
+            </li>
+            <li class="nav-item" data-tab="profile" onclick="showTab('profile', this)">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </li>
+            <li class="nav-item" data-tab="helpdesk" onclick="showTab('helpdesk', this)">
                 <i class="fas fa-headset"></i> Help Desk
             </li>
             <li class="nav-item" onclick="location.href='{% url 'homepage' %}'">
@@ -308,7 +323,7 @@
                     <i class="fas fa-check-double stat-icon" style="color: #333;"></i>
                 </div>
                 <div class="stat-card" style="border-left: 4px solid #d63031;">
-                    <div><h3>{{ stats.return_pickups }}</h3><p>Return Pickups</p></div>
+                    <div><h3>{{ stats.return_pickups|default:"0" }}</h3><p>Return Pickups</p></div>
                     <i class="fas fa-undo stat-icon" style="color: #d63031;"></i>
                 </div>
             </div>
@@ -458,7 +473,7 @@
             <div class="content-box">
                 <div class="box-header">
                     <span class="box-title text-warning" style="color:#fd7e14;"><i class="fas fa-undo"></i> Return Pickups</span>
-                    <span class="badge badge-pending" style="background:#fff3cd; color:#856404;">{{ pickup_tasks|length }} Pending</span>
+                    <span class="badge badge-pending" style="background:#fff3cd; color:#856404;">{{ pickup_tasks|length|default:"0" }} Pending</span>
                 </div>
                 <div class="task-list">
                     {% for return_item in pickup_tasks %}
@@ -526,9 +541,12 @@
                                     </a>
                                 {% endif %}
 
-                                <a href="{% url 'confirm_return_pickup' return_item.id %}" class="btn btn-success" style="background: #28a745; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
-                                    <i class="fas fa-check-circle"></i> Complete Pickup
-                                </a>
+                                <form method="post" action="{% url 'confirm_return_pickup' return_item.id %}" class="ajax-form return-pickup-form" style="display:flex; flex-direction:column; gap:10px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success" style="background: #28a745;">
+                                        <i class="fas fa-check-circle"></i> Complete Pickup
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -541,6 +559,30 @@
                 </div>
             </div>
 
+        </div>
+
+        <div id="tab-salary" class="view-section" style="display:none;">
+            <div class="content-box">
+                <div class="box-header">
+                    <span class="box-title"><i class="fas fa-wallet"></i> Salary Overview</span>
+                </div>
+                <div class="task-list" style="padding:20px;">
+                    <div class="stats-grid" style="margin-bottom:0;">
+                        <div class="stat-card border-blue">
+                            <div><h3>₹{{ stats.monthly_salary|default:"0" }}</h3><p>Fixed Salary</p></div>
+                            <i class="fas fa-money-bill-wave stat-icon" style="color: var(--info-color);"></i>
+                        </div>
+                        <div class="stat-card border-green">
+                            <div><h3>₹{{ stats.salary_paid|default:"0" }}</h3><p>Received</p></div>
+                            <i class="fas fa-check-circle stat-icon" style="color: var(--success-color);"></i>
+                        </div>
+                        <div class="stat-card border-yellow">
+                            <div><h3>₹{{ stats.salary_due|default:"0" }}</h3><p>Pending</p></div>
+                            <i class="fas fa-hourglass-half stat-icon" style="color: var(--warning-color);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="tab-history" class="view-section" style="display:none;">
@@ -577,6 +619,102 @@
                             {% endif %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-profile" class="view-section" style="display:none;">
+            <div class="content-box">
+                <div class="box-header">
+                    <span class="box-title"><i class="fas fa-user-edit"></i> Edit Profile</span>
+                    <span style="font-size:0.8rem; color:#888;">Keep details up to date.</span>
+                </div>
+                <div class="task-list" style="padding:20px;">
+                    <form action="{% url 'update_delivery_profile' %}" method="POST" class="helpdesk-form" style="background:#fff;">
+                        {% csrf_token %}
+                        <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px;">
+                            <div class="helpdesk-field" style="grid-column: span 2; padding:12px; border:1px solid #eef2f7; border-radius:10px; background:#f9fbff;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Personal</div>
+                                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;">
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">First Name</label>
+                                        <input type="text" name="first_name" value="{{ user.first_name|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Last Name</label>
+                                        <input type="text" name="last_name" value="{{ user.last_name|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Email</label>
+                                        <input type="email" name="email" value="{{ user.email|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Phone</label>
+                                        <input type="text" name="phone" value="{{ user.phone|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="helpdesk-field" style="grid-column: span 2; padding:12px; border:1px solid #eef2f7; border-radius:10px; background:#f9fbff;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Vehicle</div>
+                                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;">
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">License Number</label>
+                                        <input type="text" name="license_number" value="{{ profile.license_number|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Vehicle Type</label>
+                                        <select name="vehicle_type" style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                            <option value="Bike" {% if profile and profile.vehicle_type == 'Bike' %}selected{% endif %}>Bike</option>
+                                            <option value="Scooter" {% if profile and profile.vehicle_type == 'Scooter' %}selected{% endif %}>Scooter</option>
+                                            <option value="Car" {% if profile and profile.vehicle_type == 'Car' %}selected{% endif %}>Car</option>
+                                            <option value="Van" {% if profile and profile.vehicle_type == 'Van' %}selected{% endif %}>Van</option>
+                                            <option value="Other" {% if profile and profile.vehicle_type == 'Other' %}selected{% endif %}>Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Vehicle Number</label>
+                                        <input type="text" name="vehicle_number" value="{{ profile.vehicle_number|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="helpdesk-field" style="grid-column: span 2; padding:12px; border:1px solid #eef2f7; border-radius:10px; background:#f9fbff;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Address</div>
+                                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;">
+                                    <div class="helpdesk-field" style="grid-column: span 2;">
+                                        <label class="info-label">Street Address</label>
+                                        <input type="text" name="street_address" value="{{ profile.street_address|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">City</label>
+                                        <input type="text" name="city" value="{{ profile.city|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">State</label>
+                                        <input type="text" name="state" value="{{ profile.state|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                    <div class="helpdesk-field">
+                                        <label class="info-label">Zip Code</label>
+                                        <input type="text" name="zip_code" value="{{ profile.zip_code|default:'' }}"
+                                               style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="helpdesk-actions" style="margin-top:14px;">
+                            <button type="submit" class="btn helpdesk-btn" style="width:auto; padding:10px 16px;">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -619,6 +757,140 @@
                             </div>
                         </div>
                     </form>
+                    <div class="content-box" style="margin-top:20px;">
+                        <div class="box-header" style="gap:12px; flex-wrap:wrap;">
+                            <span class="box-title"><i class="fas fa-inbox"></i> Your Support Requests</span>
+                            <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff;">
+                                    <i class="fas fa-search" style="color:#9ca3af; font-size:0.8rem;"></i>
+                                    <input id="helpdeskSearch" type="text" placeholder="Ticket # or issue"
+                                           style="border:none; outline:none; font-size:0.8rem; min-width:160px;" />
+                                </div>
+                                <select id="helpdeskSort" style="padding:6px 10px; border-radius:8px; border:1px solid #e5e7eb; font-weight:600; font-size:0.8rem;">
+                                    <option value="newest">Newest</option>
+                                    <option value="oldest">Oldest</option>
+                                    <option value="open">Open First</option>
+                                    <option value="resolved">Resolved First</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="task-list" id="helpdeskList" style="padding:16px;">
+                            {% if helpdesk_tickets %}
+                                {% for ticket in helpdesk_tickets %}
+                                <div class="task-item helpdesk-item" style="border-left: 5px solid #2f6bff;"
+                                     data-created="{{ ticket.created_at|date:'U' }}"
+                                     data-status="{{ ticket.status }}"
+                                     data-ticket="{{ ticket.id }}"
+                                     data-reason="{{ ticket.get_reason_display }}">
+                                    <div class="task-header">
+                                        <div>
+                                            <span class="order-id">Ticket #{{ ticket.id }}</span>
+                                            <div style="font-size:0.8rem; color:#888; margin-top:4px;">
+                                                {{ ticket.created_at|date:"M d, Y h:i A" }}
+                                            </div>
+                                        </div>
+                                        <span class="badge" style="background:#e9f2ff; color:#2f6bff;">
+                                            {{ ticket.status }}
+                                        </span>
+                                    </div>
+                                    <div class="conversation-card">
+                                        <div class="bubble-header">
+                                            <i class="fas fa-question-circle"></i> Partner Query
+                                        </div>
+                                        <div class="bubble bubble-user" style="margin-top:8px;">
+                                            <div style="font-weight:600; color:#374151;">{{ ticket.get_reason_display }}</div>
+                                            <div style="margin-top:6px; color:#4b5563;">{{ ticket.remarks|default:"-" }}</div>
+                                        </div>
+                                        <div class="bubble-meta">{{ ticket.created_at|date:"M d, Y h:i A" }}</div>
+
+                                        <div class="bubble-header" style="margin-top:14px;">
+                                            <i class="fas fa-user-shield"></i> Admin Reply
+                                        </div>
+                                        {% if ticket.admin_reply %}
+                                            <div class="bubble bubble-admin" style="margin-top:8px;">
+                                                <span class="reply-text" data-full="{{ ticket.admin_reply|escape }}">
+                                                    {{ ticket.admin_reply|truncatechars:160 }}
+                                                </span>
+                                                {% if ticket.admin_reply|length > 160 %}
+                                                    <div style="margin-top:8px;">
+                                                        <button type="button" class="btn btn-call toggle-reply-btn" style="width:auto; padding:6px 12px; font-size:0.75rem;">
+                                                            Show full
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="bubble-meta">
+                                                Replied {{ ticket.replied_at|date:"M d, Y h:i A" }}
+                                                {% if ticket.replied_by %}by {{ ticket.replied_by.get_full_name|default:ticket.replied_by.username }}{% endif %}
+                                            </div>
+                                        {% else %}
+                                            <div class="bubble bubble-admin" style="margin-top:8px; color:#6b7280;">
+                                                Awaiting admin reply.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div style="text-align:center; padding:24px; color:#888;">No support requests yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-reviews" class="view-section" style="display:none;">
+            <div class="content-box">
+                <div class="box-header" style="flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <span class="box-title"><i class="fas fa-star"></i> Reviews & Ratings</span>
+                        <div style="margin-top:6px; font-size:0.85rem; color:#666;">
+                            Average Rating: <strong>{{ avg_delivery_rating|floatformat:1 }}</strong> / 5
+                            <span style="margin-left:10px; color:#999;">({{ delivery_reviews|length }} reviews)</span>
+                        </div>
+                    </div>
+                    <div style="margin-left:auto;">
+                        <select id="ratingFilter" style="padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb; font-weight:600;">
+                            <option value="all">All Ratings</option>
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="task-list" id="reviewList" style="padding:20px;">
+                    {% if delivery_reviews %}
+                        {% for review in delivery_reviews %}
+                        <div class="task-item" data-rating="{{ review.rating }}">
+                            <div class="task-header" style="align-items:flex-start; gap:10px;">
+                                <div>
+                                    <div class="order-id">Order #{{ review.order.order_number }}</div>
+                                    <div style="font-size:0.8rem; color:#888; margin-top:4px;">
+                                        {{ review.customer.get_full_name|default:review.customer.username }}
+                                        <span style="margin-left:6px; color:#bbb;">|</span>
+                                        <span style="margin-left:6px;">{{ review.created_at|date:"M d, Y" }}</span>
+                                    </div>
+                                </div>
+                                <div style="margin-left:auto;">
+                                    {% for i in "12345" %}
+                                        <i class="fas fa-star" style="color:{% if review.rating >= forloop.counter %}#fbbf24{% else %}#e5e7eb{% endif %};"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="task-body" style="grid-template-columns:1fr;">
+                                <div class="info-group" style="margin:0;">
+                                    <span class="info-label">Review</span>
+                                    <span class="info-value">{{ review.comment|default:"No comment provided." }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center; padding:40px; color:#888;">No reviews yet.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -643,6 +915,29 @@
 
         // AJAX Form Handling
         document.addEventListener('DOMContentLoaded', function() {
+            const tabParam = new URLSearchParams(window.location.search).get('tab');
+            if (tabParam) {
+                const targetTab = document.getElementById('tab-' + tabParam);
+                const targetLink = document.querySelector(`.nav-item[data-tab="${tabParam}"]`);
+                if (targetTab && targetLink) {
+                    showTab(tabParam, targetLink);
+                }
+            }
+
+            const ratingFilter = document.getElementById('ratingFilter');
+            if (ratingFilter) {
+                ratingFilter.addEventListener('change', function() {
+                    const selected = this.value;
+                    document.querySelectorAll('#reviewList .task-item').forEach(item => {
+                        if (selected === 'all') {
+                            item.style.display = '';
+                            return;
+                        }
+                        item.style.display = item.getAttribute('data-rating') === selected ? '' : 'none';
+                    });
+                });
+            }
+
             document.querySelectorAll('.alert').forEach(function(el) {
                 setTimeout(function() {
                     el.style.transition = 'opacity 0.4s ease';
@@ -650,6 +945,53 @@
                     setTimeout(function() { el.remove(); }, 450);
                 }, 2500);
             });
+
+            const helpdeskSort = document.getElementById('helpdeskSort');
+            const helpdeskSearch = document.getElementById('helpdeskSearch');
+            const helpdeskList = document.getElementById('helpdeskList');
+            if (helpdeskSort && helpdeskList) {
+                const sortItems = () => {
+                    const items = Array.from(helpdeskList.querySelectorAll('.helpdesk-item'));
+                    const mode = helpdeskSort.value;
+                    items.sort((a, b) => {
+                        const aDate = parseInt(a.getAttribute('data-created') || '0', 10);
+                        const bDate = parseInt(b.getAttribute('data-created') || '0', 10);
+                        const aStatus = (a.getAttribute('data-status') || '').toLowerCase();
+                        const bStatus = (b.getAttribute('data-status') || '').toLowerCase();
+                        if (mode === 'oldest') return aDate - bDate;
+                        if (mode === 'open') {
+                            if (aStatus === bStatus) return bDate - aDate;
+                            return aStatus === 'open' ? -1 : 1;
+                        }
+                        if (mode === 'resolved') {
+                            if (aStatus === bStatus) return bDate - aDate;
+                            return aStatus === 'resolved' ? -1 : 1;
+                        }
+                        return bDate - aDate;
+                    });
+                    items.forEach(item => helpdeskList.appendChild(item));
+                };
+                const filterItems = () => {
+                    const q = (helpdeskSearch ? helpdeskSearch.value : '').trim().toLowerCase();
+                    helpdeskList.querySelectorAll('.helpdesk-item').forEach(item => {
+                        if (!q) {
+                            item.style.display = '';
+                            return;
+                        }
+                        const ticket = (item.getAttribute('data-ticket') || '').toLowerCase();
+                        const reason = (item.getAttribute('data-reason') || '').toLowerCase();
+                        item.style.display = (ticket.includes(q) || reason.includes(q)) ? '' : 'none';
+                    });
+                };
+                helpdeskSort.addEventListener('change', () => {
+                    sortItems();
+                    filterItems();
+                });
+                if (helpdeskSearch) {
+                    helpdeskSearch.addEventListener('input', filterItems);
+                }
+                sortItems();
+            }
 
             document.body.addEventListener('submit', function(e) {
                 if (e.target.matches('.ajax-form')) {
@@ -690,6 +1032,10 @@
                                 showToast('Delivery Completed!', 'success');
                                 setTimeout(() => location.reload(), 1000);
                             }
+                            else {
+                                showToast(data.message || 'Updated successfully.', 'success');
+                                setTimeout(() => location.reload(), 800);
+                            }
                         } else {
                             showToast(data.message, 'error');
                             btn.innerHTML = originalText;
@@ -703,6 +1049,22 @@
                         btn.disabled = false;
                     });
                 }
+            });
+
+            document.querySelectorAll('.toggle-reply-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const textEl = btn.closest('.conversation-card').querySelector('.reply-text');
+                    if (!textEl) return;
+                    const isShort = btn.textContent.trim() === 'Show full';
+                    if (isShort) {
+                        textEl.textContent = textEl.getAttribute('data-full') || textEl.textContent;
+                        btn.textContent = 'Show less';
+                    } else {
+                        const full = textEl.getAttribute('data-full') || '';
+                        textEl.textContent = full.length > 160 ? full.slice(0, 160) + '…' : full;
+                        btn.textContent = 'Show full';
+                    }
+                });
             });
 
             function showToast(msg, type) {

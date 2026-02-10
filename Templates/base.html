@@ -1,5 +1,6 @@
 {% load static %}
 <html class="scroll-smooth">
+
 <head>
     <title>{% block title %}SkinCraft Ayurveda{% endblock %}</title>
     <link
@@ -77,7 +78,8 @@
                                     </div>
                                     <div>
                                         <span
-                                            class="block text-sm font-bold text-gray-700 group-hover/item:text-ayur-dark">All Products</span>
+                                            class="block text-sm font-bold text-gray-700 group-hover/item:text-ayur-dark">All
+                                            Products</span>
                                         <span class="block text-[10px] text-gray-400">Complete Collection</span>
                                     </div>
                                 </a>
@@ -203,7 +205,7 @@
                     <a href="{% url 'cart_view' %}"
                         class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-ayur-light text-ayur-dark transition-all relative group">
                         <i class="fa-solid fa-basket-shopping transition-transform group-hover:-translate-y-1"></i>
-                        <span
+                        <span id="cartCount"
                             class="absolute top-0 right-0 bg-ayur-gold text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold border-2 border-white shadow-sm">{{ cart_count }}</span>
                     </a>
 
@@ -212,7 +214,7 @@
                         <div class="relative group h-full flex items-center z-50">
 
                             <button class="flex items-center gap-3 focus:outline-none transition-all duration-300">
-                                {% if user.profile_image and user.profile_image.url %}
+                                {% if user.profile_image and user.profile_image.url != '/media/default.jpg' %}
                                 <div
                                     class="w-9 h-9 rounded-full border-2 border-ayur-gold/20 p-[1px] group-hover:border-ayur-gold transition-colors">
                                     <img src="{{ user.profile_image.url }}"
@@ -415,6 +417,10 @@
                                 Policy</a>
                         </li>
                         <li>
+                            <a href="{% url 'terms_conditions' %}" class="hover:text-white transition-colors">Terms &
+                                Conditions</a>
+                        </li>
+                        <li>
                             <a href="{% url 'privacy_policy' %}" class="hover:text-white transition-colors">Privacy
                                 Policy</a>
                         </li>
@@ -424,7 +430,8 @@
                     <h4 class="font-serif font-bold text-lg mb-4 text-ayur-gold">Contact</h4>
                     <ul class="space-y-4 text-sm text-gray-400">
                         <li class="flex items-start gap-3">
-                            <i class="fa-solid fa-location-dot mt-1 text-ayur-gold"></i><span>Surbhi The Royaltown, Pasodara patia,<br />Kamrej Road, Surat-394185</span>
+                            <i class="fa-solid fa-location-dot mt-1 text-ayur-gold"></i><span>Surbhi The Royaltown,
+                                Pasodara patia,<br />Kamrej Road, Surat-394185</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i class="fa-solid fa-envelope text-ayur-gold"></i><span>support@skincraft.com</span>

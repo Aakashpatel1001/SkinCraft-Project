@@ -53,7 +53,7 @@
           <a href="{% url 'product' %}"
             class="px-8 py-4 bg-ayur-gold text-ayur-dark font-semibold rounded-full hover:bg-white transition-all shadow-lg">Explore
             Remedies</a>
-          <a href="#about"
+          <a href="{% url 'about' %}"
             class="px-8 py-4 border border-white text-white font-semibold rounded-full hover:bg-white hover:text-ayur-dark transition-all">Our
             Philosophy</a>
         </div>
@@ -202,7 +202,9 @@
             <div class="mt-auto">
               <div class="flex items-baseline justify-between mb-4">
                 <span class="text-lg font-bold text-ayur-dark bg-ayur-light/40 px-2 py-1 rounded-md">₹<span>{{ product.get_starting_price }}</span></span>
-                <span class="text-xs text-green-700 font-bold uppercase tracking-tighter bg-green-100 px-2 py-1 rounded-md">In Stock</span>
+                <span
+                  class="text-xs text-green-700 font-bold uppercase tracking-tighter bg-green-100 px-2 py-1 rounded-md">In
+                  Stock</span>
               </div>
 
               <div class="flex gap-2">
@@ -319,21 +321,26 @@
                     Your Dosha is your unique energy footprint. Vata is air (dry), Pitta is fire (sensitive), and Kapha
                     is earth (oily).
                   </p>
-                  <a href="{% if herbal_oil_product %}{% url 'product_detail' herbal_oil_product.id %}{% else %}{% url 'product' %}?search=herbal+oil{% endif %}" 
+                  <a href="{% if herbal_oil_product %}{% url 'product_detail' herbal_oil_product.id %}{% else %}{% url 'product' %}?search=herbal+oil{% endif %}"
                     class="bg-[#FDFBF7] p-3 rounded-lg border border-[#D4AF37]/20 flex items-center gap-4 relative overflow-hidden group/card cursor-pointer hover:border-[#D4AF37] transition-all hover:shadow-lg">
                     <div
                       class="absolute right-0 top-0 w-16 h-16 bg-[#D4AF37]/10 rounded-bl-full transition-transform group-hover/card:scale-150 duration-500">
                     </div>
-                    <div class="w-12 h-12 bg-white rounded-md flex items-center justify-center shadow-sm text-2xl group-hover/card:scale-110 transition-transform">
-                      <img src="{% static 'images/product1/Herbal Oil.png' %}" alt="Herbal Oil" class="w-8 h-8 object-contain">
+                    <div
+                      class="w-12 h-12 bg-white rounded-md flex items-center justify-center shadow-sm text-2xl group-hover/card:scale-110 transition-transform">
+                      <img src="{% static 'images/product1/Herbal Oil.png' %}" alt="Herbal Oil"
+                        class="w-8 h-8 object-contain">
                     </div>
                     <div class="flex-grow z-10">
-                      <h4 class="font-serif text-[#1A3C34] font-bold text-sm group-hover/card:text-[#D4AF37] transition-colors">SkinCraft Herbal Oil</h4>
+                      <h4
+                        class="font-serif text-[#1A3C34] font-bold text-sm group-hover/card:text-[#D4AF37] transition-colors">
+                        SkinCraft Herbal Oil</h4>
                       <p class="text-[10px] text-gray-400 uppercase tracking-wider">Ayurvedic Formula</p>
                     </div>
                     <div class="z-10">
                       <span class="text-[1.1rem] font-bold text-[#1A3C34]">₹<span>{% if herbal_oil_product %}{{ herbal_oil_product.get_starting_price }}{% else %}499{% endif %}</span></span>
-                      <i class="fa-solid fa-arrow-right text-[#D4AF37] ml-2 text-xs group-hover/card:translate-x-1 transition-transform"></i>
+                      <i
+                        class="fa-solid fa-arrow-right text-[#D4AF37] ml-2 text-xs group-hover/card:translate-x-1 transition-transform"></i>
                     </div>
                   </a>
                 </div>
@@ -727,11 +734,15 @@
       },
       body: `variant_id=${variantId}`
     })
-      .then(res => {
-        if (!res.ok) throw new Error('Server ritual failed');
-        return res.json();
-      })
-      .then(data => {
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (data.status === 'auth_required' && data.redirect_url) {
+          window.location.href = data.redirect_url;
+          return;
+        }
+        if (!ok || data.status !== 'success') {
+          throw new Error(data.message || 'Server ritual failed');
+        }
         if (data.status === 'success') {
           button.innerHTML = '<i class="fa-solid fa-check mr-1 text-emerald-500"></i> Added';
           // Update all cart counters on page
@@ -742,8 +753,6 @@
             button.innerHTML = originalContent;
             button.disabled = false;
           }, 2000);
-        } else {
-          throw new Error('Logic error');
         }
       })
       .catch(err => {
@@ -769,15 +778,20 @@
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
       body: formData
     })
-      .then(res => res.json())
-      .then(data => {
+      .then(res => res.json().then(data => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (data.status === 'auth_required' && data.redirect_url) {
+          window.location.href = data.redirect_url;
+          return;
+        }
+        if (!ok || data.status !== 'success') {
+          throw new Error(data.message || 'Unable to add item.');
+        }
         if (data.status === 'success') {
           window.location.href = "{% url 'checkout' %}";
-        } else {
-          alert("Error: " + data.message);
         }
       })
-      .catch(err => console.error("Buy Now Error:", err));
+      .catch(err => alert(err.message || "Error."));
   }
 </script>
 {% endblock %}

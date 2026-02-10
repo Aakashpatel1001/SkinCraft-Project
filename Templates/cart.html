@@ -1,14 +1,108 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    /* Toast Notification Styles */
+    .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 16px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 400px;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+
+    .toast.removing {
+        animation: slideOut 0.3s ease-out;
+    }
+
+    .toast.error {
+        background-color: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FCA5A5;
+    }
+
+    .toast.success {
+        background-color: #DCFCE7;
+        color: #166534;
+        border: 1px solid #86EFAC;
+    }
+
+    .toast.info {
+        background-color: #DBEAFE;
+        color: #0C4A6E;
+        border: 1px solid #7DD3FC;
+    }
+
+    .toast-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .toast-content {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+        .toast {
+            bottom: 16px;
+            right: 16px;
+            left: 16px;
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed bottom-24 right-6 pointer-events-none z-50"></div>
+
+<!-- Hidden Messages for Toast Display -->
+{% if messages %}
+    {% for message in messages %}
+        <div data-message="{{ message }}" data-type="{% if message.tags %}{{ message.tags }}{% endif %}" style="display: none;"></div>
+    {% endfor %}
+{% endif %}
+
 <div class="bg-[#FDFBF7] min-h-screen py-12 font-['Poppins']">
     <div class="max-w-[1200px] mx-auto px-5">
         <h1 class="font-['Playfair_Display'] text-4xl font-bold text-[#1A3C34] mb-10 text-center lg:text-left">Your Ritual Bag</h1>
 
         {% if cart.items.exists %}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div class="lg:col-span-2 space-y-5">
+        <div id="cartContent" class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div id="cartItems" class="lg:col-span-2 space-y-5">
                 {% for item in cart.items.all %}
-                <div class="bg-white rounded-lg p-6 border border-[#E0E0E0] shadow-sm flex items-center gap-6 group hover:shadow-md transition-all">
+                <div class="cart-item bg-white rounded-lg p-6 border border-[#E0E0E0] shadow-sm flex items-center gap-6 group hover:shadow-md transition-all"
+                    data-item-id="{{ item.id }}">
                     <div class="w-24 h-32 bg-[#f9f9f9] rounded flex-shrink-0">
                         <img src="{{ item.product.thumbnail.url }}" class="w-full h-full object-contain p-2">
                     </div>
@@ -16,17 +110,23 @@
                     <div class="flex-grow">
                         <div class="flex justify-between">
                             <h3 class="font-['Playfair_Display'] text-xl font-bold text-[#1A3C34]">{{ item.product.name }}</h3>
-                            <a href="{% url 'delete_cart_item' item.id %}" class="text-stone-300 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></a>
+                            <a href="{% url 'delete_cart_item' item.id %}"
+                                class="cart-action text-stone-300 hover:text-red-500 transition-colors"
+                                data-action="delete"><i class="fas fa-trash-alt"></i></a>
                         </div>
                         <p class="text-[0.75rem] text-[#D4AF37] font-bold uppercase tracking-wider mt-1">{{ item.variant.unit_value }}{{ item.variant.unit_type }} • Batch #{{ item.variant.batch_number }}</p>
                         
                         <div class="flex justify-between items-end mt-6">
                             <div class="flex items-center border border-[#E0E0E0] rounded-md overflow-hidden">
-                                <a href="{% url 'update_cart_quantity' item.id 'minus' %}" class="px-4 py-2 hover:bg-stone-50 text-[#1A3C34]">-</a>
-                                <span class="px-5 py-2 font-bold bg-stone-50 border-x border-[#E0E0E0]">{{ item.quantity }}</span>
-                                <a href="{% url 'update_cart_quantity' item.id 'plus' %}" class="px-4 py-2 hover:bg-stone-50 text-[#1A3C34]">+</a>
+                                <a href="{% url 'update_cart_quantity' item.id 'minus' %}"
+                                    class="cart-action px-4 py-2 hover:bg-stone-50 text-[#1A3C34]"
+                                    data-action="minus">-</a>
+                                <span class="cart-qty px-5 py-2 font-bold bg-stone-50 border-x border-[#E0E0E0]">{{ item.quantity }}</span>
+                                <a href="{% url 'update_cart_quantity' item.id 'plus' %}"
+                                    class="cart-action px-4 py-2 hover:bg-stone-50 text-[#1A3C34]"
+                                    data-action="plus">+</a>
                             </div>
-                            <span class="text-xl font-bold text-[#1A3C34]">₹{{ item.subtotal }}</span>
+                            <span class="cart-subtotal text-xl font-bold text-[#1A3C34]">₹{{ item.subtotal }}</span>
                         </div>
                     </div>
                 </div>
@@ -37,12 +137,12 @@
                 <div class="bg-white p-8 rounded-lg border border-[#E0E0E0] shadow-xl sticky top-24">
                     <h2 class="font-['Playfair_Display'] text-2xl font-bold text-[#1A3C34] mb-6">Investment Summary</h2>
                     <div class="space-y-4 text-sm text-[#777777] border-b border-[#f3f3f3] pb-6">
-                        <div class="flex justify-between"><span>Ritual Value</span><span>₹{{ cart.total_price }}</span></div>
+                        <div class="flex justify-between"><span>Ritual Value</span><span id="cartSubtotal">₹{{ cart.total_price }}</span></div>
                         <div class="flex justify-between"><span class="text-emerald-600">Sanctuary Delivery</span><span class="text-emerald-600">COMPLIMENTARY</span></div>
                     </div>
                     <div class="flex justify-between items-center my-8">
                         <span class="font-bold text-[#1A3C34] uppercase tracking-tighter">Total Balance</span>
-                        <span class="text-3xl font-bold text-[#1A3C34]">₹{{ cart.total_price }}</span>
+                        <span id="cartTotal" class="text-3xl font-bold text-[#1A3C34]">₹{{ cart.total_price }}</span>
                     </div>
                     <a href="{% url 'checkout' %}" class="block w-full bg-[#1A3C34] text-white text-center py-5 rounded-md font-bold uppercase tracking-[3px] text-[0.8rem] hover:bg-[#0e241f] transition-all">Proceed to Checkout</a>
                 </div>
@@ -57,4 +157,105 @@
         {% endif %}
     </div>
 </div>
+
+<template id="emptyCartTemplate">
+    <div class="text-center py-32 bg-white rounded-xl border-2 border-dashed border-stone-200">
+        <i class="fas fa-shopping-bag text-5xl text-stone-100 mb-6"></i>
+        <h2 class="font-['Playfair_Display'] text-3xl text-stone-300">Your Ritual Bag is Empty</h2>
+        <a href="{% url 'product' %}" class="mt-10 inline-block bg-[#1A3C34] text-white px-12 py-4 rounded-full font-bold uppercase tracking-widest text-[0.8rem]">Discover Rituals</a>
+    </div>
+</template>
+
+<script>
+    function showToast(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+            'error': '<i class="fas fa-exclamation-circle toast-icon"></i>',
+            'success': '<i class="fas fa-check-circle toast-icon"></i>',
+            'info': '<i class="fas fa-info-circle toast-icon"></i>'
+        };
+        
+        toast.innerHTML = `
+            ${icons[type] || icons['info']}
+            <div class="toast-content">${message}</div>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // Display Django messages as toasts
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('[data-message]');
+        messages.forEach(msg => {
+            const text = msg.getAttribute('data-message');
+            const type = msg.getAttribute('data-type') || 'info';
+            showToast(text, type);
+        });
+    });
+
+    function updateCartTotals(cartTotal, cartCount) {
+        const total = cartTotal ?? '0';
+        const subtotalEl = document.getElementById('cartSubtotal');
+        const totalEl = document.getElementById('cartTotal');
+        const cartCountEl = document.getElementById('cartCount');
+        if (subtotalEl) subtotalEl.innerHTML = `&#8377;${total}`;
+        if (totalEl) totalEl.innerHTML = `&#8377;${total}`;
+        if (cartCountEl && typeof cartCount !== 'undefined') {
+            cartCountEl.textContent = cartCount;
+        }
+    }
+
+    function handleEmptyCart() {
+        const cartContent = document.getElementById('cartContent');
+        const template = document.getElementById('emptyCartTemplate');
+        if (cartContent && template) {
+            cartContent.replaceWith(template.content.cloneNode(true));
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        const actionEl = event.target.closest('.cart-action');
+        if (!actionEl) return;
+
+        event.preventDefault();
+        const url = actionEl.getAttribute('href');
+        if (!url) return;
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.json().then(data => ({ ok: res.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok || data.status === 'error') {
+                    if (data.message) showToast(data.message, 'error');
+                    return;
+                }
+
+                updateCartTotals(data.cart_total, data.cart_count);
+
+                const itemEl = document.querySelector(`.cart-item[data-item-id="${data.item_id}"]`);
+                if (data.item_removed) {
+                    if (itemEl) itemEl.remove();
+                } else if (itemEl) {
+                    const qtyEl = itemEl.querySelector('.cart-qty');
+                    const subtotalEl = itemEl.querySelector('.cart-subtotal');
+                    if (qtyEl) qtyEl.textContent = data.quantity;
+                    if (subtotalEl) subtotalEl.innerHTML = `&#8377;${data.item_subtotal}`;
+                }
+
+                if (data.cart_empty) {
+                    handleEmptyCart();
+                }
+            })
+            .catch(() => {
+                showToast('Something went wrong. Please try again.', 'error');
+            });
+    });
+</script>
 {% endblock %}

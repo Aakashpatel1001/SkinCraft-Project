@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms & Conditions - SkinCraft Ayurveda{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --color-gold: #D4AF37;
+        --color-dark: #1A2F18;
+        --color-sage: #4A5D4E;
+        --color-cream: #FDFBF7;
+    }
+
+    .terms-hero {
+        background: linear-gradient(rgba(26, 47, 24, 0.85), rgba(26, 47, 24, 0.95)),
+            url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&q=80&w=2000');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .terms-card {
+        border: 1px solid rgba(212, 175, 55, 0.12);
+        transition: all 0.3s ease;
+    }
+
+    .terms-card:hover {
+        border-color: var(--color-gold);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+    }
+
+    .terms-nav-link {
+        display: block;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        color: var(--color-sage);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .terms-nav-link:hover {
+        background: var(--color-cream);
+        color: var(--color-gold);
+        padding-left: 1.5rem;
+    }
+
+    h2 { scroll-margin-top: 100px; }
+</style>
+
+<div class="terms-hero py-24 relative overflow-hidden text-center text-white">
+    <div class="absolute top-10 left-6 lg:left-12">
+        <a href="/" class="flex items-center gap-2 text-white/80 hover:text-ayur-gold transition-colors group">
+            <i class="fa-solid fa-arrow-left-long transition-transform group-hover:-translate-x-1"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Back to Home</span>
+        </a>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <span class="text-ayur-gold font-bold text-xs uppercase tracking-[0.5em] mb-4 block">SkinCraft Promise</span>
+        <h1 class="font-serif text-5xl md:text-7xl font-bold mb-6">Terms & Conditions</h1>
+        <p class="text-white/70 text-lg max-w-2xl mx-auto leading-relaxed">
+            Clear, fair terms to protect your experience and help us deliver authentic Ayurvedic care with confidence.
+        </p>
+        <div class="mt-10 flex justify-center flex-wrap gap-4 text-[9px] font-bold tracking-[0.2em] uppercase">
+            <span class="bg-white/5 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-xl flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-ayur-gold"></i> Trusted Policies
+            </span>
+            <span class="bg-white/5 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-xl flex items-center gap-2">
+                <i class="fa-solid fa-file-circle-check text-ayur-gold"></i> Transparent Terms
+            </span>
+        </div>
+    </div>
+</div>
+
+<section class="bg-white py-20">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row gap-16">
+            <aside class="lg:w-1/4 hidden lg:block sticky top-24 h-fit">
+                <div class="bg-gray-50 p-8 rounded-3xl">
+                    <h4 class="font-serif text-xl mb-6 text-ayur-dark">Quick Navigation</h4>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#acceptance" class="terms-nav-link">1. Acceptance</a>
+                        <a href="#account" class="terms-nav-link">2. Account & Access</a>
+                        <a href="#orders" class="terms-nav-link">3. Orders & Payments</a>
+                        <a href="#shipping" class="terms-nav-link">4. Shipping & Returns</a>
+                        <a href="#use" class="terms-nav-link">5. Acceptable Use</a>
+                        <a href="#liability" class="terms-nav-link">6. Liability</a>
+                        <a href="#contact" class="terms-nav-link">7. Contact</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="lg:w-3/4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                    <div class="terms-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-bag-shopping text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Fair Commerce</h4>
+                        <p class="text-xs text-gray-500">Transparent pricing, secure payments, and clear order handling.</p>
+                    </div>
+                    <div class="terms-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-rotate-left text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Returns Covered</h4>
+                        <p class="text-xs text-gray-500">Returns follow policy rules for quick resolution.</p>
+                    </div>
+                    <div class="terms-card p-8 rounded-3xl bg-[#FDFBF7]">
+                        <i class="fa-solid fa-user-shield text-ayur-gold text-2xl mb-4"></i>
+                        <h4 class="font-bold text-ayur-dark mb-2">Protected Access</h4>
+                        <p class="text-xs text-gray-500">Your account and data are handled with care and security.</p>
+                    </div>
+                </div>
+
+                <div class="prose prose-stone max-w-none">
+                    <h2 id="acceptance" class="font-serif text-3xl text-ayur-dark mb-6">1. Acceptance of Terms</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        By accessing or using SkinCraft, you agree to these Terms & Conditions. If you do not agree, please do not use the site.
+                    </p>
+
+                    <h2 id="account" class="font-serif text-3xl text-ayur-dark mb-6">2. Account & Access</h2>
+                    <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+                        <ul class="space-y-4">
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">01</span>
+                                <span class="text-gray-600">You are responsible for keeping your login details secure.</span>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">02</span>
+                                <span class="text-gray-600">Provide accurate information to ensure smooth delivery and support.</span>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">03</span>
+                                <span class="text-gray-600">We may suspend accounts that violate policies or misuse services.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h2 id="orders" class="font-serif text-3xl text-ayur-dark mb-6">3. Orders & Payments</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Orders are confirmed once payment is successful or COD is verified. Prices may change without prior notice, but confirmed orders are honored at the agreed price.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                        <div class="bg-[#FDFBF7] p-6 rounded-2xl border border-gray-100">
+                            <h4 class="font-semibold text-ayur-dark mb-3">Payment Methods</h4>
+                            <p class="text-sm text-gray-600">Online (UPI/Card/Wallets) and Cash on Delivery where available.</p>
+                        </div>
+                        <div class="bg-[#FDFBF7] p-6 rounded-2xl border border-gray-100">
+                            <h4 class="font-semibold text-ayur-dark mb-3">Invoice</h4>
+                            <p class="text-sm text-gray-600">Invoices are emailed after order confirmation.</p>
+                        </div>
+                    </div>
+
+                    <h2 id="shipping" class="font-serif text-3xl text-ayur-dark mb-6">4. Shipping & Returns</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Shipping timelines are estimates. Returns are accepted as per our published return policy.
+                    </p>
+                    <div class="bg-gray-50 p-8 rounded-2xl mb-12">
+                        <ul class="space-y-4">
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">01</span>
+                                <span class="text-gray-600">Return requests should be raised within the eligible window.</span>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">02</span>
+                                <span class="text-gray-600">Products must be unused and returned in original condition.</span>
+                            </li>
+                            <li class="flex gap-4">
+                                <span class="w-6 h-6 bg-ayur-gold text-white rounded-full flex items-center justify-center text-[10px] shrink-0">03</span>
+                                <span class="text-gray-600">Refunds are processed after inspection and approval.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h2 id="use" class="font-serif text-3xl text-ayur-dark mb-6">5. Acceptable Use</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        You agree not to misuse the site, attempt unauthorized access, or disrupt services. Content is protected by intellectual property rights.
+                    </p>
+
+                    <h2 id="liability" class="font-serif text-3xl text-ayur-dark mb-6">6. Limitation of Liability</h2>
+                    <p class="text-gray-600 mb-12 leading-relaxed">
+                        SkinCraft is not liable for indirect losses or damages arising from use of the site. We strive to provide accurate information but cannot guarantee uninterrupted access.
+                    </p>
+
+                    <h2 id="contact" class="font-serif text-3xl text-ayur-dark mb-6">7. Contact Us</h2>
+                    <p class="text-gray-600 mb-4 leading-relaxed">
+                        For questions about these terms, reach out to us at <strong>support@skincraft.com</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

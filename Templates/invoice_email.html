@@ -146,16 +146,26 @@
                                             <table width="100%" cellpadding="0" cellspacing="0">
                                                 <tr>
                                                     <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Subtotal:</td>
-                                                    <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹{{ order.total_amount|floatformat:2 }}</td>
+                                                    <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹{{ subtotal|floatformat:2 }}</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Tax (0%):</td>
                                                     <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹0.00</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Shipping:</td>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Delivery Charges:</td>
+                                                    {% if order.delivery_fee and order.delivery_fee > 0 %}
+                                                    <td style="font-size: 13px; font-weight: 600; color: #1f2937; text-align: right; padding: 5px 0;">₹{{ order.delivery_fee|floatformat:2 }}</td>
+                                                    {% else %}
                                                     <td style="font-size: 13px; font-weight: 600; color: #16a34a; text-align: right; padding: 5px 0;">FREE</td>
+                                                    {% endif %}
                                                 </tr>
+                                                {% if order.discount_amount and order.discount_amount > 0 %}
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #4b5563; padding: 5px 0;">Coupon Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}:</td>
+                                                    <td style="font-size: 13px; font-weight: 600; color: #16a34a; text-align: right; padding: 5px 0;">-₹{{ order.discount_amount|floatformat:2 }}</td>
+                                                </tr>
+                                                {% endif %}
                                                 <tr>
                                                     <td colspan="2" style="padding: 10px 0; border-top: 2px solid #d1d5db;"></td>
                                                 </tr>
@@ -209,3 +219,5 @@
     </table>
 </body>
 </html>
+
+

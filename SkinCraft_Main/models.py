@@ -47,6 +47,19 @@ class Address(models.Model):
         return f"{self.address_type}: {self.street_address}, {self.city}"
 
 
+class BankDetails(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bank_details')
+    account_holder_name = models.CharField(max_length=200)
+    account_number = models.CharField(max_length=50)
+    ifsc_code = models.CharField(max_length=20)
+    bank_name = models.CharField(max_length=200)
+    upi_id = models.CharField(max_length=100, blank=True, null=True, help_text='Optional: UPI ID for faster refunds')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bank Details for {self.user}"
+
+
 class DeliveryProfile(models.Model):
     VEHICLE_CHOICES = [
         ('Bike', 'Bike'),
@@ -112,6 +125,23 @@ class Delivery(models.Model):
         return f"Delivery for Order {self.order.order_number} - {self.status}"
 
 
+class DeliveryPartnerReview(models.Model):
+    RATING_CHOICES = [(i, f"{i} Star") for i in range(1, 6)]
+
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='delivery_review')
+    delivery_partner = models.ForeignKey(DeliveryProfile, on_delete=models.CASCADE, related_name='reviews')
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery_reviews')
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.delivery_partner.user.username} - {self.rating}"
+
+
 class DeliveryHelpDeskTicket(models.Model):
     REASON_CHOICES = [
         ('Customer Not Available', 'Customer Not Available'),
@@ -130,6 +160,15 @@ class DeliveryHelpDeskTicket(models.Model):
     reason = models.CharField(max_length=50, choices=REASON_CHOICES)
     remarks = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    admin_reply = models.TextField(blank=True, null=True)
+    replied_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='helpdesk_replies'
+    )
+    replied_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -175,9 +214,35 @@ class Order(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     zip_code = models.CharField(max_length=10, blank=True, null=True)
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    coupon_code = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return self.order_number
+
+
+class Coupon(models.Model):
+    DISCOUNT_TYPE_CHOICES = (
+        ('Flat', 'Flat'),
+        ('Percent', 'Percent'),
+    )
+ 
+    code = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=200, blank=True, null=True)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, default='Flat')
+    value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return self.code
 
 class ContactMessage(models.Model):
     SUBJECT_CHOICES = [
@@ -258,6 +323,11 @@ class Product(models.Model):
         from django.db.models import Avg
         avg = self.reviews.aggregate(Avg('rating'))['rating__avg']
         return round(avg, 1) if avg else 0
+
+    @property
+    def first_available_variant(self):
+        """Returns the first variant with stock > 0, or the first variant if all OOS"""
+        return self.variants.filter(stock__gt=0).first() or self.variants.first()
 
 # 4. PRODUCT IMAGES (GALLERY)
 class ProductImage(models.Model):
@@ -443,9 +513,8 @@ class Return(models.Model):
     def __str__(self):
         return f"Return Request - {self.order.order_number} ({self.status})"
 
-
 class Payment(models.Model):
-    """Store all payment details for orders and refunds (COD and Online)"""
+    """Store payment details for orders (COD and Online)"""
     PAYMENT_METHOD_CHOICES = (
         ('COD', 'Cash on Delivery'),
         ('Razorpay', 'Razorpay'),
@@ -456,18 +525,10 @@ class Payment(models.Model):
         ('Pending', 'Pending'),
         ('Completed', 'Completed'),
         ('Failed', 'Failed'),
-        ('Refunded', 'Refunded'),
-    )
-    
-    TYPE_CHOICES = (
-        ('Order', 'Order Payment'),
-        ('Refund', 'Refund Payment'),
     )
     
     # Core Fields
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
-    return_request = models.OneToOneField(Return, on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
-    payment_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='Order')
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending')
@@ -476,16 +537,6 @@ class Payment(models.Model):
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_signature = models.CharField(max_length=200, blank=True, null=True)
-    
-    # For COD Bank Details (Refunds)
-    account_holder_name = models.CharField(max_length=200, blank=True, null=True)
-    account_number = models.CharField(max_length=50, blank=True, null=True)
-    ifsc_code = models.CharField(max_length=20, blank=True, null=True)
-    bank_name = models.CharField(max_length=200, blank=True, null=True)
-    upi_id = models.CharField(max_length=100, blank=True, null=True, help_text='Optional: UPI ID for faster refund')
-    
-    # Collection Info
-    collected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments_collected')
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -498,7 +549,40 @@ class Payment(models.Model):
         verbose_name_plural = 'Payments'
     
     def __str__(self):
-        return f"{self.get_payment_type_display()} - {self.order.order_number} - {self.get_status_display()}"
+        return f"{self.order.order_number} - {self.get_status_display()}"
+
+
+class Refund(models.Model):
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Processed', 'Processed'),
+        ('Failed', 'Failed'),
+    )
+
+    refund_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='refunds')
+    return_request = models.OneToOneField(Return, on_delete=models.CASCADE, related_name='refund_record', null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    damage_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Processed')
+    processed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='refunds_processed')
+    processed_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        ref = self.refund_id or f"#{self.id}"
+        return f"Refund {ref} - {self.order.order_number} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        super().save(*args, **kwargs)
+        if creating and not self.refund_id:
+            self.refund_id = f"REF-{self.pk:06d}"
+            super().save(update_fields=['refund_id'])
 
 
 class SalaryPayment(models.Model):

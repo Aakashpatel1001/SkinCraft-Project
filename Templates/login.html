@@ -65,7 +65,7 @@
             <div>
                 <div class="flex justify-between items-center mb-1">
                     <label class="block text-xs font-bold uppercase text-gray-700 tracking-wide">Password</label>
-                    <a href="#" class="text-xs text-[#2D5A27] hover:underline font-medium">Forgot Password?</a>
+                    <a href="{% url 'forgot_password' %}" class="text-xs text-[#2D5A27] hover:underline font-medium">Forgot Password?</a>
                 </div>
                 <div class="relative">
                     <span class="absolute left-4 top-3 text-gray-400"><i class="fa-solid fa-lock"></i></span>
@@ -81,23 +81,6 @@
                 Sign In <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
             </button>
         </form>
-
-        <div class="my-5 flex items-center gap-4">
-            <div class="h-px bg-gray-100 flex-1"></div>
-            <span class="text-[10px] text-gray-500 uppercase tracking-wider">Or continue with</span>
-            <div class="h-px bg-gray-100 flex-1"></div>
-        </div>
-
-        <div class="flex gap-3">
-            <button class="flex-1 py-2.5 border border-gray-200 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" class="w-4 h-4" alt="Google">
-                <span class="text-xs font-bold text-gray-600">Google</span>
-            </button>
-            <button class="flex-1 py-2.5 border border-gray-200 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors">
-                <i class="fa-brands fa-apple text-lg"></i>
-                <span class="text-xs font-bold text-gray-600">Apple</span>
-            </button>
-        </div>
 
         <div class="mt-8 text-center border-t border-gray-50 pt-6">
             <p class="text-gray-500 text-sm">

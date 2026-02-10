@@ -130,8 +130,15 @@ function moveToBag(productId) {
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: formData
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+        if (data.status === 'auth_required' && data.redirect_url) {
+            window.location.href = data.redirect_url;
+            return;
+        }
+        if (!ok || data.status !== 'success') {
+            throw new Error(data.message || 'Unable to add item.');
+        }
         if (data.status === 'success') {
             // Update cart count
             const cartBadge = document.getElementById('cart-count');
@@ -141,7 +148,7 @@ function moveToBag(productId) {
             removeFromSanctuary(productId);
         }
     })
-    .catch(err => console.error("Error:", err));
+    .catch(err => alert(err.message || "Error."));
 }
 </script>
 {% endblock %}

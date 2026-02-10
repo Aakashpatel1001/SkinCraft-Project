@@ -75,6 +75,7 @@
         opacity: 1 !important;
         pointer-events: auto !important;
     }
+
 </style>
 {% endblock %}
 
@@ -140,6 +141,10 @@
                             class="nav-btn w-full text-left px-4 py-3 flex items-center gap-3">
                             <i class="fa-solid fa-box-open w-5 text-center"></i> My Orders
                         </button>
+                        <button onclick="switchTab('bank')" id="btn-bank"
+                            class="nav-btn w-full text-left px-4 py-3 flex items-center gap-3">
+                            <i class="fa-solid fa-building-columns w-5 text-center"></i> Bank Details
+                        </button>
                         <button onclick="switchTab('address')" id="btn-address"
                             class="nav-btn w-full text-left px-4 py-3 flex items-center gap-3">
                             <i class="fa-solid fa-map-location-dot w-5 text-center"></i> Addresses
@@ -154,6 +159,7 @@
                             <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> Logout
                         </a>
                     </nav>
+
                 </div>
             </div>
 
@@ -425,12 +431,32 @@
                                 </div>
 
                                 <!-- Action Buttons -->
-                                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-center gap-3">
+                                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-center gap-3 flex-wrap">
+                                    {% if order.status in 'Pending,Shipped' %}
+                                    <form method="POST" action="{% url 'cancel_order' order.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.');">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="px-6 py-2 bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-600 transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
+                                            <i class="fa-solid fa-times-circle"></i> Cancel Order
+                                        </button>
+                                    </form>
+                                    {% endif %}
                                     {% if order.status == 'Delivered' %}
                                     <button onclick="openReviewModal({{ order.id }})"
                                         class="px-6 py-2 bg-ayur-primary text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-ayur-dark transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
                                         <i class="fa-solid fa-star"></i> Review
                                     </button>
+                                    {% if order.assigned_to and order.assigned_to.delivery_profile %}
+                                    <button
+                                        onclick="openDeliveryReviewModal(this)"
+                                        data-order-id="{{ order.id }}"
+                                        data-partner="{{ order.assigned_to.get_full_name|default:order.assigned_to.username }}"
+                                        data-rating="{{ order.delivery_partner_review.rating|default:'' }}"
+                                        data-comment="{{ order.delivery_partner_review.comment|default:''|escapejs }}"
+                                        class="px-6 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-black transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
+                                        <i class="fa-solid fa-truck"></i> Rate Delivery
+                                    </button>
+                                    {% endif %}
                                     {% if not order.return_request %}
                                     <button onclick="openReturnModal({{ order.id }}, '{{ order.order_number }}')"
                                         class="px-6 py-2 bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-600 transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
@@ -449,57 +475,76 @@
                                         </span>
                                         
                                         {% if order.return_request.status == 'Completed' %}
-                                        <div class="mt-2 pt-2 border-t border-green-200">
-                                            <p class="text-green-900 font-bold text-xs mb-1">
-                                                <i class="fa-solid fa-box-open"></i> Pickup Completed
-                                            </p>
-                                            <p class="text-green-800 text-xs">
-                                                <i class="fa-solid fa-calendar-check"></i> {{ order.return_request.picked_up_at|date:"M d, Y - h:i A" }}
-                                            </p>
-                                            <p class="text-green-700 text-xs mt-1">
-                                                <i class="fa-solid fa-user-check"></i> By: {{ order.return_request.assigned_to.get_full_name }}
-                                            </p>
-                                            
-                                            {% with refund_payment=order.return_request.payment %}
-                                            {% if refund_payment %}
-                                                {% if refund_payment.status == 'Completed' %}
-                                                <div class="mt-2 bg-green-100 border-2 border-green-400 p-3 rounded-lg">
-                                                    <p class="text-green-900 font-bold text-xs mb-1 flex items-center gap-2">
-                                                        <i class="fa-solid fa-check-double"></i> REFUND COMPLETED
+                                        <div class="mt-2">
+                                            <button type="button" onclick="openRefundStatusModal({{ order.id }}, 'refund')"
+                                                class="px-4 py-2 bg-white border border-green-300 text-green-800 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-green-50 transition-all flex items-center gap-2">
+                                                <i class="fa-solid fa-receipt"></i> Refund Status
+                                            </button>
+
+                                            {% with refund_record=order.return_request.refund_record %}
+                                            <div id="refund-status-{{ order.id }}" class="hidden">
+                                                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                                                    <p class="text-green-900 font-bold text-xs mb-1">
+                                                        <i class="fa-solid fa-box-open"></i> Pickup Completed
                                                     </p>
-                                                    <p class="text-green-800 text-xs font-semibold">
-                                                        <i class="fa-solid fa-money-bill-wave"></i> Amount: ₹{{ refund_payment.amount }}
+                                                    <p class="text-green-800 text-xs">
+                                                        <i class="fa-solid fa-calendar-check"></i> {{ order.return_request.picked_up_at|date:"M d, Y - h:i A" }}
                                                     </p>
                                                     <p class="text-green-700 text-xs mt-1">
-                                                        <i class="fa-solid fa-university"></i> 
-                                                        {% if refund_payment.account_number %}
-                                                            Transferred to: ****{{ refund_payment.account_number|slice:"-4:" }}
-                                                        {% else %}
-                                                            Refunded to: {{ order.payment_method }}
-                                                        {% endif %}
-                                                    </p>
-                                                    <p class="text-green-600 text-xs mt-2 italic">
-                                                        <i class="fa-solid fa-info-circle"></i> Refund should reflect in 3-5 business days
+                                                        <i class="fa-solid fa-user-check"></i> By: {{ order.return_request.assigned_to.get_full_name }}
                                                     </p>
                                                 </div>
-                                                {% else %}
-                                                <div class="mt-2 bg-amber-50 border border-amber-300 p-2 rounded">
-                                                    <p class="text-amber-900 font-bold text-xs mb-1">
-                                                        <i class="fa-solid fa-clock"></i> REFUND STATUS: {{ refund_payment.status }}
+                                                {% if refund_record %}
+                                                <div class="bg-green-100 border-2 border-green-400 p-3 rounded-lg">
+                                                    <p class="text-green-900 font-bold text-xs mb-1 flex items-center gap-2">
+                                                        <i class="fa-solid fa-check-double"></i> REFUND {{ refund_record.status|upper }}
                                                     </p>
-                                                    <p class="text-amber-800 text-xs">
-                                                        <i class="fa-solid fa-money-bill-wave"></i> Amount: ₹{{ refund_payment.amount }}
+                                                    <p class="text-green-800 text-xs font-semibold">
+                                                        <i class="fa-solid fa-money-bill-wave"></i> Amount: &#8377;{{ refund_record.amount }}
+                                                    </p>
+                                                    <p class="text-green-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-info-circle"></i> Processed: {{ refund_record.processed_at|default:"Pending" }}
+                                                    </p>
+                                                    <p class="text-green-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-user-shield"></i> Refunded By: {{ refund_record.processed_by.get_full_name|default:refund_record.processed_by.username|default:"Admin" }}
+                                                    </p>
+                                                    <p class="text-green-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-credit-card"></i> Method: {{ order.payment_method|default:"COD" }}
+                                                    </p>
+                                                    {% if order.payment_method == 'Razorpay' and order.razorpay_payment_id %}
+                                                    <p class="text-green-700 text-xs mt-1">
+                                                        <i class="fa-solid fa-receipt"></i> Payment ID: {{ order.razorpay_payment_id }}
+                                                    </p>
+                                                    {% elif order.payment_method == 'COD' %}
+                                                    {% if order.user and order.user.bank_details %}
+                                                    <div class="mt-2 bg-white border border-green-200 rounded-lg p-2 text-xs text-green-800">
+                                                        <div class="font-semibold mb-1"><i class="fa-solid fa-building-columns"></i> Bank Transfer Details</div>
+                                                        <div>Account Holder: {{ order.user.bank_details.account_holder_name }}</div>
+                                                        <div>Bank: {{ order.user.bank_details.bank_name }}</div>
+                                                        <div>Account: ****{{ order.user.bank_details.account_number|slice:"-4:" }}</div>
+                                                        <div>IFSC: {{ order.user.bank_details.ifsc_code }}</div>
+                                                        {% if order.user.bank_details.upi_id %}
+                                                        <div>UPI: {{ order.user.bank_details.upi_id }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% else %}
+                                                    <p class="text-amber-700 text-xs mt-2">
+                                                        <i class="fa-solid fa-info-circle"></i> Bank details not available.
+                                                    </p>
+                                                    {% endif %}
+                                                    {% endif %}
+                                                </div>
+                                                {% else %}
+                                                <div class="bg-amber-50 border border-amber-300 p-2 rounded">
+                                                    <p class="text-amber-900 font-bold text-xs mb-1">
+                                                        <i class="fa-solid fa-clock"></i> REFUND STATUS: Pending
                                                     </p>
                                                     <p class="text-amber-700 text-xs mt-1">
-                                                        <i class="fa-solid fa-info-circle"></i> Refund processing in progress
+                                                        <i class="fa-solid fa-info-circle"></i> Refund will be processed soon.
                                                     </p>
                                                 </div>
                                                 {% endif %}
-                                            {% else %}
-                                            <p class="text-green-600 text-xs mt-2 bg-green-50 p-2 rounded">
-                                                <i class="fa-solid fa-info-circle"></i> Refund will be processed within 5-7 business days
-                                            </p>
-                                            {% endif %}
+                                            </div>
                                             {% endwith %}
                                         </div>
                                         
@@ -529,6 +574,46 @@
                                         {% endif %}
                                     </div>
                                     {% endif %}
+
+                                    {% if order.status == 'Cancelled' %}
+                                    <div class="w-full bg-red-50 border border-red-200 rounded-xl p-4 text-xs font-semibold text-red-900">
+                                        <div class="flex items-center justify-between gap-3 flex-wrap">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fa-solid fa-circle-xmark"></i> Order Cancelled
+                                            </div>
+                                            {% if order.payment_status == 'Paid' or order.payment_status == 'Refunded' %}
+                                            <button type="button" onclick="openRefundStatusModal({{ order.id }}, 'cancel')"
+                                                class="px-3 py-2 bg-white border border-red-300 text-red-800 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-red-50 transition-all flex items-center gap-2">
+                                                <i class="fa-solid fa-receipt"></i> Refund Status
+                                            </button>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if order.payment_status == 'Paid' or order.payment_status == 'Refunded' %}
+                                        <div id="cancel-refund-status-{{ order.id }}" class="hidden mt-3 bg-white border border-red-200 rounded-lg p-3 text-[11px] text-gray-700">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                <div>Product Total: <span class="font-bold text-gray-900">&#8377;{{ order.product_total|floatformat:2 }}</span></div>
+                                                <div>Delivery Charges: <span class="font-bold text-gray-900">&#8377;{{ order.delivery_fee|default:0|floatformat:2 }}</span></div>
+                                                {% if order.discount_amount and order.discount_amount > 0 %}
+                                                <div>Coupon Discount: <span class="font-bold text-red-600">-&#8377;{{ order.discount_amount|floatformat:2 }}</span></div>
+                                                {% endif %}
+                                                <div class="md:col-span-2 text-green-700">
+                                                    Refund Amount: <span class="font-bold">&#8377;{{ order.refund_amount|floatformat:2 }}</span>
+                                                </div>
+                                                <div>Payment Method: <span class="font-bold text-gray-900">{{ order.payment_method|default:"Online" }}</span></div>
+                                                {% if order.razorpay_payment_id %}
+                                                <div>Payment ID: <span class="font-bold text-gray-900">{{ order.razorpay_payment_id }}</span></div>
+                                                {% endif %}
+                                                <div>Refund Status: <span class="font-bold text-gray-900">{{ order.payment_status }}</span></div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <div class="mt-2 text-red-700">
+                                            Payment was not completed. No refund is applicable.
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
                                     <a href="{% url 'invoice_view' order.id %}" target="_blank"
                                         class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm hover:shadow-md">
                                         <i class="fa-solid fa-file-invoice"></i> Invoice
@@ -552,6 +637,43 @@
                         </a>
                     </div>
                     {% endif %}
+                </div>
+
+                <div id="tab-bank" class="tab-content bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                        <div>
+                            <h3 class="font-serif text-2xl text-ayur-dark font-bold">Bank Details</h3>
+                            <p class="text-xs text-gray-500 mt-1">Add bank details for COD refund during returns.</p>
+                        </div>
+                    </div>
+                    <form method="POST" class="space-y-4 max-w-xl">
+                        {% csrf_token %}
+                        <input type="hidden" name="save_bank_details" value="1">
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-user"></i></span>
+                            {{ bank_form.account_holder_name }}
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-building-columns"></i></span>
+                            {{ bank_form.bank_name }}
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-hashtag"></i></span>
+                            {{ bank_form.account_number }}
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-code"></i></span>
+                            {{ bank_form.ifsc_code }}
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-qrcode"></i></span>
+                            {{ bank_form.upi_id }}
+                        </div>
+                        <button type="submit"
+                            class="bg-ayur-dark text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-ayur-primary transition-all">
+                            Save Details
+                        </button>
+                    </form>
                 </div>
 
                 <div id="tab-address" class="tab-content bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -651,7 +773,7 @@
                             {% if edit_address_id %}Edit Address{% else %}Add New Address{% endif %}
                         </h4>
 
-                        <form method="POST" class="space-y-6">
+                        <form method="POST" class="space-y-6" id="addressForm">
                             {% csrf_token %}
                             <input type="hidden" name="add_address" value="1">
                             {% if edit_address_id %}<input type="hidden" name="address_id"
@@ -686,23 +808,24 @@
                                 <div>
                                     <label
                                         class="block text-xs font-bold uppercase text-gray-600 mb-2 tracking-wider">City</label>
-                                    <input type="text" name="city" required class="custom-input" placeholder="City"
-                                        value="{{ address_form.city.value|default:'' }}">
+                                    <input type="text" name="city" id="address-city" required class="custom-input" placeholder="City"
+                                        value="{{ address_form.city.value|default:'Surat' }}" readonly>
                                 </div>
 
                                 <div>
                                     <label
                                         class="block text-xs font-bold uppercase text-gray-600 mb-2 tracking-wider">State</label>
-                                    <input type="text" name="state" required class="custom-input" placeholder="State"
-                                        value="{{ address_form.state.value|default:'' }}">
+                                    <input type="text" name="state" id="address-state" required class="custom-input" placeholder="State"
+                                        value="{{ address_form.state.value|default:'Gujarat' }}" readonly>
                                 </div>
 
                                 <div>
                                     <label
                                         class="block text-xs font-bold uppercase text-gray-600 mb-2 tracking-wider">Zip
                                         Code</label>
-                                    <input type="text" name="zip_code" required class="custom-input"
+                                    <input type="text" name="zip_code" id="address-zip" required class="custom-input"
                                         placeholder="Pincode" value="{{ address_form.zip_code.value|default:'' }}">
+                                    <p id="pincodeStatus" class="mt-2 text-[10px] font-semibold text-stone-400 hidden"></p>
                                 </div>
 
                                 <div class="md:col-span-2">
@@ -845,6 +968,74 @@
     </div>
 </div>
 
+<!-- Delivery Partner Review Modal -->
+<div id="deliveryReviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white">
+            <div class="flex items-center justify-between">
+                <h3 class="font-serif text-2xl font-bold">Rate Your Delivery</h3>
+                <button onclick="closeDeliveryReviewModal()"
+                    class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <p class="text-sm text-white/80 mt-2" id="deliveryReviewPartner"></p>
+        </div>
+
+        <form id="deliveryReviewForm" method="POST" action="{% url 'submit_delivery_partner_review' %}" class="p-6 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="order_id" id="delivery_review_order_id">
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-2 uppercase">Rating</label>
+                <select name="rating" id="delivery_review_rating" required
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-slate-900 bg-white font-medium">
+                    <option value="">Select rating</option>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3">3 - Average</option>
+                    <option value="2">2 - Poor</option>
+                    <option value="1">1 - Very Poor</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-2 uppercase">Your Feedback</label>
+                <textarea name="comment" id="delivery_review_comment" rows="4"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg resize-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/20 outline-none transition-all"
+                    placeholder="Share your delivery experience..."></textarea>
+            </div>
+
+            <div class="mt-8 flex gap-3">
+                <button type="submit"
+                    class="flex-1 bg-slate-900 text-white px-8 py-4 rounded-lg font-bold text-sm uppercase tracking-wider hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Rating
+                </button>
+                <button type="button" onclick="closeDeliveryReviewModal()"
+                    class="flex-1 bg-white border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-bold text-sm uppercase tracking-wider hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-times"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Refund Status Modal -->
+<div id="refundStatusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
+        <div class="sticky top-0 bg-gradient-to-r from-ayur-dark to-ayur-primary p-4 text-white flex items-center justify-between">
+            <h3 class="font-serif text-xl font-bold">Refund Status</h3>
+            <button type="button" onclick="closeRefundStatusModal()"
+                class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 transition-all flex items-center justify-center">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div id="refundStatusContent" class="p-6 text-sm text-gray-700">
+            <!-- Filled dynamically -->
+        </div>
+    </div>
+</div>
+
 <!-- Return Modal -->
 <div id="returnModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -880,15 +1071,6 @@
                     <option value="Changed Mind">Changed Mind</option>
                     <option value="Other">Other</option>
                 </select>
-            </div>
-
-            <!-- Issue Description -->
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
-                    <i class="fa-solid fa-list-check text-red-500 mr-2"></i> Issue Type
-                </label>
-                <input type="text" name="issue" id="returnIssue" placeholder="e.g., Bottle leaking, Wrong quantity, etc." required
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-500 font-medium" />
             </div>
 
             <!-- Additional Details -->
@@ -965,6 +1147,108 @@
         }
     }
 
+    function setPincodeStatus(text, tone) {
+        const statusEl = document.getElementById('pincodeStatus');
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        statusEl.classList.remove('hidden', 'text-red-500', 'text-emerald-600', 'text-stone-400');
+        statusEl.classList.add(tone);
+    }
+
+    function clearPincodeStatus() {
+        const statusEl = document.getElementById('pincodeStatus');
+        if (!statusEl) return;
+        statusEl.textContent = '';
+        statusEl.classList.add('hidden');
+    }
+
+    const FIXED_CITY = 'Surat';
+    const FIXED_STATE = 'Gujarat';
+
+    function isSurat(value) {
+        return (value || '').trim().toLowerCase() === FIXED_CITY.toLowerCase();
+    }
+
+    function setFixedCityState(cityInput, stateInput) {
+        if (cityInput) {
+            cityInput.value = FIXED_CITY;
+            cityInput.readOnly = true;
+        }
+        if (stateInput) {
+            stateInput.value = FIXED_STATE;
+            stateInput.readOnly = true;
+        }
+    }
+
+    function setupPincodeAutofill() {
+        const zipInput = document.getElementById('address-zip');
+        const cityInput = document.getElementById('address-city');
+        const stateInput = document.getElementById('address-state');
+
+        if (!zipInput || !cityInput || !stateInput) return;
+
+        setFixedCityState(cityInput, stateInput);
+
+        let lookupTimeout = null;
+
+        const fetchPincode = (pin) => {
+            setPincodeStatus('Checking pincode...', 'text-stone-400');
+            fetch(`https://api.postalpincode.in/pincode/${pin}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data) || !data[0] || data[0].Status !== 'Success') {
+                        zipInput.dataset.cityAllowed = 'false';
+                        setPincodeStatus('Invalid pincode. Please check and try again.', 'text-red-500');
+                        return;
+                    }
+
+                    const offices = Array.isArray(data[0].PostOffice) ? data[0].PostOffice : [];
+                    if (!offices.length) {
+                        zipInput.dataset.cityAllowed = 'false';
+                        setPincodeStatus('No city found for this pincode.', 'text-red-500');
+                        return;
+                    }
+
+                    const isSuratPin = offices.some(office => {
+                        const district = (office.District || '').trim();
+                        const block = (office.Block || '').trim();
+                        const name = (office.Name || '').trim();
+                        return isSurat(district) || isSurat(block) || isSurat(name);
+                    });
+
+                    setFixedCityState(cityInput, stateInput);
+
+                    if (!isSuratPin) {
+                        zipInput.dataset.cityAllowed = 'false';
+                        setPincodeStatus('We provide only Surat orders. Please use a Surat pincode.', 'text-red-500');
+                        return;
+                    }
+
+                    zipInput.dataset.cityAllowed = 'true';
+                    setPincodeStatus(`Valid pincode`, 'text-emerald-600');
+                })
+                .catch(() => {
+                    zipInput.dataset.cityAllowed = 'unknown';
+                    setFixedCityState(cityInput, stateInput);
+                    setPincodeStatus('Unable to verify pincode. Please try again.', 'text-red-500');
+                });
+        };
+
+        zipInput.addEventListener('input', function() {
+            const pin = (zipInput.value || '').replace(/\D/g, '');
+            if (zipInput.value !== pin) zipInput.value = pin;
+
+            clearTimeout(lookupTimeout);
+            if (pin.length !== 6) {
+                zipInput.dataset.cityAllowed = 'false';
+                clearPincodeStatus();
+                setFixedCityState(cityInput, stateInput);
+                return;
+            }
+            lookupTimeout = setTimeout(() => fetchPincode(pin), 400);
+        });
+    }
+
     // Initialize profile image action button on page load
     document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams(window.location.search);
@@ -1008,6 +1292,30 @@
                 actionBtn.classList.add('hidden');
             }
         }
+
+        setupPincodeAutofill();
+
+        const addressForm = document.getElementById('addressForm');
+        if (addressForm) {
+            addressForm.addEventListener('submit', function(e) {
+                const zipInput = document.getElementById('address-zip');
+                if (!zipInput) return;
+
+                const pin = (zipInput.value || '').trim();
+                const allowed = (zipInput.dataset.cityAllowed || 'unknown').toLowerCase();
+
+                if (!pin || pin.length !== 6) {
+                    e.preventDefault();
+                    setPincodeStatus('We provide only Surat orders. Please enter a valid Surat pincode.', 'text-red-500');
+                    return;
+                }
+
+                if (allowed !== 'true') {
+                    e.preventDefault();
+                    setPincodeStatus('We provide only Surat orders. Please use a Surat address.', 'text-red-500');
+                }
+            });
+        }
     });
 
     function switchTab(tabId) {
@@ -1044,6 +1352,37 @@
             detailsElement.classList.add('hidden');
             chevronElement.style.transform = 'rotate(0deg)';
         }
+    }
+
+    function openRefundStatusModal(orderId, type) {
+        const modal = document.getElementById('refundStatusModal');
+        const content = document.getElementById('refundStatusContent');
+        if (!modal || !content) return;
+
+        const panelId = type === 'cancel' ? 'cancel-refund-status-' + orderId : 'refund-status-' + orderId;
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+
+        content.innerHTML = panel.innerHTML;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRefundStatusModal() {
+        const modal = document.getElementById('refundStatusModal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function toggleBankDetailsForm(orderId) {
+        const panel = document.getElementById('bank-details-form-' + orderId);
+        if (!panel) return;
+        panel.classList.toggle('hidden');
+    }
+
+    function toggleCancelRefundStatus(orderId) {
+        openRefundStatusModal(orderId, 'cancel');
     }
 
     function openReviewModal(orderId) {
@@ -1112,6 +1451,24 @@
         document.getElementById('reviewForm').reset();
     }
 
+    function openDeliveryReviewModal(button) {
+        const orderId = button.getAttribute('data-order-id');
+        const partnerName = button.getAttribute('data-partner') || 'Delivery Partner';
+        const rating = button.getAttribute('data-rating') || '';
+        const comment = button.getAttribute('data-comment') || '';
+
+        document.getElementById('delivery_review_order_id').value = orderId;
+        document.getElementById('deliveryReviewPartner').textContent = `For ${partnerName}`;
+        document.getElementById('delivery_review_rating').value = rating;
+        document.getElementById('delivery_review_comment').value = comment;
+        document.getElementById('deliveryReviewModal').classList.remove('hidden');
+    }
+
+    function closeDeliveryReviewModal() {
+        document.getElementById('deliveryReviewModal').classList.add('hidden');
+        document.getElementById('deliveryReviewForm').reset();
+    }
+
     // Return Modal Functions
     function openReturnModal(orderId, orderNumber) {
         document.getElementById('return_order_id').value = orderId;
@@ -1176,6 +1533,12 @@
     document.getElementById('reviewModal')?.addEventListener('click', function (e) {
         if (e.target === this) {
             closeReviewModal();
+        }
+    });
+
+    document.getElementById('refundStatusModal')?.addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeRefundStatusModal();
         }
     });
 
