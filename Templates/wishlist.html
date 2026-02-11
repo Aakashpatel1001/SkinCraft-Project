@@ -4,6 +4,7 @@
     .wishlist-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
     .wishlist-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
@@ -14,23 +15,26 @@
     <div class="max-w-[1200px] mx-auto px-5">
         <!-- Header -->
         <div class="mb-12">
-            <h1 class="font-['Playfair_Display'] text-4xl font-bold text-[#1A3C34] mb-2">My Ritual <span class="text-[#D4AF37]">Sanctuary</span></h1>
-            <p class="text-[#999] text-sm">{{ wishlist_items.count }} product{{ wishlist_items.count|pluralize }} saved for later</p>
+            <h1 class="font-['Playfair_Display'] text-4xl font-bold text-[#1A3C34] mb-2">My Ritual <span
+                    class="text-[#D4AF37]">Sanctuary</span></h1>
+            <p id="wishlist-count-container" class="text-[#999] text-sm"><span id="wishlist-count">{{ wishlist_count }}</span> product{{ wishlist_count|pluralize }} saved for later</p>
         </div>
 
         {% if wishlist_items %}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {% for item in wishlist_items %}
-            <div id="wishlist-card-{{ item.product.id }}" class="wishlist-card group bg-white rounded-lg border border-gray-100 overflow-hidden flex flex-col h-full relative">
+            <div id="wishlist-card-{{ item.product.id }}"
+                class="wishlist-card group bg-white rounded-lg border border-gray-100 overflow-hidden flex flex-col h-full relative">
                 <!-- Product Image -->
                 <div class="relative h-52 overflow-hidden bg-[#F9F9F9]">
-                    <button onclick="removeFromSanctuary('{{ item.product.id }}')" 
-                            class="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center transition-all text-red-500 hover:bg-red-50">
+                    <button onclick="removeFromSanctuary('{{ item.product.id }}')"
+                        class="absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-white/90 backdrop-blur shadow-sm flex items-center justify-center transition-all text-red-500 hover:bg-red-50">
                         <i class="fas fa-trash-alt text-xs"></i>
                     </button>
 
                     <div class="absolute top-2 left-2 z-10">
-                        <span class="bg-[#1A3C34] text-white text-[8px] font-bold px-2 py-0.5 rounded shadow-sm uppercase">
+                        <span
+                            class="bg-[#1A3C34] text-white text-[8px] font-bold px-2 py-0.5 rounded shadow-sm uppercase">
                             {{ item.product.category.name|truncatechars:10 }}
                         </span>
                     </div>
@@ -40,15 +44,18 @@
                         <img src="{{ item.product.thumbnail.url }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-gray-200"><i class="fa-solid fa-leaf text-2xl opacity-20"></i></div>
+                        <div class="w-full h-full flex items-center justify-center text-gray-200"><i
+                                class="fa-solid fa-leaf text-2xl opacity-20"></i></div>
                         {% endif %}
                     </a>
                 </div>
 
                 <!-- Product Info -->
                 <div class="p-3 flex-grow flex flex-col">
-                    <h3 class="font-['Playfair_Display'] text-sm font-bold text-[#1A3C34] mb-1.5 line-clamp-2 leading-tight">
-                        <a href="{% url 'product_detail' item.product.id }}" class="hover:text-[#D4AF37] transition-colors">{{ item.product.name }}</a>
+                    <h3
+                        class="font-['Playfair_Display'] text-sm font-bold text-[#1A3C34] mb-1.5 line-clamp-2 leading-tight">
+                        <a href="{% url 'product_detail' item.product.id }}"
+                            class="hover:text-[#D4AF37] transition-colors">{{ item.product.name }}</a>
                     </h3>
 
                     <!-- Price & Variant Selection -->
@@ -59,16 +66,18 @@
                         </div>
 
                         <!-- Variant Select -->
-                        <select id="variant-select-{{ item.product.id }}" class="w-full bg-[#F9F7F4] border border-[#E8DCC8] rounded text-[10px] font-semibold text-[#1A3C34] py-1.5 px-2 outline-none focus:ring-2 focus:ring-[#D4AF37] transition-all">
+                        <select id="variant-select-{{ item.product.id }}"
+                            class="w-full bg-[#F9F7F4] border border-[#E8DCC8] rounded text-[10px] font-semibold text-[#1A3C34] py-1.5 px-2 outline-none focus:ring-2 focus:ring-[#D4AF37] transition-all">
                             {% for v in item.product.variants.all %}
-                                <option value="{{ v.id }}" {% if item.variant.id == v.id %}selected{% endif %}>
-                                    {{ v.unit_value }}{{ v.unit_type }} — ₹{{ v.price }}
-                                </option>
+                            <option value="{{ v.id }}" {% if item.variant.id == v.id %}selected{% endif %}>
+                                {{ v.unit_value }}{{ v.unit_type }} — ₹{{ v.price }}
+                            </option>
                             {% endfor %}
                         </select>
 
                         <!-- Actions -->
-                        <button onclick="moveToBag('{{ item.product.id }}')" class="w-full bg-[#1A3C34] text-white py-2 rounded font-bold uppercase tracking-wide text-[9px] hover:bg-[#0f2319] transition-all shadow-md">
+                        <button onclick="moveToBag('{{ item.product.id }}')"
+                            class="w-full bg-[#1A3C34] text-white py-2 rounded font-bold uppercase tracking-wide text-[9px] hover:bg-[#0f2319] transition-all shadow-md">
                             <i class="fas fa-shopping-bag mr-1"></i>Bag
                         </button>
                     </div>
@@ -81,74 +90,84 @@
             <i class="fas fa-heart text-5xl text-stone-100 mb-6"></i>
             <h2 class="font-['Playfair_Display'] text-3xl text-stone-300 mb-2">Your Sanctuary is Empty</h2>
             <p class="text-stone-400 mb-8">Start adding your favorite rituals to your wishlist</p>
-            <a href="{% url 'product' %}" class="inline-block bg-[#1A3C34] text-white px-12 py-4 rounded-full font-bold uppercase tracking-widest text-[0.8rem]">Explore Rituals</a>
+            <a href="{% url 'product' %}"
+                class="inline-block bg-[#1A3C34] text-white px-12 py-4 rounded-full font-bold uppercase tracking-widest text-[0.8rem]">Explore
+                Rituals</a>
         </div>
         {% endif %}
     </div>
 </section>
 
 <script>
-const csrftoken = '{{ csrf_token }}';
+    const csrftoken = '{{ csrf_token }}';
 
-function removeFromSanctuary(productId) {
-    const card = document.getElementById(`wishlist-card-${productId}`);
-    
-    fetch(`/wishlist/toggle/${productId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrftoken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'variant_id=' 
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'removed') {
-            card.style.transform = 'scale(0.95)';
-            card.style.opacity = '0';
-            setTimeout(() => {
-                card.remove();
-                if (document.querySelectorAll('[id^="wishlist-card-"]').length === 0) {
-                    location.reload(); 
+    function removeFromSanctuary(productId) {
+        const card = document.getElementById(`wishlist-card-${productId}`);
+
+        fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'variant_id='
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'removed') {
+                    // Update count display
+                    const container = document.getElementById('wishlist-count-container');
+                    if (container && data.wishlist_count !== undefined) {
+                        const count = data.wishlist_count;
+                        const suffix = count === 1 ? 'product' : 'products';
+                        container.innerHTML = `<span id="wishlist-count">${count}</span> ${suffix} saved for later`;
+                    }
+
+                    card.style.transform = 'scale(0.95)';
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        card.remove();
+                        if (document.querySelectorAll('[id^="wishlist-card-"]').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
                 }
-            }, 300);
-        }
-    })
-    .catch(err => console.error("Error:", err));
-}
+            })
+            .catch(err => console.error("Error:", err));
+    }
 
-function moveToBag(productId) {
-    const variantId = document.getElementById(`variant-select-${productId}`).value;
-    
-    const formData = new FormData();
-    formData.append('variant_id', variantId);
-    formData.append('csrfmiddlewaretoken', csrftoken);
+    function moveToBag(productId) {
+        const variantId = document.getElementById(`variant-select-${productId}`).value;
 
-    fetch(`/cart/add/${productId}/`, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
-    })
-    .then(res => res.json().then(data => ({ ok: res.ok, data })))
-    .then(({ ok, data }) => {
-        if (data.status === 'auth_required' && data.redirect_url) {
-            window.location.href = data.redirect_url;
-            return;
-        }
-        if (!ok || data.status !== 'success') {
-            throw new Error(data.message || 'Unable to add item.');
-        }
-        if (data.status === 'success') {
-            // Update cart count
-            const cartBadge = document.getElementById('cart-count');
-            if(cartBadge) cartBadge.innerText = data.cart_count;
-            
-            // Remove from wishlist
-            removeFromSanctuary(productId);
-        }
-    })
-    .catch(err => alert(err.message || "Error."));
-}
+        const formData = new FormData();
+        formData.append('variant_id', variantId);
+        formData.append('csrfmiddlewaretoken', csrftoken);
+
+        fetch(`/cart/add/${productId}/`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+            .then(res => res.json().then(data => ({ ok: res.ok, data })))
+            .then(({ ok, data }) => {
+                if (data.status === 'auth_required' && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
+                if (!ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Unable to add item.');
+                }
+                if (data.status === 'success') {
+                    // Update cart count
+                    const cartBadge = document.getElementById('cart-count');
+                    if (cartBadge) cartBadge.innerText = data.cart_count;
+
+                    // Remove from wishlist
+                    removeFromSanctuary(productId);
+                }
+            })
+            .catch(err => alert(err.message || "Error."));
+    }
 </script>
 {% endblock %}

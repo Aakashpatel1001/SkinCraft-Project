@@ -30,6 +30,36 @@
       }
     }
   </script>
+  <style>
+    .rating-wrap {
+      position: relative;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    .rating-back,
+    .rating-front {
+      display: flex;
+      gap: 2px;
+    }
+
+    .rating-front {
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      width: calc((var(--rating, 0) / 5) * 100%);
+      white-space: nowrap;
+    }
+
+    .rating-back i {
+      color: #E5E7EB;
+    }
+
+    .rating-front i {
+      color: #D4AF37;
+    }
+  </style>
 </head>
 <!-- main body section -->
 
@@ -177,18 +207,26 @@
                 <span class="text-xs text-ayur-gold font-bold uppercase tracking-wider">{{ product.subcategory.name }}</span>
                 {% endif %}
               </div>
-              <div class="flex items-center text-yellow-400 text-sm">
+              <div class="flex items-center text-sm">
                 {% if product.average_rating > 0 %}
-                <div class="flex text-yellow-400 text-xs">
-                  {% for i in "12345" %}
-                  {% if forloop.counter <= product.average_rating|floatformat:0 %} <i class="fas fa-star"></i>
-                    {% else %}
-                    <i class="far fa-star"></i>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-                <span class="text-gray-600 text-sm font-semibold ml-1">{{ product.average_rating|floatformat:1 }}</span>
-                <span class="text-gray-400 text-xs ml-0.5">({{ product.reviews.count }})</span>
+                <span class="rating-wrap text-xs" style="--rating: {{ product.average_rating|floatformat:1 }};">
+                  <span class="rating-back">
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                  </span>
+                  <span class="rating-front">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                  </span>
+                </span>
+                <span class="text-gray-600 text-sm font-semibold ml-2">{{ product.average_rating|floatformat:1 }}</span>
+                <span class="text-gray-400 text-xs ml-1">({{ product.reviews.count }})</span>
                 {% else %}
                 <span class="text-gray-400 text-xs">No reviews</span>
                 {% endif %}
@@ -201,24 +239,47 @@
 
             <div class="mt-auto">
               <div class="flex items-baseline justify-between mb-4">
-                <span class="text-lg font-bold text-ayur-dark bg-ayur-light/40 px-2 py-1 rounded-md">₹<span>{{ product.get_starting_price }}</span></span>
+                <span class="text-lg font-bold text-ayur-dark bg-ayur-light/40 px-2 py-1 rounded-md">₹{{ product.get_starting_price }}</span>
+                {% if product.variants.exists %}
+                {% with first_variant=product.variants.first %}
+                {% if first_variant.stock > 0 %}
                 <span
                   class="text-xs text-green-700 font-bold uppercase tracking-tighter bg-green-100 px-2 py-1 rounded-md">In
                   Stock</span>
+                {% else %}
+                <span
+                  class="text-xs text-red-700 font-bold uppercase tracking-tighter bg-red-100 px-2 py-1 rounded-md">Out
+                  of Stock</span>
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                <span
+                  class="text-xs text-gray-400 font-bold uppercase tracking-tighter bg-gray-100 px-2 py-1 rounded-md">No
+                  Variants</span>
+                {% endif %}
               </div>
 
+              {% with first_variant=product.variants.first %}
               <div class="flex gap-2">
+                {% if first_variant and first_variant.stock > 0 %}
                 <button onclick="addToBag(this)" data-product-id="{{ product.id }}"
-                  data-variant-id="{{ product.variants.first.id }}"
+                  data-variant-id="{{ first_variant.id }}"
                   class="flex-1 bg-white border border-gray-200 text-ayur-dark py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:border-ayur-gold transition-all">
                   <i class="fa-solid fa-basket-shopping mr-1"></i> Add To Bag
                 </button>
                 <button onclick="buyNow(this)" data-product-id="{{ product.id }}"
-                  data-variant-id="{{ product.variants.first.id }}"
+                  data-variant-id="{{ first_variant.id }}"
                   class="flex-1 bg-ayur-dark text-white py-2 rounded-lg text-xs font-bold uppercase tracking-widest text-center hover:bg-ayur-primary transition-all shadow-md">
                   Buy Now
                 </button>
+                {% else %}
+                <button disabled
+                  class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-xs font-bold uppercase tracking-widest cursor-not-allowed">
+                  <i class="fa-solid fa-ban mr-1"></i> Out of Stock
+                </button>
+                {% endif %}
               </div>
+              {% endwith %}
             </div>
           </div>
         </div>
@@ -766,32 +827,33 @@
   }
 
   function buyNow(button) {
-    const productId = button.getAttribute('data-product-id');
     const variantId = button.getAttribute('data-variant-id');
+    const productId = button.getAttribute('data-product-id');
 
-    const formData = new FormData();
-    formData.append('variant_id', variantId);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    if (variantId && productId) {
+      const formData = new FormData();
+      formData.append('variant_id', variantId);
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-    fetch(`/cart/add/${productId}/`, {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      body: formData
-    })
-      .then(res => res.json().then(data => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (data.status === 'auth_required' && data.redirect_url) {
-          window.location.href = data.redirect_url;
-          return;
-        }
-        if (!ok || data.status !== 'success') {
-          throw new Error(data.message || 'Unable to add item.');
-        }
-        if (data.status === 'success') {
-          window.location.href = "{% url 'checkout' %}";
-        }
+      fetch(`/cart/add/${productId}/`, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
       })
-      .catch(err => alert(err.message || "Error."));
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (ok && data.status === 'success') {
+            window.location.href = "{% url 'checkout' %}?variant_id=" + variantId;
+          } else if (data.status === 'auth_required' && data.redirect_url) {
+            window.location.href = data.redirect_url;
+          } else {
+            alert(data.message || 'Unable to proceed.');
+          }
+        })
+        .catch(err => alert("Error: " + err.message));
+    } else {
+      alert("Please select a valid option.");
+    }
   }
 </script>
 {% endblock %}

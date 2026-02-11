@@ -23,6 +23,7 @@
             transform: translateX(400px);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -34,6 +35,7 @@
             transform: translateX(0);
             opacity: 1;
         }
+
         to {
             transform: translateX(400px);
             opacity: 0;
@@ -88,78 +90,103 @@
 
 <!-- Hidden Messages for Toast Display -->
 {% if messages %}
-    {% for message in messages %}
-        <div data-message="{{ message }}" data-type="{% if message.tags %}{{ message.tags }}{% endif %}" style="display: none;"></div>
-    {% endfor %}
+{% for message in messages %}
+<div data-message="{{ message }}" data-type="{% if message.tags %}{{ message.tags }}{% endif %}" style="display: none;">
+</div>
+{% endfor %}
 {% endif %}
 
 <div class="bg-[#FDFBF7] min-h-screen py-12 font-['Poppins']">
     <div class="max-w-[1200px] mx-auto px-5">
-        <h1 class="font-['Playfair_Display'] text-3xl font-bold text-[#1A3C34] mb-10 text-center lg:text-left uppercase tracking-widest">Finalize Your Ritual</h1>
-        <div id="suratTopNotice" class="mb-6 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-5 py-3 text-xs font-semibold flex items-center gap-2">
+        <h1
+            class="font-['Playfair_Display'] text-3xl font-bold text-[#1A3C34] mb-10 text-center lg:text-left uppercase tracking-widest">
+            Finalize Your Ritual</h1>
+        <div id="suratTopNotice"
+            class="mb-6 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-5 py-3 text-xs font-semibold flex items-center gap-2">
             <i class="fa-solid fa-location-dot"></i>
             We currently deliver only in Surat. Please select a Surat address to place your order.
         </div>
         {% if messages %}
         <div class="mb-6 space-y-2">
             {% for message in messages %}
-                {% if 'logged in as' not in message|lower and 'you are now logged in' not in message|lower %}
-                <div class="px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest border flex items-start gap-2
+            {% if 'logged in as' not in message|lower and 'you are now logged in' not in message|lower %}
+            <div class="px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest border flex items-start gap-2
                     {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700 border-emerald-200
                     {% elif message.tags == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
                     {% elif message.tags == 'error' %}bg-red-50 text-red-700 border-red-200
                     {% else %}bg-stone-50 text-stone-600 border-stone-200{% endif %}">
-                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'warning' %}fa-triangle-exclamation{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %} mt-0.5"></i>
-                    <span>{{ message }}</span>
-                </div>
-                {% endif %}
+                <i
+                    class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'warning' %}fa-triangle-exclamation{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %} mt-0.5"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endif %}
             {% endfor %}
         </div>
         {% endif %}
         <form method="POST" action="{% url 'process_order' %}" id="checkout-form">
             {% csrf_token %}
             <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+            {% if buy_now_mode %}
+            <input type="hidden" name="action" value="buy_now">
+            <input type="hidden" name="variant_id" value="{{ buy_now_variant_id }}">
+            {% endif %}
             <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
             <input type="hidden" name="razorpay_signature" id="razorpay_signature">
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 items-start">
                 <div class="space-y-6">
                     <div class="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                         <h2 class="text-sm font-bold text-[#1A3C34] mb-8 flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">1</span>
+                            <span
+                                class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">1</span>
                             Contact Details
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div class="space-y-1">
-                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Full Name</label>
-                                <input type="text" name="full_name" value="{{ initial_contact.full_name }}" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="Receiver Name">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Full
+                                    Name</label>
+                                <input type="text" name="full_name" value="{{ initial_contact.full_name }}" required
+                                    class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                    placeholder="Receiver Name">
                             </div>
                             <div class="space-y-1">
-                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Phone Number</label>
-                                <input type="text" name="phone" value="{{ initial_contact.phone }}" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="Mobile Number">
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Phone
+                                    Number</label>
+                                <input type="text" name="phone" value="{{ initial_contact.phone }}" required
+                                    class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                    placeholder="Mobile Number">
                             </div>
                             <div class="md:col-span-2 space-y-1">
-                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Email Address</label>
-                                <input type="email" name="email" value="{{ initial_contact.email }}" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="sanctuary@email.com">
-                                <p class="text-[9px] text-stone-400 mt-2 italic"><i class="fa-solid fa-lock mr-1"></i> We'll use these details for your invoice and order updates.</p>
+                                <label class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Email
+                                    Address</label>
+                                <input type="email" name="email" value="{{ initial_contact.email }}" required
+                                    class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                    placeholder="sanctuary@email.com">
+                                <p class="text-[9px] text-stone-400 mt-2 italic"><i class="fa-solid fa-lock mr-1"></i>
+                                    We'll use these details for your invoice and order updates.</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                         <h2 class="text-sm font-bold text-[#1A3C34] mb-8 flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">2</span>
+                            <span
+                                class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">2</span>
                             Order Summary
                         </h2>
                         <div class="space-y-6">
-                            {% for item in cart.items.all %}
+                            {% for item in checkout_items %}
                             <div class="flex gap-5 items-center border-b border-stone-50 pb-5 last:border-0">
                                 <div class="w-20 h-24 bg-stone-50 rounded-lg overflow-hidden flex-shrink-0 p-2">
-                                    <img src="{{ item.product.thumbnail.url }}" class="w-full h-full object-contain mix-blend-multiply">
+                                    <img src="{{ item.product.thumbnail.url }}"
+                                        class="w-full h-full object-contain mix-blend-multiply">
                                 </div>
                                 <div class="flex-grow">
-                                    <h4 class="text-xs font-bold text-[#1A3C34] leading-tight">{{ item.product.name }}</h4>
+                                    <h4 class="text-xs font-bold text-[#1A3C34] leading-tight">{{ item.product.name }}
+                                    </h4>
                                     <p class="text-[10px] text-stone-400 mt-1 uppercase tracking-tighter">Size: {{ item.variant.unit_value }}{{ item.variant.unit_type }} • Qty: {{ item.quantity }}</p>
-                                    <span class="inline-block mt-2 text-[8px] bg-stone-100 px-2 py-0.5 rounded font-black uppercase text-stone-500">Ritual Item</span>
+                                    <span
+                                        class="inline-block mt-2 text-[8px] bg-stone-100 px-2 py-0.5 rounded font-black uppercase text-stone-500">Ritual
+                                        Item</span>
                                 </div>
                                 <div class="text-right">
                                     <span class="text-sm font-bold text-[#1A3C34]">₹{{ item.subtotal }}</span>
@@ -171,26 +198,31 @@
 
                     <div class="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                         <h2 class="text-sm font-bold text-[#1A3C34] mb-8 flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">3</span>
+                            <span
+                                class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">3</span>
                             Payment Method
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="payment" value="cod" checked class="hidden peer">
-                                <div class="p-5 border-2 border-stone-100 rounded-xl flex flex-col items-center gap-2 peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all group">
+                                <div
+                                    class="p-5 border-2 border-stone-100 rounded-xl flex flex-col items-center gap-2 peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all group">
                                     <i class="fa-solid fa-money-bill-transfer text-emerald-600 text-xl"></i>
                                     <span class="text-[11px] font-bold text-[#1A3C34]">Cash on Delivery</span>
                                     <p class="text-[9px] text-stone-400">Pay when it arrives</p>
-                                    <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100"><i class="fa-solid fa-circle-check text-[#1A3C34] text-xs"></i></div>
+                                    <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100"><i
+                                            class="fa-solid fa-circle-check text-[#1A3C34] text-xs"></i></div>
                                 </div>
                             </label>
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="payment" value="online" class="hidden peer">
-                                <div class="p-5 border-2 border-stone-100 rounded-xl flex flex-col items-center gap-2 peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all group">
+                                <div
+                                    class="p-5 border-2 border-stone-100 rounded-xl flex flex-col items-center gap-2 peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all group">
                                     <i class="fa-solid fa-mobile-screen text-emerald-600 text-xl"></i>
                                     <span class="text-[11px] font-bold text-[#1A3C34]">Online Payment</span>
                                     <p class="text-[9px] text-stone-400">UPI, Card, Netbanking</p>
-                                    <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100"><i class="fa-solid fa-circle-check text-[#1A3C34] text-xs"></i></div>
+                                    <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100"><i
+                                            class="fa-solid fa-circle-check text-[#1A3C34] text-xs"></i></div>
                                 </div>
                             </label>
                         </div>
@@ -198,29 +230,33 @@
 
                     <div class="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
                         <h2 class="text-sm font-bold text-[#1A3C34] mb-8 flex items-center gap-3">
-                            <span class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">4</span>
+                            <span
+                                class="w-6 h-6 rounded-full bg-[#1A3C34] text-white flex items-center justify-center text-[10px]">4</span>
                             Delivery Address
                         </h2>
-                        
+
                         <div class="space-y-4">
                             {% for addr in addresses %}
                             <label class="block cursor-pointer group">
                                 <input type="radio" name="selected_address" value="{{ addr.id }}" {% if addr.is_default %}checked{% endif %} required class="hidden peer" data-city="{{ addr.city|default:'' }}">
-                                <div class="p-5 border-2 border-stone-100 rounded-xl peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all relative">
+                                <div
+                                    class="p-5 border-2 border-stone-100 rounded-xl peer-checked:border-[#1A3C34] peer-checked:bg-emerald-50/30 transition-all relative">
                                     <div class="flex items-center justify-between mb-2">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-[#1A3C34] group-hover:bg-white transition-colors">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-[#1A3C34] group-hover:bg-white transition-colors">
                                                 {% if addr.address_type == 'Home' %}
-                                                    <i class="fa-solid fa-house text-xs"></i>
+                                                <i class="fa-solid fa-house text-xs"></i>
                                                 {% elif addr.address_type == 'Office' or addr.address_type == 'Work' %}
-                                                    <i class="fa-solid fa-briefcase text-xs"></i>
+                                                <i class="fa-solid fa-briefcase text-xs"></i>
                                                 {% else %}
-                                                    <i class="fa-solid fa-location-dot text-xs"></i>
+                                                <i class="fa-solid fa-location-dot text-xs"></i>
                                                 {% endif %}
                                             </div>
                                             <span class="text-xs font-bold text-[#1A3C34]">{{ user.get_full_name }}</span>
                                         </div>
-                                        <span class="bg-white border border-stone-200 px-2 py-0.5 rounded text-[8px] uppercase font-black text-stone-400 peer-checked:text-[#1A3C34] peer-checked:border-[#1A3C34]">
+                                        <span
+                                            class="bg-white border border-stone-200 px-2 py-0.5 rounded text-[8px] uppercase font-black text-stone-400 peer-checked:text-[#1A3C34] peer-checked:border-[#1A3C34]">
                                             {{ addr.address_type }}
                                         </span>
                                     </div>
@@ -232,7 +268,8 @@
                                         <span class="font-bold text-stone-400">Phone:</span> {{ user.phone }}
                                         {% endif %}
                                     </p>
-                                    <div class="absolute top-4 right-4 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                    <div
+                                        class="absolute top-4 right-4 opacity-0 peer-checked:opacity-100 transition-opacity">
                                         <i class="fa-solid fa-circle-check text-[#1A3C34]"></i>
                                     </div>
                                 </div>
@@ -243,19 +280,23 @@
                             </div>
                             {% endfor %}
 
-                            <div id="suratRestrictionNotice" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-center">
+                            <div id="suratRestrictionNotice"
+                                class="hidden bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-center">
                                 We deliver only in Surat. Please select or add a Surat address below.
                             </div>
 
                             {% if user.is_authenticated %}
-                            <button type="button" id="openAddAddressModal" class="block w-full border-2 border-dashed border-stone-200 p-4 rounded-xl text-center text-stone-400 text-[11px] font-bold hover:bg-stone-50 hover:border-stone-300 transition-all uppercase tracking-widest">
+                            <button type="button" id="openAddAddressModal"
+                                class="block w-full border-2 border-dashed border-stone-200 p-4 rounded-xl text-center text-stone-400 text-[11px] font-bold hover:bg-stone-50 hover:border-stone-300 transition-all uppercase tracking-widest">
                                 + Add New Address
                             </button>
-                            <a href="{% url 'profile' %}?tab=address" class="block w-full text-center text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
+                            <a href="{% url 'profile' %}?tab=address"
+                                class="block w-full text-center text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors">
                                 Manage saved addresses
                             </a>
                             {% else %}
-                            <p class="text-center text-[10px] font-bold uppercase tracking-widest text-stone-400">Login to add a new address</p>
+                            <p class="text-center text-[10px] font-bold uppercase tracking-widest text-stone-400">Login
+                                to add a new address</p>
                             {% endif %}
                         </div>
                     </div>
@@ -263,61 +304,74 @@
 
                 <div class="lg:sticky lg:top-24 h-fit">
                     <div class="bg-white p-8 rounded-xl border border-gray-100 shadow-xl space-y-6">
-                        <h3 class="text-sm font-bold text-[#1A3C34] border-b border-stone-50 pb-4 uppercase tracking-widest">Price Details</h3>
+                        <h3
+                            class="text-sm font-bold text-[#1A3C34] border-b border-stone-50 pb-4 uppercase tracking-widest">
+                            Price Details</h3>
                         <div class="space-y-4 text-xs">
                             <div class="flex justify-between text-stone-400">
                                 <span>Subtotal</span>
-                                <span class="text-[#1A3C34] font-bold">₹<span id="subtotalAmount">{{ cart.total_price }}</span></span>
+                                <span class="text-[#1A3C34] font-bold">₹<span id="subtotalAmount">{% if buy_now_mode %}{{ checkout_items.0.subtotal }}{% else %}{{ cart.total_price }}{% endif %}</span></span>
                             </div>
                             <div class="flex justify-between text-stone-400">
                                 <span>Delivery Charges</span>
                                 <span class="text-[#1A3C34] font-bold">
                                     {% if delivery_fee == 0 %}
-                                        FREE
+                                    FREE
                                     {% else %}
-                                        ₹<span id="deliveryFeeAmount">{{ delivery_fee }}</span>
+                                    ₹<span id="deliveryFeeAmount">{{ delivery_fee }}</span>
                                     {% endif %}
                                 </span>
                             </div>
-                            <div id="discountRow" class="flex justify-between text-emerald-600 font-bold {% if discount_amount == 0 %}hidden{% endif %}">
+                            <div id="discountRow"
+                                class="flex justify-between text-emerald-600 font-bold {% if discount_amount == 0 %}hidden{% endif %}">
                                 <span>Coupon Discount</span>
                                 <span>-₹<span id="discountAmount">{{ discount_amount }}</span></span>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-2 py-2">
-                            <input type="text" id="couponInput" placeholder="PROMO CODE" class="flex-grow p-3 border border-stone-100 rounded-lg text-[10px] outline-none focus:border-stone-300" value="{% if applied_coupon %}{{ applied_coupon.code }}{% endif %}">
-                            <button type="button" id="applyCouponBtn" class="bg-black text-white px-5 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-all">Apply</button>
+                            <input type="text" id="couponInput" placeholder="PROMO CODE"
+                                class="flex-grow p-3 border border-stone-100 rounded-lg text-[10px] outline-none focus:border-stone-300"
+                                value="{% if applied_coupon %}{{ applied_coupon.code }}{% endif %}">
+                            <button type="button" id="applyCouponBtn"
+                                class="bg-black text-white px-5 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-all">Apply</button>
                         </div>
                         <p id="couponMessage" class="text-[10px] text-stone-400"></p>
 
                         <div class="border border-stone-100 rounded-lg p-3 text-[10px] text-stone-500">
-                            <div class="font-bold text-stone-600 uppercase tracking-widest text-[9px] mb-2">Seasonal Coupons</div>
+                            <div class="font-bold text-stone-600 uppercase tracking-widest text-[9px] mb-2">Seasonal
+                                Coupons</div>
                             <div class="space-y-2">
                                 {% for coupon in available_coupons %}
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div>
-                                            <div class="font-bold text-stone-700">{{ coupon.code }}</div>
-                                            <div class="text-[9px] text-stone-400">{{ coupon.description|default:"Seasonal Offer" }}</div>
-                                            <div class="text-[9px] text-stone-400">Min ₹{{ coupon.min_order_amount }} • Valid till {{ coupon.end_date|date:"M d, Y" }}</div>
-                                        </div>
-                                        <button type="button" class="apply-coupon-chip bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest" data-coupon="{{ coupon.code }}">Apply</button>
+                                <div class="flex items-center justify-between gap-2">
+                                    <div>
+                                        <div class="font-bold text-stone-700">{{ coupon.code }}</div>
+                                        <div class="text-[9px] text-stone-400">{{ coupon.description|default:"Seasonal Offer" }}</div>
+                                        <div class="text-[9px] text-stone-400">Min ₹{{ coupon.min_order_amount }} • Valid till {{ coupon.end_date|date:"M d, Y" }}</div>
                                     </div>
+                                    <button type="button"
+                                        class="apply-coupon-chip bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest"
+                                        data-coupon="{{ coupon.code }}">Apply</button>
+                                </div>
                                 {% empty %}
-                                    <div class="text-[9px] text-stone-400">No seasonal coupons available right now.</div>
+                                <div class="text-[9px] text-stone-400">No seasonal coupons available right now.</div>
                                 {% endfor %}
                             </div>
                         </div>
 
                         <div class="flex justify-between items-center border-t border-stone-50 pt-6">
-                            <span class="text-xs font-bold text-[#1A3C34] uppercase tracking-tighter">Total Amount</span>
+                            <span class="text-xs font-bold text-[#1A3C34] uppercase tracking-tighter">Total
+                                Amount</span>
                             <span class="text-xl font-bold text-[#1A3C34]">₹<span id="totalAmount">{{ total_amount }}</span></span>
                         </div>
 
-                        <button type="submit" class="w-full bg-[#1A3C34] text-white py-5 rounded-lg font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-[#0e241f] flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 transition-all hover:-translate-y-1" id="place-order-btn">
+                        <button type="submit"
+                            class="w-full bg-[#1A3C34] text-white py-5 rounded-lg font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-[#0e241f] flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 transition-all hover:-translate-y-1"
+                            id="place-order-btn">
                             Place Order <i class="fa-solid fa-arrow-right text-[10px]"></i>
                         </button>
-                        <p class="text-[9px] text-center text-stone-300 pt-2"><i class="fa-solid fa-shield-halved mr-1"></i> Secure Checkout Ritual</p>
+                        <p class="text-[9px] text-center text-stone-300 pt-2"><i
+                                class="fa-solid fa-shield-halved mr-1"></i> Secure Checkout Ritual</p>
                     </div>
                 </div>
             </div>
@@ -337,421 +391,450 @@
                     <input type="hidden" name="add_address" value="1">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Address Type</label>
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Address
+                                Type</label>
                             <div class="relative">
-                                <select name="address_type" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all bg-white">
+                                <select name="address_type" required
+                                    class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all bg-white">
                                     <option value="">Select Address Type</option>
                                     {% for value, label in address_choices %}
                                     <option value="{{ value }}">{{ label }}</option>
                                     {% endfor %}
                                 </select>
-                                <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-gray-400 text-xs pointer-events-none"></i>
+                                <i
+                                    class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-gray-400 text-xs pointer-events-none"></i>
                             </div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Street Address</label>
-                            <input type="text" name="street_address" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="House No, Street, Area">
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Street
+                                Address</label>
+                            <input type="text" name="street_address" required
+                                class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                placeholder="House No, Street, Area">
                         </div>
                         <div>
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">City</label>
-                            <input type="text" name="city" id="checkout-address-city" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="City" value="Surat" readonly>
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">City</label>
+                            <input type="text" name="city" id="checkout-address-city" required
+                                class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                placeholder="City" value="Surat" readonly>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">State</label>
-                            <input type="text" name="state" id="checkout-address-state" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="State" value="Gujarat" readonly>
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">State</label>
+                            <input type="text" name="state" id="checkout-address-state" required
+                                class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                placeholder="State" value="Gujarat" readonly>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Pincode</label>
-                            <input type="text" name="zip_code" id="checkout-address-zip" required class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="Pincode">
-                            <p id="checkoutPincodeStatus" class="mt-2 text-[10px] font-semibold text-stone-400 hidden"></p>
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Pincode</label>
+                            <input type="text" name="zip_code" id="checkout-address-zip" required
+                                class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                placeholder="Pincode">
+                            <p id="checkoutPincodeStatus" class="mt-2 text-[10px] font-semibold text-stone-400 hidden">
+                            </p>
                         </div>
                         <div>
-                            <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Phone Number</label>
-                            <input type="text" name="phone_number" class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all" placeholder="Phone Number">
+                            <label
+                                class="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Phone
+                                Number</label>
+                            <input type="text" name="phone_number"
+                                class="w-full p-3 border border-gray-200 rounded text-sm focus:border-[#1A3C34] outline-none transition-all"
+                                placeholder="Phone Number">
                         </div>
-                        <div class="md:col-span-2 flex items-center justify-between border border-stone-100 rounded-lg px-4 py-3">
+                        <div
+                            class="md:col-span-2 flex items-center justify-between border border-stone-100 rounded-lg px-4 py-3">
                             <div>
-                                <div class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Set as default</div>
+                                <div class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Set as
+                                    default</div>
                                 <div class="text-[9px] text-stone-400">Use this as primary address</div>
                             </div>
                             <label class="inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="is_default" class="sr-only peer">
-                                <div class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#1A3C34] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1A3C34]"></div>
+                                <div
+                                    class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#1A3C34] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1A3C34]">
+                                </div>
                             </label>
                         </div>
                     </div>
                     <div class="flex gap-3 pt-2">
-                        <button type="submit" class="flex-1 bg-[#1A3C34] text-white py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest">Save Address</button>
-                        <button type="button" id="cancelAddAddressModal" class="flex-1 border border-stone-200 text-stone-500 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest">Cancel</button>
+                        <button type="submit"
+                            class="flex-1 bg-[#1A3C34] text-white py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest">Save
+                            Address</button>
+                        <button type="button" id="cancelAddAddressModal"
+                            class="flex-1 border border-stone-200 text-stone-500 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-    (function () {
-        const form = document.getElementById('checkout-form');
-        const placeOrderBtn = document.getElementById('place-order-btn');
-        const couponInput = document.getElementById('couponInput');
-        const applyCouponBtn = document.getElementById('applyCouponBtn');
-        const couponMessage = document.getElementById('couponMessage');
-        const discountRow = document.getElementById('discountRow');
-        const discountAmountEl = document.getElementById('discountAmount');
-        const totalAmountEl = document.getElementById('totalAmount');
-        const subtotalAmountEl = document.getElementById('subtotalAmount');
-        const deliveryFeeAmountEl = document.getElementById('deliveryFeeAmount');
-        const addressModal = document.getElementById('checkoutAddressModal');
-        const openAddressModalBtn = document.getElementById('openAddAddressModal');
-        const closeAddressModalBtn = document.getElementById('closeAddAddressModal');
-        const cancelAddressModalBtn = document.getElementById('cancelAddAddressModal');
-        const suratNotice = document.getElementById('suratRestrictionNotice');
-        const suratTopNotice = document.getElementById('suratTopNotice');
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('checkout-form');
+            const placeOrderBtn = document.getElementById('place-order-btn');
+            const couponInput = document.getElementById('couponInput');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            const couponMessage = document.getElementById('couponMessage');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmountEl = document.getElementById('discountAmount');
+            const totalAmountEl = document.getElementById('totalAmount');
+            const subtotalAmountEl = document.getElementById('subtotalAmount');
+            const deliveryFeeAmountEl = document.getElementById('deliveryFeeAmount');
+            const addressModal = document.getElementById('checkoutAddressModal');
+            const openAddressModalBtn = document.getElementById('openAddAddressModal');
+            const closeAddressModalBtn = document.getElementById('closeAddAddressModal');
+            const cancelAddressModalBtn = document.getElementById('cancelAddAddressModal');
+            const suratNotice = document.getElementById('suratRestrictionNotice');
+            const suratTopNotice = document.getElementById('suratTopNotice');
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
                 }
+                return cookieValue;
             }
-            return cookieValue;
-        }
 
-        const FIXED_CITY = 'Surat';
-        const FIXED_STATE = 'Gujarat';
+            const FIXED_CITY = 'Surat';
+            const FIXED_STATE = 'Gujarat';
 
-        function isSurat(value) {
-            return (value || '').trim().toLowerCase() === FIXED_CITY.toLowerCase();
-        }
-
-        function setFixedCityState(cityInput, stateInput) {
-            if (cityInput) {
-                cityInput.value = FIXED_CITY;
-                cityInput.readOnly = true;
+            function isSurat(value) {
+                return (value || '').trim().toLowerCase() === FIXED_CITY.toLowerCase();
             }
-            if (stateInput) {
-                stateInput.value = FIXED_STATE;
-                stateInput.readOnly = true;
-            }
-        }
 
-        function setupCheckoutPincodeAutofill() {
-            const zipInput = document.getElementById('checkout-address-zip');
-            const cityInput = document.getElementById('checkout-address-city');
-            const stateInput = document.getElementById('checkout-address-state');
-            const statusEl = document.getElementById('checkoutPincodeStatus');
-
-            if (!zipInput || !cityInput || !stateInput) return;
-
-            setFixedCityState(cityInput, stateInput);
-
-            let lookupTimeout = null;
-
-            const setStatus = (text, tone) => {
-                if (!statusEl) return;
-                statusEl.textContent = text;
-                statusEl.classList.remove('hidden', 'text-red-500', 'text-emerald-600', 'text-stone-400');
-                statusEl.classList.add(tone);
-            };
-
-            const clearStatus = () => {
-                if (!statusEl) return;
-                statusEl.textContent = '';
-                statusEl.classList.add('hidden');
-            };
-
-            const fetchPincode = (pin) => {
-                setStatus('Checking pincode...', 'text-stone-400');
-                fetch(`https://api.postalpincode.in/pincode/${pin}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!Array.isArray(data) || !data[0] || data[0].Status !== 'Success') {
-                            zipInput.dataset.cityAllowed = 'false';
-                            setStatus('Invalid pincode. Please check and try again.', 'text-red-500');
-                            return;
-                        }
-                        const offices = Array.isArray(data[0].PostOffice) ? data[0].PostOffice : [];
-                        if (!offices.length) {
-                            zipInput.dataset.cityAllowed = 'false';
-                            setStatus('No city found for this pincode.', 'text-red-500');
-                            return;
-                        }
-                        const isSuratPin = offices.some(office => {
-                            const district = (office.District || '').trim();
-                            const block = (office.Block || '').trim();
-                            const name = (office.Name || '').trim();
-                            return isSurat(district) || isSurat(block) || isSurat(name);
-                        });
-
-                        setFixedCityState(cityInput, stateInput);
-
-                        if (!isSuratPin) {
-                            zipInput.dataset.cityAllowed = 'false';
-                            setStatus('We provide only Surat orders. Please use a Surat pincode.', 'text-red-500');
-                            return;
-                        }
-
-                        zipInput.dataset.cityAllowed = 'true';
-                        setStatus(`Valid pincode`, 'text-emerald-600');
-                    })
-                    .catch(() => {
-                        zipInput.dataset.cityAllowed = 'unknown';
-                        setFixedCityState(cityInput, stateInput);
-                        setStatus('Unable to verify pincode. Please try again.', 'text-red-500');
-                    });
-            };
-
-            zipInput.addEventListener('input', function () {
-                const pin = (zipInput.value || '').replace(/\D/g, '');
-                if (zipInput.value !== pin) zipInput.value = pin;
-
-                clearTimeout(lookupTimeout);
-                if (pin.length !== 6) {
-                    zipInput.dataset.cityAllowed = 'false';
-                    clearStatus();
-                    setFixedCityState(cityInput, stateInput);
-                    return;
+            function setFixedCityState(cityInput, stateInput) {
+                if (cityInput) {
+                    cityInput.value = FIXED_CITY;
+                    cityInput.readOnly = true;
                 }
-                lookupTimeout = setTimeout(() => fetchPincode(pin), 400);
-            });
-        }
-
-        function openAddressModal() {
-            if (!addressModal) return;
-            addressModal.classList.remove('hidden');
-            addressModal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAddressModal() {
-            if (!addressModal) return;
-            addressModal.classList.add('hidden');
-            addressModal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-        }
-
-        function normalizeCity(value) {
-            return (value || '').trim().toLowerCase();
-        }
-
-        function validateSuratAddress() {
-            const selected = form.querySelector('input[name="selected_address"]:checked');
-            if (!selected) {
-                if (suratNotice) suratNotice.classList.add('hidden');
-                if (suratTopNotice) suratTopNotice.classList.remove('hidden');
-                if (placeOrderBtn) placeOrderBtn.disabled = false;
-                return;
-            }
-
-            const city = normalizeCity(selected.dataset.city);
-            const isSurat = city === 'surat';
-            if (suratNotice) {
-                if (isSurat) suratNotice.classList.add('hidden');
-                else suratNotice.classList.remove('hidden');
-            }
-            if (suratTopNotice) {
-                if (isSurat) suratTopNotice.classList.add('hidden');
-                else suratTopNotice.classList.remove('hidden');
-            }
-            if (placeOrderBtn) placeOrderBtn.disabled = !isSurat;
-        }
-
-        form.addEventListener('submit', async function (e) {
-            const paymentMethod = form.querySelector('input[name="payment"]:checked')?.value || 'cod';
-            if (paymentMethod !== 'online') {
-                return;
-            }
-
-            e.preventDefault();
-            placeOrderBtn.disabled = true;
-            placeOrderBtn.textContent = 'Processing...';
-
-            try {
-                const response = await fetch("{% url 'create_razorpay_order' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({})
-                });
-
-                const data = await response.json();
-                if (data.status !== 'success') {
-                    throw new Error(data.message || 'Unable to create payment.');
+                if (stateInput) {
+                    stateInput.value = FIXED_STATE;
+                    stateInput.readOnly = true;
                 }
+            }
 
-                const options = {
-                    key: data.key_id,
-                    amount: data.amount,
-                    currency: data.currency,
-                    name: 'SkinCraft',
-                    description: 'Order Payment',
-                    order_id: data.order_id,
-                    prefill: data.prefill || {},
-                    handler: function (response) {
-                        document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
-                        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
-                        document.getElementById('razorpay_signature').value = response.razorpay_signature;
-                        form.submit();
-                    },
-                    theme: {
-                        color: '#1A3C34'
-                    }
+            function setupCheckoutPincodeAutofill() {
+                const zipInput = document.getElementById('checkout-address-zip');
+                const cityInput = document.getElementById('checkout-address-city');
+                const stateInput = document.getElementById('checkout-address-state');
+                const statusEl = document.getElementById('checkoutPincodeStatus');
+
+                if (!zipInput || !cityInput || !stateInput) return;
+
+                setFixedCityState(cityInput, stateInput);
+
+                let lookupTimeout = null;
+
+                const setStatus = (text, tone) => {
+                    if (!statusEl) return;
+                    statusEl.textContent = text;
+                    statusEl.classList.remove('hidden', 'text-red-500', 'text-emerald-600', 'text-stone-400');
+                    statusEl.classList.add(tone);
                 };
 
-                const rzp = new Razorpay(options);
-                rzp.on('payment.failed', function (response) {
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.textContent = 'Place Order';
-                    alert('Payment failed: ' + response.error.description);
-                });
-                rzp.open();
-            } catch (err) {
-                placeOrderBtn.disabled = false;
-                placeOrderBtn.textContent = 'Place Order';
-                alert('Error: ' + err.message);
-            }
-        });
+                const clearStatus = () => {
+                    if (!statusEl) return;
+                    statusEl.textContent = '';
+                    statusEl.classList.add('hidden');
+                };
 
-        async function applyCoupon(code) {
-            if (!couponInput) return;
-            couponMessage.textContent = '';
-            applyCouponBtn.disabled = true;
-            applyCouponBtn.textContent = 'Applying...';
+                const fetchPincode = (pin) => {
+                    setStatus('Checking pincode...', 'text-stone-400');
+                    fetch(`https://api.postalpincode.in/pincode/${pin}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!Array.isArray(data) || !data[0] || data[0].Status !== 'Success') {
+                                zipInput.dataset.cityAllowed = 'false';
+                                setStatus('Invalid pincode. Please check and try again.', 'text-red-500');
+                                return;
+                            }
+                            const offices = Array.isArray(data[0].PostOffice) ? data[0].PostOffice : [];
+                            if (!offices.length) {
+                                zipInput.dataset.cityAllowed = 'false';
+                                setStatus('No city found for this pincode.', 'text-red-500');
+                                return;
+                            }
+                            const isSuratPin = offices.some(office => {
+                                const district = (office.District || '').trim();
+                                const block = (office.Block || '').trim();
+                                const name = (office.Name || '').trim();
+                                return isSurat(district) || isSurat(block) || isSurat(name);
+                            });
 
-            try {
-                const response = await fetch("{% url 'apply_coupon' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({ code })
-                });
-                const data = await response.json();
-                if (!response.ok || data.status !== 'success') {
-                    throw new Error(data.message || 'Coupon invalid');
-                }
-                if (data.discount && discountAmountEl) {
-                    discountAmountEl.textContent = Number(data.discount).toFixed(2);
-                    discountRow?.classList.remove('hidden');
-                } else {
-                    discountRow?.classList.add('hidden');
-                }
-                const subtotal = parseFloat(subtotalAmountEl?.textContent || '0') || 0;
-                const deliveryFee = parseFloat(deliveryFeeAmountEl?.textContent || '0') || 0;
-                const discount = parseFloat(discountAmountEl?.textContent || '0') || 0;
-                const total = Math.max(0, subtotal + deliveryFee - discount);
-                if (totalAmountEl) totalAmountEl.textContent = total.toFixed(2);
-                couponMessage.textContent = data.message || 'Coupon applied';
-            } catch (err) {
-                discountRow?.classList.add('hidden');
-                if (discountAmountEl) discountAmountEl.textContent = '0.00';
-                couponMessage.textContent = err.message;
-            } finally {
-                applyCouponBtn.disabled = false;
-                applyCouponBtn.textContent = 'Apply';
-            }
-        }
+                            setFixedCityState(cityInput, stateInput);
 
-        if (applyCouponBtn) {
-            applyCouponBtn.addEventListener('click', function () {
-                const code = (couponInput?.value || '').trim();
-                applyCoupon(code);
-            });
-        }
+                            if (!isSuratPin) {
+                                zipInput.dataset.cityAllowed = 'false';
+                                setStatus('We provide only Surat orders. Please use a Surat pincode.', 'text-red-500');
+                                return;
+                            }
 
-        document.querySelectorAll('.apply-coupon-chip').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const code = this.getAttribute('data-coupon') || '';
-                if (couponInput) couponInput.value = code;
-                applyCoupon(code);
-            });
-        });
+                            zipInput.dataset.cityAllowed = 'true';
+                            setStatus(`Valid pincode`, 'text-emerald-600');
+                        })
+                        .catch(() => {
+                            zipInput.dataset.cityAllowed = 'unknown';
+                            setFixedCityState(cityInput, stateInput);
+                            setStatus('Unable to verify pincode. Please try again.', 'text-red-500');
+                        });
+                };
 
-        form.querySelectorAll('input[name="selected_address"]').forEach(input => {
-            input.addEventListener('change', validateSuratAddress);
-        });
+                zipInput.addEventListener('input', function () {
+                    const pin = (zipInput.value || '').replace(/\D/g, '');
+                    if (zipInput.value !== pin) zipInput.value = pin;
 
-        const addAddressForm = addressModal?.querySelector('form');
-        if (addAddressForm) {
-            addAddressForm.addEventListener('submit', function (e) {
-                const zipInput = document.getElementById('checkout-address-zip');
-                if (!zipInput) return;
-                const pin = (zipInput.value || '').trim();
-                const allowed = (zipInput.dataset.cityAllowed || 'unknown').toLowerCase();
-
-                if (!pin || pin.length !== 6) {
-                    e.preventDefault();
-                    if (typeof showToast === 'function') {
-                        showToast('We provide only Surat orders. Please enter a valid Surat pincode.', 'error');
+                    clearTimeout(lookupTimeout);
+                    if (pin.length !== 6) {
+                        zipInput.dataset.cityAllowed = 'false';
+                        clearStatus();
+                        setFixedCityState(cityInput, stateInput);
+                        return;
                     }
+                    lookupTimeout = setTimeout(() => fetchPincode(pin), 400);
+                });
+            }
+
+            function openAddressModal() {
+                if (!addressModal) return;
+                addressModal.classList.remove('hidden');
+                addressModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeAddressModal() {
+                if (!addressModal) return;
+                addressModal.classList.add('hidden');
+                addressModal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+
+            function normalizeCity(value) {
+                return (value || '').trim().toLowerCase();
+            }
+
+            function validateSuratAddress() {
+                const selected = form.querySelector('input[name="selected_address"]:checked');
+                if (!selected) {
+                    if (suratNotice) suratNotice.classList.add('hidden');
+                    if (suratTopNotice) suratTopNotice.classList.remove('hidden');
+                    if (placeOrderBtn) placeOrderBtn.disabled = false;
                     return;
                 }
 
-                if (allowed !== 'true') {
-                    e.preventDefault();
-                    if (typeof showToast === 'function') {
-                        showToast('We provide only Surat orders. Please use a Surat address.', 'error');
+                const city = normalizeCity(selected.dataset.city);
+                const isSurat = city === 'surat';
+                if (suratNotice) {
+                    if (isSurat) suratNotice.classList.add('hidden');
+                    else suratNotice.classList.remove('hidden');
+                }
+                if (suratTopNotice) {
+                    if (isSurat) suratTopNotice.classList.add('hidden');
+                    else suratTopNotice.classList.remove('hidden');
+                }
+                if (placeOrderBtn) placeOrderBtn.disabled = !isSurat;
+            }
+
+            form.addEventListener('submit', async function (e) {
+                const paymentMethod = form.querySelector('input[name="payment"]:checked')?.value || 'cod';
+                if (paymentMethod !== 'online') {
+                    return;
+                }
+
+                e.preventDefault();
+                placeOrderBtn.disabled = true;
+                placeOrderBtn.textContent = 'Processing...';
+
+                try {
+                    const response = await fetch("{% url 'create_razorpay_order' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    const data = await response.json();
+                    if (data.status !== 'success') {
+                        throw new Error(data.message || 'Unable to create payment.');
                     }
+
+                    const options = {
+                        key: data.key_id,
+                        amount: data.amount,
+                        currency: data.currency,
+                        name: 'SkinCraft',
+                        description: 'Order Payment',
+                        order_id: data.order_id,
+                        prefill: data.prefill || {},
+                        handler: function (response) {
+                            document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+                            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                            document.getElementById('razorpay_signature').value = response.razorpay_signature;
+                            form.submit();
+                        },
+                        theme: {
+                            color: '#1A3C34'
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response) {
+                        placeOrderBtn.disabled = false;
+                        placeOrderBtn.textContent = 'Place Order';
+                        alert('Payment failed: ' + response.error.description);
+                    });
+                    rzp.open();
+                } catch (err) {
+                    placeOrderBtn.disabled = false;
+                    placeOrderBtn.textContent = 'Place Order';
+                    alert('Error: ' + err.message);
                 }
             });
-        }
 
-        openAddressModalBtn?.addEventListener('click', openAddressModal);
-        closeAddressModalBtn?.addEventListener('click', closeAddressModal);
-        cancelAddressModalBtn?.addEventListener('click', closeAddressModal);
-        addressModal?.addEventListener('click', function (e) {
-            if (e.target === addressModal) {
-                closeAddressModal();
+            async function applyCoupon(code) {
+                if (!couponInput) return;
+                couponMessage.textContent = '';
+                applyCouponBtn.disabled = true;
+                applyCouponBtn.textContent = 'Applying...';
+
+                try {
+                    const response = await fetch("{% url 'apply_coupon' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ code })
+                    });
+                    const data = await response.json();
+                    if (!response.ok || data.status !== 'success') {
+                        throw new Error(data.message || 'Coupon invalid');
+                    }
+                    if (data.discount && discountAmountEl) {
+                        discountAmountEl.textContent = Number(data.discount).toFixed(2);
+                        discountRow?.classList.remove('hidden');
+                    } else {
+                        discountRow?.classList.add('hidden');
+                    }
+                    const subtotal = parseFloat(subtotalAmountEl?.textContent || '0') || 0;
+                    const deliveryFee = parseFloat(deliveryFeeAmountEl?.textContent || '0') || 0;
+                    const discount = parseFloat(discountAmountEl?.textContent || '0') || 0;
+                    const total = Math.max(0, subtotal + deliveryFee - discount);
+                    if (totalAmountEl) totalAmountEl.textContent = total.toFixed(2);
+                    couponMessage.textContent = data.message || 'Coupon applied';
+                } catch (err) {
+                    discountRow?.classList.add('hidden');
+                    if (discountAmountEl) discountAmountEl.textContent = '0.00';
+                    couponMessage.textContent = err.message;
+                } finally {
+                    applyCouponBtn.disabled = false;
+                    applyCouponBtn.textContent = 'Apply';
+                }
             }
-        });
 
-        setupCheckoutPincodeAutofill();
-        validateSuratAddress();
+            if (applyCouponBtn) {
+                applyCouponBtn.addEventListener('click', function () {
+                    const code = (couponInput?.value || '').trim();
+                    applyCoupon(code);
+                });
+            }
 
-    })();
+            document.querySelectorAll('.apply-coupon-chip').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const code = this.getAttribute('data-coupon') || '';
+                    if (couponInput) couponInput.value = code;
+                    applyCoupon(code);
+                });
+            });
 
-    function showToast(message, type = 'info', duration = 4000) {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        const icons = {
-            'error': '<i class="fas fa-exclamation-circle toast-icon"></i>',
-            'success': '<i class="fas fa-check-circle toast-icon"></i>',
-            'info': '<i class="fas fa-info-circle toast-icon"></i>'
-        };
-        
-        toast.innerHTML = `
+            form.querySelectorAll('input[name="selected_address"]').forEach(input => {
+                input.addEventListener('change', validateSuratAddress);
+            });
+
+            const addAddressForm = addressModal?.querySelector('form');
+            if (addAddressForm) {
+                addAddressForm.addEventListener('submit', function (e) {
+                    const zipInput = document.getElementById('checkout-address-zip');
+                    if (!zipInput) return;
+                    const pin = (zipInput.value || '').trim();
+                    const allowed = (zipInput.dataset.cityAllowed || 'unknown').toLowerCase();
+
+                    if (!pin || pin.length !== 6) {
+                        e.preventDefault();
+                        if (typeof showToast === 'function') {
+                            showToast('We provide only Surat orders. Please enter a valid Surat pincode.', 'error');
+                        }
+                        return;
+                    }
+
+                    if (allowed !== 'true') {
+                        e.preventDefault();
+                        if (typeof showToast === 'function') {
+                            showToast('We provide only Surat orders. Please use a Surat address.', 'error');
+                        }
+                    }
+                });
+            }
+
+            openAddressModalBtn?.addEventListener('click', openAddressModal);
+            closeAddressModalBtn?.addEventListener('click', closeAddressModal);
+            cancelAddressModalBtn?.addEventListener('click', closeAddressModal);
+            addressModal?.addEventListener('click', function (e) {
+                if (e.target === addressModal) {
+                    closeAddressModal();
+                }
+            });
+
+            setupCheckoutPincodeAutofill();
+            validateSuratAddress();
+
+        })();
+
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                'error': '<i class="fas fa-exclamation-circle toast-icon"></i>',
+                'success': '<i class="fas fa-check-circle toast-icon"></i>',
+                'info': '<i class="fas fa-info-circle toast-icon"></i>'
+            };
+
+            toast.innerHTML = `
             ${icons[type] || icons['info']}
             <div class="toast-content">${message}</div>
         `;
-        
-        container.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.classList.add('removing');
-            setTimeout(() => toast.remove(), 300);
-        }, duration);
-    }
 
-    // Display Django messages as toasts
-    document.addEventListener('DOMContentLoaded', function() {
-        const messages = document.querySelectorAll('[data-message]');
-        messages.forEach(msg => {
-            const text = msg.getAttribute('data-message');
-            const type = msg.getAttribute('data-type') || 'info';
-            showToast(text, type);
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Display Django messages as toasts
+        document.addEventListener('DOMContentLoaded', function () {
+            const messages = document.querySelectorAll('[data-message]');
+            messages.forEach(msg => {
+                const text = msg.getAttribute('data-message');
+                const type = msg.getAttribute('data-type') || 'info';
+                showToast(text, type);
+            });
         });
-    });
-</script>
+    </script>
 </div>
 {% endblock %}

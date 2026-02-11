@@ -27,6 +27,8 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
+from django.urls import reverse
+from urllib.parse import quote
 
 # --- REGISTRATION VIEW ---
 def register_view(request):
@@ -43,6 +45,29 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 # --- LOGIN VIEW ---
+def _get_session_wishlist_items(request):
+    return request.session.get('wishlist_items', [])
+
+def _set_session_wishlist_items(request, items):
+    request.session['wishlist_items'] = items
+    request.session.modified = True
+
+def _merge_session_wishlist_into_user(request, user):
+    items = _get_session_wishlist_items(request)
+    if not items:
+        return
+    for entry in items:
+        product_id = entry.get('product_id')
+        variant_id = entry.get('variant_id')
+        if not product_id:
+            continue
+        product = Product.objects.filter(id=product_id).first()
+        if not product:
+            continue
+        variant = ProductVariant.objects.filter(id=variant_id).first() if variant_id else None
+        Wishlist.objects.get_or_create(user=user, product=product, variant=variant)
+    _set_session_wishlist_items(request, [])
+
 def login_view(request):
     if request.method == 'POST':
         form = UserLoginForm(request, data=request.POST)
@@ -53,6 +78,7 @@ def login_view(request):
             
             if user is not None:
                 login(request, user)
+                _merge_session_wishlist_into_user(request, user)
                 messages.info(request, f"You are now logged in as {username}.")
                 if getattr(user, 'role', None) == User.DELIVERY:
                     return redirect('delivery_dashboard')
@@ -104,14 +130,44 @@ def custom_admin_entry(request):
 # --- LOGOUT VIEW ---
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have successfully logged out.")
+    # messages.info(request, "You have successfully logged out.")
     return redirect('homepage')
 
 
+def _send_order_cancellation_email(order):
+    """Send cancellation email to customer if an email address is available."""
+    recipient = (order.email or (order.user.email if order.user else '')).strip()
+    if not recipient:
+        return False
+
+    customer_name = (
+        order.full_name
+        or (order.user.get_full_name() if order.user else '')
+        or 'Customer'
+    )
+    subject = f"Order Cancelled - #{order.order_number}"
+    body = (
+        f"Hello {customer_name},\n\n"
+        f"Your order #{order.order_number} has been cancelled successfully.\n"
+        f"Order Total: Rs. {order.total_amount}\n\n"
+        "If this was not expected, please contact our support team.\n\n"
+        "Thanks,\n"
+        "SkinCraft"
+    )
+    EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[recipient],
+    ).send(fail_silently=True)
+    return True
+
+
 # --- ADMIN DASHBOARD VIEW ---
-@login_required
 def admin_dashboard(request):
     """Admin dashboard showing business statistics"""
+    if not request.user.is_authenticated:
+        return redirect(f"/{settings.ADMIN_DASHBOARD_PATH}/")
     if not request.user.is_staff:
         messages.error(request, 'Access denied. You need admin privileges.')
         return redirect('homepage')
@@ -219,11 +275,50 @@ def admin_dashboard(request):
     # Recent data
     recent_orders_qs = Order.objects.select_related('user', 'assigned_to').prefetch_related('items__product').order_by('-created_at')
     recent_orders = recent_orders_qs[:10]
+    all_orders = recent_orders_qs
     recent_payments = Payment.objects.select_related('order').order_by('-created_at')[:10]
     recent_returns = Return.objects.select_related('order', 'user', 'assigned_to').order_by('-created_at')[:10]
     returns = Return.objects.select_related('order', 'user', 'assigned_to').prefetch_related('order__items__product').order_by('-created_at')
     returns_ready_for_refund = returns.filter(status='Completed').filter(Q(refund_record__isnull=True) | ~Q(refund_record__status='Processed'))
     active_pickups = returns.filter(status='Approved', assigned_to__isnull=False)
+    refunds = Refund.objects.select_related('order', 'order__user', 'return_request', 'processed_by').order_by('-created_at')
+    cancelled_refund_orders = Order.objects.select_related('user').prefetch_related('refunds').filter(
+        status='Cancelled',
+        payment_status='Paid',
+    ).order_by('-created_at')
+    cancelled_refund_rows = []
+    for cancelled_order in cancelled_refund_orders:
+        cancelled_refund = (
+            cancelled_order.refunds.filter(return_request__isnull=True)
+            .order_by('-created_at')
+            .first()
+        )
+        if cancelled_refund:
+            if cancelled_refund.status == 'Processed':
+                display_status = 'Paid'
+            elif cancelled_refund.status == 'Pending':
+                display_status = 'Pending'
+            else:
+                display_status = 'Failed'
+            refund_amount = cancelled_refund.amount
+            updated_at = cancelled_refund.processed_at or cancelled_refund.created_at
+        else:
+            if cancelled_order.payment_status == 'Paid':
+                display_status = 'Paid'
+            elif cancelled_order.payment_status == 'Pending':
+                display_status = 'Pending'
+            else:
+                display_status = cancelled_order.payment_status
+            refund_amount = cancelled_order.total_amount
+            updated_at = cancelled_order.created_at
+
+        cancelled_refund_rows.append({
+            'order': cancelled_order,
+            'refund': cancelled_refund,
+            'display_status': display_status,
+            'refund_amount': refund_amount,
+            'updated_at': updated_at,
+        })
     inventory_items = ProductVariant.objects.select_related('product', 'product__category').order_by('-stock')[:10]
     inventory_products_qs = Product.objects.select_related('category', 'subcategory').prefetch_related(
         'variants', 'images', 'tags'
@@ -373,11 +468,15 @@ def admin_dashboard(request):
     context = {
         'stats': stats,
         'recent_orders': recent_orders,
+        'all_orders': all_orders,
         'recent_payments': recent_payments,
         'recent_returns': recent_returns,
         'returns': returns,
         'returns_ready_for_refund': returns_ready_for_refund,
         'active_pickups': active_pickups,
+        'refunds': refunds,
+        'cancelled_refund_orders': cancelled_refund_orders,
+        'cancelled_refund_rows': cancelled_refund_rows,
         'inventory_items': inventory_items,
         'inventory_data_json': json.dumps(inventory_data),
         'inventory_categories_json': json.dumps(inventory_categories),
@@ -450,7 +549,6 @@ def return_details(request, return_id):
         return redirect('homepage')
     # For now, keep details within the dashboard context
     return redirect('/admin_dashboard/#returns')
-
 
 @login_required
 def process_return_refund(request, return_id):
@@ -645,6 +743,7 @@ def update_order(request, order_id):
     try:
         order = Order.objects.get(id=order_id)
         data = json.loads(request.body)
+        previous_status = order.status
 
         # Update status if provided
         if 'status' in data and data['status']:
@@ -662,6 +761,9 @@ def update_order(request, order_id):
                 order.assigned_to = None
 
         order.save()
+
+        if previous_status != 'Cancelled' and order.status == 'Cancelled':
+            _send_order_cancellation_email(order)
 
         return JsonResponse({'success': True, 'message': 'Order updated successfully'})
 
@@ -1090,6 +1192,9 @@ def homepage(request):
         wishlisted_product_ids = Wishlist.objects.filter(
             user=request.user
         ).values_list('product_id', flat=True)
+    else:
+        session_items = _get_session_wishlist_items(request)
+        wishlisted_product_ids = [item.get('product_id') for item in session_items if item.get('product_id')]
     
     # Get herbal oil product for the FAQ section
     herbal_oil_product = Product.objects.filter(
@@ -1454,9 +1559,25 @@ def profile_view(request):
         except Exception:
             product_total = Decimal('0')
         order.product_total = product_total
-        if getattr(order, 'payment_status', '') == 'Paid':
+        cancelled_refund = (
+            order.refunds.filter(return_request__isnull=True)
+            .order_by('-created_at')
+            .first()
+        )
+        order.cancelled_refund_record = cancelled_refund
+        if cancelled_refund:
+            if cancelled_refund.status == 'Processed':
+                order.cancelled_refund_status_display = 'Paid'
+            elif cancelled_refund.status == 'Pending':
+                order.cancelled_refund_status_display = 'Pending'
+            else:
+                order.cancelled_refund_status_display = 'Failed'
+            order.refund_amount = cancelled_refund.amount
+        elif getattr(order, 'payment_status', '') == 'Paid':
+            order.cancelled_refund_status_display = 'Paid'
             order.refund_amount = order.total_amount
         else:
+            order.cancelled_refund_status_display = getattr(order, 'payment_status', 'Pending')
             order.refund_amount = Decimal('0')
     
     context = {
@@ -1497,6 +1618,7 @@ def cancel_order(request, order_id):
         order.status = 'Cancelled'
         order.assigned_to = None
         order.save(update_fields=['status', 'assigned_to'])
+        transaction.on_commit(lambda: _send_order_cancellation_email(order))
 
     messages.success(request, f'Order {order.order_number} has been cancelled.')
     return redirect('/profile/?tab=orders')
@@ -1626,6 +1748,9 @@ def product_list(request):
         wishlisted_product_ids = Wishlist.objects.filter(
             user=request.user
         ).values_list('product_id', flat=True)
+    else:
+        session_items = _get_session_wishlist_items(request)
+        wishlisted_product_ids = [item.get('product_id') for item in session_items if item.get('product_id')]
 
     # --- PAGINATION ---
     paginator = Paginator(products, 6) 
@@ -1699,14 +1824,30 @@ def product_detail(request, pk):
 
 @login_required
 def wishlist_view(request):
-    items = Wishlist.objects.filter(user=request.user).select_related('product').order_by('-added_at')
+    if request.user.is_authenticated:
+        items = Wishlist.objects.filter(user=request.user).select_related('product', 'variant').order_by('-added_at')
+        wishlist_count = items.count()
+    else:
+        session_items = _get_session_wishlist_items(request)
+        items = []
+        for entry in session_items:
+            product_id = entry.get('product_id')
+            if not product_id:
+                continue
+            product = Product.objects.filter(id=product_id).first()
+            if not product:
+                continue
+            variant_id = entry.get('variant_id')
+            variant = ProductVariant.objects.filter(id=variant_id).first() if variant_id else None
+            items.append({'product': product, 'variant': variant})
+        wishlist_count = len(items)
     
     context = {
         'wishlist_items': items,
+        'wishlist_count': wishlist_count,
     }
     return render(request, 'wishlist.html', context)
 
-@login_required
 def toggle_wishlist(request, product_id):
     """
     Handles the AJAX ritual for adding/removing items.
@@ -1716,6 +1857,20 @@ def toggle_wishlist(request, product_id):
         product = get_object_or_404(Product, id=product_id)
         variant_id = request.POST.get('variant_id')
 
+        if not request.user.is_authenticated:
+            items = _get_session_wishlist_items(request)
+            entry = {
+                'product_id': product.id,
+                'variant_id': variant_id if variant_id else None
+            }
+            if entry in items:
+                items = [i for i in items if i != entry]
+                _set_session_wishlist_items(request, items)
+                return JsonResponse({'status': 'removed', 'wishlist_count': len(items)})
+            items.append(entry)
+            _set_session_wishlist_items(request, items)
+            return JsonResponse({'status': 'added', 'wishlist_count': len(items)})
+
         if variant_id:
             variant = ProductVariant.objects.filter(id=variant_id).first()
             wish_items = Wishlist.objects.filter(user=request.user, product=product, variant=variant)
@@ -1724,11 +1879,21 @@ def toggle_wishlist(request, product_id):
 
         if wish_items.exists():
             wish_items.delete()
-            return JsonResponse({'status': 'removed'})
+            # Recalculate count
+            if request.user.is_authenticated:
+                count = Wishlist.objects.filter(user=request.user).count()
+            else:
+                count = len(_get_session_wishlist_items(request))
+            return JsonResponse({'status': 'removed', 'wishlist_count': count})
         else:
             variant = ProductVariant.objects.filter(id=variant_id).first() if variant_id else None
             Wishlist.objects.create(user=request.user, product=product, variant=variant)
-            return JsonResponse({'status': 'added'})
+            # Recalculate count
+            if request.user.is_authenticated:
+                count = Wishlist.objects.filter(user=request.user).count()
+            else:
+                count = len(_get_session_wishlist_items(request))
+            return JsonResponse({'status': 'added', 'wishlist_count': count})
             
     return JsonResponse({'status': 'error'}, status=400)
 
@@ -1742,6 +1907,13 @@ def get_or_create_cart(request):
     return cart
 
 def add_to_cart(request, product_id):
+    if not request.user.is_authenticated:
+        login_url = reverse('login')
+        redirect_url = f"{login_url}?next={quote(request.get_full_path())}"
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'auth_required', 'redirect_url': redirect_url}, status=401)
+        return redirect(redirect_url)
+
     if request.method == 'POST':
         product = get_object_or_404(Product, id=product_id)
         variant_id = request.POST.get('variant_id')
@@ -1750,10 +1922,7 @@ def add_to_cart(request, product_id):
         variant = get_object_or_404(ProductVariant, id=variant_id)
 
         # Get or create cart
-        cart, created = Cart.objects.get_or_create(
-            user=request.user if request.user.is_authenticated else None,
-            defaults={'session_id': request.session.session_key if not request.user.is_authenticated else None}
-        )
+        cart, created = Cart.objects.get_or_create(user=request.user)
         
         # Add item if not already in cart
         item, created = CartItem.objects.get_or_create(
@@ -1858,38 +2027,63 @@ def delete_cart_item(request, item_id):
         })
     return redirect('cart_view')
 
+@login_required
 def checkout_view(request):
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        # Fetch saved data for the sanctuary ritual
-        initial_contact = {
-            'full_name': f"{request.user.first_name} {request.user.last_name}",
-            'email': request.user.email,
-            'phone': request.user.phone or ""
-        }
-        addresses = Address.objects.filter(user=request.user)
-    else:
-        # Redirect if no guest session exists
-        session_id = request.session.session_key
-        if not session_id:
-            return redirect('cart_view')
-        cart, _ = Cart.objects.get_or_create(session_id=session_id)
-        initial_contact = {}
-        addresses = []
+    # Fetch saved data for the sanctuary ritual
+    initial_contact = {
+        'full_name': f"{request.user.first_name} {request.user.last_name}",
+        'email': request.user.email,
+        'phone': request.user.phone or ""
+    }
+    addresses = Address.objects.filter(user=request.user)
 
-    if not cart.items.exists():
-        return redirect('cart_view')
+    # CHECK FOR BUY NOW MODE
+    buy_now_variant_id = request.GET.get('variant_id')
+    buy_now_mode = False
+    checkout_items = []
     
-    # Validate stock availability for all items
-    for item in cart.items.all():
-        if item.quantity > item.variant.stock:
-            messages.error(request, f'{item.product.name}: Only {item.variant.stock} units available. Please adjust quantity.')
+    cart = None
+    if buy_now_variant_id:
+        try:
+            variant = ProductVariant.objects.get(id=buy_now_variant_id)
+            if variant.stock > 0:
+                buy_now_mode = True
+                # Create a pseudo-item structure for the template
+                from collections import namedtuple
+                PseudoItem = namedtuple('PseudoItem', ['product', 'variant', 'quantity', 'subtotal'])
+                
+                item = PseudoItem(
+                    product=variant.product,
+                    variant=variant,
+                    quantity=1,
+                    subtotal=variant.price
+                )
+                checkout_items = [item]
+                subtotal = variant.price
+            else:
+                messages.error(request, 'Selected item is out of stock.')
+                return redirect('cart_view')
+        except ProductVariant.DoesNotExist:
+            messages.error(request, 'Invalid item selected.')
             return redirect('cart_view')
-    
+    else:
+        # STANDARD CART CHECKOUT
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        if not cart.items.exists():
+            return redirect('cart_view')
+        
+        # Validate stock availability for all items
+        for item in cart.items.all():
+            if item.quantity > item.variant.stock:
+                messages.error(request, f'{item.product.name}: Only {item.variant.stock} units available. Please adjust quantity.')
+                return redirect('cart_view')
+        
+        checkout_items = cart.items.all()
+        subtotal = Decimal(str(cart.total_price))
+
     # Delivery fee rules
     delivery_free_threshold = Decimal('999')
     delivery_fee_fixed = Decimal('49')
-    subtotal = Decimal(str(cart.total_price))
     delivery_fee = Decimal('0') if subtotal >= delivery_free_threshold else delivery_fee_fixed
 
     # Coupon handling
@@ -1928,7 +2122,10 @@ def checkout_view(request):
     ).order_by('end_date')
 
     context = {
-        'cart': cart,
+        'cart': cart, # Can be None in buy_now_mode
+        'checkout_items': checkout_items, # Use this for iteration
+        'buy_now_mode': buy_now_mode,
+        'buy_now_variant_id': buy_now_variant_id,
         'initial_contact': initial_contact,
         'addresses': addresses,
         'address_choices': [('Home', 'Home'), ('Office', 'Office'), ('Other', 'Other')],
@@ -2152,11 +2349,40 @@ def _is_first_order_user(user):
 @transaction.atomic
 def process_order(request):
     if request.method == 'POST':
-        # 1. Retrieve the bag for Auth or Guest
-        if request.user.is_authenticated:
-            cart = get_object_or_404(Cart, user=request.user)
+        # CHECK FOR BUY NOW MODE
+        buy_now_mode = request.POST.get('action') == 'buy_now'
+        buy_now_variant_id = request.POST.get('variant_id')
+        
+        cart = None
+        pseudo_items = []
+        
+        if buy_now_mode and buy_now_variant_id:
+            try:
+                variant = ProductVariant.objects.get(id=buy_now_variant_id)
+                # Create a pseudo-item structure for processing
+                from collections import namedtuple
+                PseudoItem = namedtuple('PseudoItem', ['product', 'variant', 'quantity', 'subtotal'])
+                
+                item = PseudoItem(
+                    product=variant.product,
+                    variant=variant,
+                    quantity=1,
+                    subtotal=variant.price
+                )
+                pseudo_items = [item]
+                cart_total_price = variant.price
+            except ProductVariant.DoesNotExist:
+                messages.error(request, 'Invalid item for Buy Now.')
+                return redirect('checkout')
         else:
-            cart = get_object_or_404(Cart, session_id=request.session.session_key)
+            # STANDARD CART CHECKOUT
+            if request.user.is_authenticated:
+                cart = get_object_or_404(Cart, user=request.user)
+            else:
+                cart = get_object_or_404(Cart, session_id=request.session.session_key)
+            
+            pseudo_items = cart.items.all()
+            cart_total_price = cart.total_price
 
         # 2. Extract Details from Form
         full_name = request.POST.get('full_name')
@@ -2206,7 +2432,7 @@ def process_order(request):
         # Recalculate totals for order
         delivery_free_threshold = Decimal('999')
         delivery_fee_fixed = Decimal('49')
-        subtotal = Decimal(str(cart.total_price))
+        subtotal = Decimal(str(cart_total_price))
         delivery_fee = Decimal('0') if subtotal >= delivery_free_threshold else delivery_fee_fixed
 
         discount_amount = Decimal('0')
@@ -2258,8 +2484,8 @@ def process_order(request):
             zip_code=selected_address.zip_code if selected_address else ''
         )
 
-        # 6. Create OrderItems from cart items
-        for item in cart.items.all():
+        # 6. Create OrderItems from pseudo items (works for both flows)
+        for item in pseudo_items:
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
@@ -2274,8 +2500,37 @@ def process_order(request):
         # 7. Send invoice email
         send_invoice_email(order)
 
-        # 8. Clear the cart items and coupon
-        cart.items.all().delete()
+        # 8. Clear the cart items and coupon if STANDARD FLOW
+        if not buy_now_mode and cart:
+            cart.items.all().delete()
+        elif buy_now_mode:
+            # For Buy Now, remove only the specific item from the cart if it exists
+            # This prevents double purchasing if they later go to cart
+            if request.user.is_authenticated:
+                user_cart = Cart.objects.filter(user=request.user).first()
+            else:
+                user_cart = Cart.objects.filter(session_id=request.session.session_key).first()
+                
+            if user_cart:
+                try:
+                    # Find and remove/decrement the item in the cart
+                    cart_item = user_cart.items.filter(variant_id=buy_now_variant_id).first()
+                    if cart_item:
+                        # Logic: Since we just bought 1 unit (assumed for buy now), 
+                        # we should reduce quantity by 1 or delete if qty is 1.
+                        # However, for simplicity and typical "Buy Now" expectation, 
+                        # we often just remove the item line entirely to be safe/clean.
+                        # Let's decrement for correctness.
+                        if cart_item.quantity > 1:
+                            cart_item.quantity -= 1
+                            cart_item.save()
+                        else:
+                            cart_item.delete()
+                except Exception as e:
+                    # Log error but don't fail the order process
+                    print(f"Error cleaning up cart after buy now: {e}")
+        
+        # Always remove coupon after use
         request.session.pop('coupon_code', None)
         
         return redirect('order_success', order_number=order_number)

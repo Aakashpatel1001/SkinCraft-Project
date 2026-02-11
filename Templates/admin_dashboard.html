@@ -249,6 +249,14 @@
                     <span id="badge-returns"
                         class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">{{ returns_pending_count }}</span>
                 </a>
+                <a href="#refunds"
+                    class="flex items-center gap-3 py-3 px-4 mx-3 my-1 rounded-2xl text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-white hover:text-ayur-primary hover:translate-x-1 hover:shadow-[0_10px_22px_rgba(14,27,20,0.08)]"
+                    data-section="refunds">
+                    <i class="fas fa-money-bill-wave nav-icon"></i>
+                    <span>Refunds</span>
+                    <span id="badge-refunds"
+                        class="ml-auto bg-red-500 text-white px-2 py-0.5 rounded-[10px] text-[0.7rem] font-semibold">{{ refunds.count }}</span>
+                </a>
                 <a href="#users"
                     class="flex items-center gap-3 py-3 px-4 mx-3 my-1 rounded-2xl text-gray-600 no-underline transition-all duration-300 cursor-pointer relative hover:bg-white hover:text-ayur-primary hover:translate-x-1 hover:shadow-[0_10px_22px_rgba(14,27,20,0.08)]"
                     data-section="users">
@@ -995,6 +1003,105 @@
                 </div>
             </div>
 
+            <div id="refunds" class="content-section">
+                <div class="bg-white/90 rounded-2xl border border-white/70 p-6 shadow-[var(--shadow-soft)] glass mb-6">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                        <h3 class="text-2xl font-bold text-ayur-dark m-0 font-serif">Refunds</h3>
+                        <span class="text-xs text-gray-500">Cancelled order refunds and return refunds.</span>
+                    </div>
+                </div>
+
+                <div class="bg-white/90 rounded-2xl border border-white/70 p-6 shadow-[var(--shadow-soft)] glass mb-6">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                        <h4 class="text-lg font-semibold text-ayur-dark m-0">Cancelled Order Refunds</h4>
+                        <span class="text-xs text-gray-500">Orders cancelled after online payment.</span>
+                    </div>
+                    <table class="w-full border-collapse data-table">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Paid Amount</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Method</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Cancelled On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cancelledRefundsTableBody">
+                            {% for row in cancelled_refund_rows %}
+                            <tr class="border-b border-gray-100 transition-all duration-300">
+                                <td class="p-4 text-sm text-gray-700"><strong>#{{ row.order.order_number }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">{{ row.order.full_name|default:row.order.user.get_full_name|default:row.order.user.username|default:"Customer" }}</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>&#8377;{{ row.refund_amount|floatformat:2 }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">{{ row.order.payment_method|default:"Online" }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% if row.display_status == 'Paid' %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">PAID</span>
+                                    {% elif row.display_status == 'Pending' %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">PENDING</span>
+                                    {% else %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-red-100 text-red-700">{{ row.display_status|upper }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">{{ row.updated_at|date:"M d, Y h:i A" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="p-6 text-sm text-gray-500" colspan="6">No cancelled order refunds found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-white/90 rounded-2xl border border-white/70 p-6 shadow-[var(--shadow-soft)] glass">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                        <h4 class="text-lg font-semibold text-ayur-dark m-0">Return Refunds</h4>
+                        <span class="text-xs text-gray-500">Refunds processed from return requests.</span>
+                    </div>
+                    <table class="w-full border-collapse data-table">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Refund ID</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Order</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Customer</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Refund Amount</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Damage</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Processed On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refundsTableBody">
+                            {% for refund in refunds %}
+                            <tr class="border-b border-gray-100 transition-all duration-300">
+                                <td class="p-4 text-sm text-gray-700"><strong>{{ refund.refund_id|default:refund.id }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">#{{ refund.order.order_number }}</td>
+                                <td class="p-4 text-sm text-gray-700">{{ refund.order.full_name|default:refund.order.user.get_full_name|default:refund.order.user.username|default:"Customer" }}</td>
+                                <td class="p-4 text-sm text-gray-700"><strong>&#8377;{{ refund.amount|floatformat:2 }}</strong></td>
+                                <td class="p-4 text-sm text-gray-700">&#8377;{{ refund.damage_amount|floatformat:2 }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% if refund.status == 'Processed' %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-green-100 text-green-700">PROCESSED</span>
+                                    {% elif refund.status == 'Pending' %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-yellow-100 text-yellow-700">PENDING</span>
+                                    {% else %}
+                                    <span class="px-3 py-1 rounded-[10px] text-xs font-semibold bg-red-100 text-red-700">{{ refund.status|upper }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    {% if refund.processed_at %}{{ refund.processed_at|date:"M d, Y h:i A" }}{% else %}{{ refund.created_at|date:"M d, Y h:i A" }}{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="p-6 text-sm text-gray-500" colspan="7">No return refunds found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- INSPECT & REFUND MODAL -->
             <div id="refundInspectModal"
                 class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center px-4 py-6">
@@ -1201,7 +1308,7 @@
                                 </tr>
                             </thead>
                             <tbody id="ordersTableBody">
-                                {% for order in recent_orders %}
+                                {% for order in all_orders %}
                                 <tr class="border-b border-gray-100 transition-all duration-300 order-row"
                                     data-order-id="{{ order.id }}"
                                     data-assigned-driver="{{ order.assigned_to.id|default:'' }}"
@@ -1271,7 +1378,23 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mt-6">
+                        <p id="orderCount" class="text-sm text-gray-500">Showing 0-0 of 0</p>
+                        <div class="flex items-center gap-2">
+                            <button id="orderPrev"
+                                class="px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 hover:text-ayur-primary hover:border-ayur-primary">Prev</button>
+                            <select id="orderPerPage"
+                                class="px-3 py-2 rounded-full border border-gray-200 text-xs text-gray-600">
+                                <option value="10" selected>10 / page</option>
+                                <option value="20">20 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                            <button id="orderNext"
+                                class="px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 hover:text-ayur-primary hover:border-ayur-primary">Next</button>
+                        </div>
+                    </div>
                 </div>
+
             </div>
 
             <!-- ORDER DETAIL MODAL -->
@@ -2072,7 +2195,7 @@
                                         Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="customerUsersTableBody">
                                 {% for customer in recent_customers %}
                                 <tr class="border-b border-gray-100 transition-all duration-300"
                                     data-user-type="customer"
@@ -2332,6 +2455,12 @@
 
         // Store filtered state
         let currentTab = 'all';
+        let orderPage = 1;
+        const orderCount = document.getElementById('orderCount');
+        const orderPrev = document.getElementById('orderPrev');
+        const orderNext = document.getElementById('orderNext');
+        const orderPerPage = document.getElementById('orderPerPage');
+        let orderPageSize = orderPerPage ? Number(orderPerPage.value) : 10;
 
         // Tab Switching
         const orderTabBtns = document.querySelectorAll('.order-tab-btn');
@@ -2394,13 +2523,14 @@
         if (orderDateTo) orderDateTo.addEventListener('change', applyAllFilters);
 
         // Apply All Filters - Improved
-        function applyAllFilters() {
+        function applyAllFilters(keepPage = false) {
             const searchTerm = (document.getElementById('orderSearch')?.value || '').toLowerCase().trim();
             const statusFilter = document.getElementById('orderStatus')?.value || '';
             const dateFrom = document.getElementById('orderDateFrom')?.value || '';
             const dateTo = document.getElementById('orderDateTo')?.value || '';
 
-            const rows = document.querySelectorAll('.order-row');
+            const rows = Array.from(document.querySelectorAll('.order-row'));
+            const filteredRows = [];
 
             rows.forEach(row => {
                 let show = true;
@@ -2447,8 +2577,50 @@
                     }
                 }
 
-                row.style.display = show ? 'table-row' : 'none';
+                if (show) {
+                    filteredRows.push(row);
+                }
+                row.style.display = 'none';
             });
+
+            if (!keepPage) {
+                orderPage = 1;
+            }
+
+            const totalRows = filteredRows.length;
+            const maxPage = Math.max(1, Math.ceil(totalRows / orderPageSize));
+            if (orderPage > maxPage) {
+                orderPage = maxPage;
+            }
+
+            const startIndex = (orderPage - 1) * orderPageSize;
+            const endIndex = Math.min(startIndex + orderPageSize, totalRows);
+            const pageRows = filteredRows.slice(startIndex, endIndex);
+            pageRows.forEach(row => {
+                row.style.display = 'table-row';
+            });
+
+            if (orderCount) {
+                if (totalRows === 0) {
+                    orderCount.textContent = 'Showing 0-0 of 0';
+                } else {
+                    orderCount.textContent = `Showing ${startIndex + 1}-${endIndex} of ${totalRows}`;
+                }
+            }
+
+            if (orderPrev) {
+                orderPrev.disabled = orderPage <= 1;
+                orderPrev.classList.toggle('opacity-40', orderPage <= 1);
+            }
+
+            if (orderNext) {
+                orderNext.disabled = endIndex >= totalRows;
+                orderNext.classList.toggle('opacity-40', endIndex >= totalRows);
+            }
+        }
+
+        function applyOrderFilters(keepPage = false) {
+            applyAllFilters(keepPage);
         }
 
         // Clear Filters
@@ -2472,11 +2644,36 @@
                     }
                 });
 
-                document.querySelectorAll('.order-row').forEach(row => {
-                    row.style.display = 'table-row';
-                });
+                orderPage = 1;
+                applyAllFilters();
             });
         }
+
+        if (orderPrev) {
+            orderPrev.addEventListener('click', function () {
+                if (orderPage > 1) {
+                    orderPage -= 1;
+                    applyAllFilters(true);
+                }
+            });
+        }
+
+        if (orderNext) {
+            orderNext.addEventListener('click', function () {
+                orderPage += 1;
+                applyAllFilters(true);
+            });
+        }
+
+        if (orderPerPage) {
+            orderPerPage.addEventListener('change', function () {
+                orderPageSize = Number(this.value) || 10;
+                orderPage = 1;
+                applyAllFilters();
+            });
+        }
+
+        applyAllFilters();
 
         // ===== USER MANAGEMENT FILTERS =====
         const userSearchInput = document.getElementById('userSearchInput');
@@ -2713,6 +2910,7 @@
                         }
 
                         applyUserFilters();
+                        refreshAdminSnapshot();
                         closeAddDeliveryPartnerModalFn();
                     })
                     .catch(error => {
@@ -2767,6 +2965,7 @@
                       if (!data.success) {
                           throw new Error(data.error || 'Update failed');
                       }
+                      refreshAdminSnapshot();
                   })
                   .catch(() => {
                       // revert UI
@@ -2790,15 +2989,6 @@
             }
         }
 
-        const userToggleInputs = document.querySelectorAll('.user-toggle-input');
-        userToggleInputs.forEach(toggle => {
-            toggle.addEventListener('change', function () {
-                handleUserToggleChange(this);
-            });
-        });
-
-        const userLockButtons = document.querySelectorAll('.user-lock-btn');
-
         function updateLockButton(button, isActive) {
             if (!button) {
                 return;
@@ -2818,53 +3008,50 @@
             button.classList.toggle('hover:bg-emerald-600', !isActive);
         }
 
-        userLockButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const userId = this.getAttribute('data-user-id');
-                const isActive = this.getAttribute('data-user-active') === 'true';
-                const nextActive = !isActive;
+        function handleUserLockClick(button) {
+            const userId = button.getAttribute('data-user-id');
+            const isActive = button.getAttribute('data-user-active') === 'true';
+            const nextActive = !isActive;
 
-                if (!userId) {
-                    return;
-                }
+            if (!userId) {
+                return;
+            }
 
-                const actionLabel = nextActive ? 'unblock' : 'block';
-                if (!confirm(`Are you sure you want to ${actionLabel} this user?`)) {
-                    return;
-                }
+            const actionLabel = nextActive ? 'unblock' : 'block';
+            if (!confirm(`Are you sure you want to ${actionLabel} this user?`)) {
+                return;
+            }
 
-                this.disabled = true;
+            button.disabled = true;
 
-                fetch(`/api/user/${userId}/toggle/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ is_active: nextActive })
+            fetch(`/api/user/${userId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ is_active: nextActive })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || 'Update failed');
+                    }
+                    updateLockButton(button, nextActive);
+                    refreshAdminSnapshot();
                 })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            throw new Error(data.error || 'Update failed');
-                        }
-                        updateLockButton(this, nextActive);
-                    })
-                    .catch(() => {
-                        alert('Failed to update user status.');
-                    })
-                    .finally(() => {
-                        this.disabled = false;
-                    });
-            });
-        });
+                .catch(() => {
+                    alert('Failed to update user status.');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                });
+        }
 
         // Customer detail modal
         const customerModal = document.getElementById('customerModal');
         const closeCustomerModal = document.getElementById('closeCustomerModal');
-        const customerViewBtns = document.querySelectorAll('.customer-view-btn');
-
         function openCustomerModal(btn) {
             if (!customerModal) return;
             const id = btn.getAttribute('data-id') || '—';
@@ -2894,12 +3081,6 @@
             customerModal.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
-
-        customerViewBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-                openCustomerModal(this);
-            });
-        });
 
         if (closeCustomerModal) {
             closeCustomerModal.addEventListener('click', closeCustomerModalFn);
@@ -4719,6 +4900,25 @@
             const topProductValuesScript = document.getElementById('topProductValues');
             const topProductLabels = topProductLabelsScript ? JSON.parse(topProductLabelsScript.textContent) : [];
             const topProductValues = topProductValuesScript ? JSON.parse(topProductValuesScript.textContent) : [];
+            const formatTopProductLabel = (label) => {
+                const text = String(label || '').trim();
+                if (text.length <= 34) return text;
+
+                const words = text.split(' ');
+                const lines = [];
+                let line = '';
+                words.forEach(word => {
+                    const next = line ? `${line} ${word}` : word;
+                    if (next.length > 34 && line) {
+                        lines.push(line);
+                        line = word;
+                    } else {
+                        line = next;
+                    }
+                });
+                if (line) lines.push(line);
+                return lines;
+            };
         new Chart(productsCtx.getContext('2d'), {
             type: 'bar',
             data: {
@@ -4733,6 +4933,30 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'y',
+                layout: {
+                    padding: {
+                        left: 18,
+                        right: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            autoSkip: false,
+                            padding: 10,
+                            callback: function (value) {
+                                const label = this.getLabelForValue(value);
+                                return formatTopProductLabel(label);
+                            }
+                        }
+                    },
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
                 plugins: {
                     legend: { display: false }
                 }
@@ -4793,6 +5017,18 @@
 
         // Delegate handlers for dynamically refreshed rows
         document.addEventListener('click', function (event) {
+            const userLockBtn = event.target.closest('.user-lock-btn');
+            if (userLockBtn) {
+                handleUserLockClick(userLockBtn);
+                return;
+            }
+
+            const customerViewBtn = event.target.closest('.customer-view-btn');
+            if (customerViewBtn) {
+                openCustomerModal(customerViewBtn);
+                return;
+            }
+
             const orderBtn = event.target.closest('.order-view-btn');
             if (orderBtn) {
                 const orderId = orderBtn.getAttribute('data-order-id');
@@ -4837,14 +5073,18 @@
                         'stat-active-users',
                         'stat-active-delivery',
                         'badge-returns',
-                        'badge-users',
+                        'badge-refunds',
                         'badge-orders',
                         'badge-inventory',
                         'recentOrdersBody',
                         'ordersTableBody',
                         'returnsTableBody',
+                        'customerUsersTableBody',
+                        'deliveryPartnersUserBody',
                         'customersTableBody',
-                        'partnersTableBody'
+                        'partnersTableBody',
+                        'cancelledRefundsTableBody',
+                        'refundsTableBody'
                     ];
 
                     idsToSync.forEach(id => {
