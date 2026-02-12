@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Delivery Partner | Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/5.png' %}" type="image/png">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         /* --- RESET & VARIABLES --- */
@@ -102,10 +103,10 @@
         .ec-desc { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .status-text-paid { color: #0bb783; }
-        .status-text-due { color: #f64e60; }
 
         /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .salary-stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         .stat-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
         .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; }
         .stat-card h3 { font-size: 1.8rem; margin-bottom: 5px; color: #333; font-weight: 800; }
@@ -218,27 +219,31 @@
             .main-content { margin-left: 0; padding: 15px; }
             .top-header { display: flex; }
             .stats-grid { grid-template-columns: 1fr; }
+            .salary-stats-grid { grid-template-columns: 1fr; }
             .task-body { grid-template-columns: 1fr; gap: 15px; }
             .driver-profile { padding-bottom: 40px; } 
+        }
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .salary-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
-
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
     <div class="sidebar" id="sidebar">
         <div class="logo-area">
             <h3><i class="fas fa-shipping-fast" style="color:var(--accent-color);"></i> Partner App</h3>
         </div>
-        
         <ul class="nav-links">
             <li class="nav-item active" data-tab="dashboard" onclick="showTab('dashboard', this)">
                 <i class="fas fa-th-large"></i> Dashboard
             </li>
             <li class="nav-item" data-tab="salary" onclick="showTab('salary', this)">
                 <i class="fas fa-wallet"></i> Salary
+            </li>
+            <li class="nav-item" data-tab="bank" onclick="showTab('bank', this)">
+                <i class="fas fa-university"></i> Bank Details
             </li>
             <li class="nav-item" data-tab="history" onclick="showTab('history', this)">
                 <i class="fas fa-history"></i> Order History
@@ -291,29 +296,28 @@
             
             <div class="earnings-card">
                 <div class="ec-header"><span>Monthly Salary</span><i class="fas fa-wallet"></i></div>
-                <div class="ec-amount">₹{{ stats.salary_paid|default:"0" }}</div>
+                <div class="ec-amount">₹{{ stats.salary_paid|default:"0"|floatformat:2 }}</div>
                 <div class="ec-label">Received This Month</div>
                 <div class="ec-progress">
+                    {% if stats.monthly_salary > 0 %}
                     <div class="ec-bar" style="width: {% widthratio stats.salary_paid stats.monthly_salary 100 %}%"></div>
+                    {% else %}
+                    <div class="ec-bar" style="width: 0%"></div>
+                    {% endif %}
                 </div>
                 <div class="ec-stats">
-                    <div class="ec-stat-item">
-                        <span class="ec-val">₹{{ stats.monthly_salary }}</span><span class="ec-desc">Fixed</span>
+                    <div class="ec-stat-item" style="width: 50%;">
+                        <span class="ec-val">₹{{ stats.monthly_salary|default:"0"|floatformat:2 }}</span><span class="ec-desc">Fixed</span>
                     </div>
-                    <div class="ec-stat-item" style="border-left: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1);">
-                        <span class="ec-val status-text-paid">₹{{ stats.salary_paid }}</span><span class="ec-desc">Paid</span>
-                    </div>
-                    <div class="ec-stat-item">
-                        <span class="ec-val status-text-due">₹{{ stats.salary_due }}</span><span class="ec-desc">Due</span>
+                    <div class="ec-stat-item" style="width: 50%; border-left: 1px solid rgba(255,255,255,0.1);">
+                        <span class="ec-val status-text-paid">₹{{ stats.salary_paid|default:"0"|floatformat:2 }}</span><span class="ec-desc">Paid</span>
                     </div>
                 </div>
             </div>
-
-            <div class="stats-grid">
-                <div class="stat-card border-blue">
-                    <div><h3>₹{{ stats.monthly_salary }}</h3><p>Fixed Salary</p></div>
-                    <i class="fas fa-money-bill-wave stat-icon" style="color: var(--info-color);"></i>
-                </div>
+                <div class="stats-grid">
+                    <div class="stat-card border-blue">
+                        <div><h3>{{ stats.return_pickups|default:"0" }}</h3><p>Total Return Pickups</p></div>                     <i class="fas fa-undo stat-icon" style="color: var(--info-color);"></i>
+                    </div>
                 <div class="stat-card border-yellow">
                     <div><h3>{{ stats.pending_count }}</h3><p>Pending Deliveries</p></div>
                     <i class="fas fa-clock stat-icon" style="color: var(--warning-color);"></i>
@@ -322,12 +326,11 @@
                     <div><h3>{{ stats.total_delivered }}</h3><p>Orders Delivered</p></div>
                     <i class="fas fa-check-double stat-icon" style="color: #333;"></i>
                 </div>
-                <div class="stat-card" style="border-left: 4px solid #d63031;">
-                    <div><h3>{{ stats.return_pickups|default:"0" }}</h3><p>Return Pickups</p></div>
-                    <i class="fas fa-undo stat-icon" style="color: #d63031;"></i>
+                <div class="stat-card border-green">
+                    <div><h3>{{ stats.pending_returns|default:"0" }}</h3><p>Pending Returns</p></div>
+                    <i class="fas fa-rotate-left stat-icon" style="color: #0986b4;"></i>
                 </div>
             </div>
-
             <div class="content-box">
                 <div class="box-header">
                     <span class="box-title text-success"><i class="fas fa-box"></i> Deliveries</span>
@@ -564,21 +567,160 @@
         <div id="tab-salary" class="view-section" style="display:none;">
             <div class="content-box">
                 <div class="box-header">
-                    <span class="box-title"><i class="fas fa-wallet"></i> Salary Overview</span>
+                    <span class="box-title"><i class="fas fa-wallet"></i> Salary Wallet</span>
+                    <span style="font-size:0.8rem; color:#888;">Updated from admin salary transfers</span>
                 </div>
                 <div class="task-list" style="padding:20px;">
-                    <div class="stats-grid" style="margin-bottom:0;">
+                    <div class="stats-grid salary-stats-grid" style="margin-bottom:0;">
                         <div class="stat-card border-blue">
-                            <div><h3>₹{{ stats.monthly_salary|default:"0" }}</h3><p>Fixed Salary</p></div>
+                            <div><h3>₹{{ stats.monthly_salary|default:"0"|floatformat:2 }}</h3><p>Base Salary</p></div>
                             <i class="fas fa-money-bill-wave stat-icon" style="color: var(--info-color);"></i>
                         </div>
                         <div class="stat-card border-green">
-                            <div><h3>₹{{ stats.salary_paid|default:"0" }}</h3><p>Received</p></div>
+                            <div><h3>₹{{ stats.salary_paid|default:"0"|floatformat:2 }}</h3><p>This Month Received</p></div>
                             <i class="fas fa-check-circle stat-icon" style="color: var(--success-color);"></i>
                         </div>
-                        <div class="stat-card border-yellow">
-                            <div><h3>₹{{ stats.salary_due|default:"0" }}</h3><p>Pending</p></div>
-                            <i class="fas fa-hourglass-half stat-icon" style="color: var(--warning-color);"></i>
+                        <div class="stat-card border-dark">
+                            <div><h3>₹{{ stats.total_salary_received|default:"0"|floatformat:2 }}</h3><p>Total Received</p></div>
+                            <i class="fas fa-piggy-bank stat-icon" style="color: #333;"></i>
+                        </div>
+                        <div class="stat-card border-blue">
+                            <div>
+                                <h3 style="font-size:1.2rem;">
+                                    {% if last_salary_payment %}
+                                    {{ last_salary_payment.get_period_display }}
+                                    {% else %}
+                                    --
+                                    {% endif %}
+                                </h3>
+                                <p>Last Paid Period</p>
+                            </div>
+                            <i class="fas fa-calendar-check stat-icon" style="color: var(--info-color);"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <div class="box-header">
+                    <span class="box-title"><i class="fas fa-receipt"></i> Salary Payment History</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Base</th>
+                                <th>Bonus</th>
+                                <th>Deduction</th>
+                                <th>Net Paid</th>
+                                <th>Mode</th>
+                                <th>Status</th>
+                                <th>Paid On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for salary in salary_payments %}
+                            <tr>
+                                <td style="font-weight:700;">{{ salary.get_period_display }}</td>
+                                <td>₹{{ salary.base_salary|floatformat:2 }}</td>
+                                <td>₹{{ salary.bonus|floatformat:2 }}</td>
+                                <td>₹{{ salary.deductions|floatformat:2 }}</td>
+                                <td style="font-weight:800; color:#1f7a4d;">₹{{ salary.net_salary|floatformat:2 }}</td>
+                                <td>{{ salary.payment_mode|default:"-" }}</td>
+                                <td>
+                                    {% if salary.status == 'Paid' %}
+                                    <span class="badge" style="background:#d4edda; color:#155724;">Paid</span>
+                                    {% elif salary.status == 'Pending' %}
+                                    <span class="badge" style="background:#fff3cd; color:#856404;">Pending</span>
+                                    {% elif salary.status == 'Hold' %}
+                                    <span class="badge" style="background:#ffe8cc; color:#9a3412;">On Hold</span>
+                                    {% else %}
+                                    <span class="badge" style="background:#fde2e2; color:#9f1239;">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if salary.paid_at %}
+                                    {{ salary.paid_at|date:"M d, Y" }}<span style="font-size:0.75rem; color:#999; display:block;">{{ salary.paid_at|date:"h:i A" }}</span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" style="text-align:center; padding:40px; color:#888;">
+                                    No salary payments yet. Admin transfers will appear here.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-bank" class="view-section" style="display:none;">
+            <div class="content-box">
+                <div class="box-header">
+                    <span class="box-title"><i class="fas fa-university"></i> Salary Bank Details</span>
+                    <span style="font-size:0.8rem; color:#888;">Used by admin for salary transfers.</span>
+                </div>
+                <div class="task-list" style="padding:20px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+                        <div style="padding:14px; border:1px solid #e5e7eb; border-radius:10px; background:#f9fbff;">
+                            <div style="font-size:0.78rem; font-weight:700; color:#6b7280; text-transform:uppercase; margin-bottom:8px;">Saved Details</div>
+                            {% if bank_details %}
+                            <div style="font-size:0.9rem; color:#374151; line-height:1.6;">
+                                <div><strong>Account Holder:</strong> {{ bank_details.account_holder_name }}</div>
+                                <div><strong>Account Number:</strong> ****{{ bank_details.account_number|slice:"-4:" }}</div>
+                                <div><strong>IFSC:</strong> {{ bank_details.ifsc_code }}</div>
+                                <div><strong>Bank:</strong> {{ bank_details.bank_name }}</div>
+                                <div><strong>UPI ID:</strong> {{ bank_details.upi_id|default:"-" }}</div>
+                                <div style="margin-top:8px; color:#6b7280; font-size:0.8rem;">
+                                    Updated: {{ bank_details.updated_at|date:"M d, Y h:i A" }}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div style="font-size:0.9rem; color:#6b7280;">
+                                No bank details added yet. Add details below so admin can transfer your salary.
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <form action="{% url 'update_delivery_bank_details' %}" method="POST" class="helpdesk-form" style="background:#fff;">
+                                {% csrf_token %}
+                                <div class="helpdesk-field">
+                                    <label class="info-label">Account Holder Name</label>
+                                    <input type="text" name="account_holder_name" value="{{ bank_details.account_holder_name|default:'' }}" required
+                                           style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                </div>
+                                <div class="helpdesk-field" style="margin-top:10px;">
+                                    <label class="info-label">Account Number</label>
+                                    <input type="text" name="account_number" value="{{ bank_details.account_number|default:'' }}" required
+                                           style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                </div>
+                                <div class="helpdesk-field" style="margin-top:10px;">
+                                    <label class="info-label">IFSC Code</label>
+                                    <input type="text" name="ifsc_code" value="{{ bank_details.ifsc_code|default:'' }}" required
+                                           style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                </div>
+                                <div class="helpdesk-field" style="margin-top:10px;">
+                                    <label class="info-label">Bank Name</label>
+                                    <input type="text" name="bank_name" value="{{ bank_details.bank_name|default:'' }}" required
+                                           style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                </div>
+                                <div class="helpdesk-field" style="margin-top:10px;">
+                                    <label class="info-label">UPI ID (Optional)</label>
+                                    <input type="text" name="upi_id" value="{{ bank_details.upi_id|default:'' }}"
+                                           style="width:100%; padding:10px; border:2px solid #e9eef7; border-radius:8px; font-weight:600;">
+                                </div>
+                                <div class="helpdesk-actions" style="margin-top:14px;">
+                                    <button type="submit" class="btn helpdesk-btn" style="width:auto; padding:10px 16px;">
+                                        <i class="fas fa-save"></i> Save Bank Details
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -1166,3 +1308,4 @@
     </script>
 </body>
 </html>
+

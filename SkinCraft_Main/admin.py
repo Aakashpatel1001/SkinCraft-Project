@@ -243,3 +243,37 @@ class RefundAdmin(admin.ModelAdmin):
         }),
     )
 
+
+@admin.register(SalaryPayment)
+class SalaryPaymentAdmin(admin.ModelAdmin):
+    list_display = (
+        'delivery_partner',
+        'month',
+        'year',
+        'base_salary',
+        'bonus',
+        'deductions',
+        'net_salary',
+        'payment_mode',
+        'transfer_destination',
+        'status',
+        'paid_at',
+    )
+    list_filter = ('status', 'payment_mode', 'month', 'year')
+    search_fields = ('delivery_partner__username', 'delivery_partner__first_name', 'delivery_partner__last_name')
+    readonly_fields = (
+        'created_at',
+        'paid_at',
+        'paid_by',
+        'transfer_destination',
+        'transfer_account_holder_name',
+        'transfer_account_last4',
+        'transfer_ifsc_code',
+        'transfer_bank_name',
+        'transfer_upi_id',
+    )
+
+    def transfer_destination(self, obj):
+        return obj.get_transfer_destination_display()
+    transfer_destination.short_description = 'Transfer To'
+

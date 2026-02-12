@@ -22,6 +22,7 @@ import razorpay
 import hashlib
 import hmac
 import json
+import os
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
@@ -29,6 +30,37 @@ from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 from django.urls import reverse
 from urllib.parse import quote
+
+MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+MAX_PRODUCT_IMAGE_SIZE_MB = 5
+ALLOWED_PRODUCT_IMAGE_CONTENT_TYPES = {
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+}
+ALLOWED_PRODUCT_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+
+
+def _validate_inventory_image(file_obj, field_label):
+    if not file_obj:
+        return
+
+    if file_obj.size > MAX_PRODUCT_IMAGE_SIZE_BYTES:
+        raise ValueError(f'{field_label} must be {MAX_PRODUCT_IMAGE_SIZE_MB}MB or smaller.')
+
+    content_type = (getattr(file_obj, 'content_type', '') or '').lower()
+    extension = os.path.splitext(getattr(file_obj, 'name', '') or '')[1].lower()
+    if content_type in ALLOWED_PRODUCT_IMAGE_CONTENT_TYPES:
+        return
+    if extension in ALLOWED_PRODUCT_IMAGE_EXTENSIONS:
+        return
+
+    raise ValueError(
+        f'{field_label} must be a valid image (JPG, JPEG, PNG, WEBP, GIF). PDF files are not allowed.'
+    )
+
 
 # --- REGISTRATION VIEW ---
 def register_view(request):
@@ -370,7 +402,7 @@ def admin_dashboard(request):
         })
     inventory_tags = list(ProductTag.objects.values_list('name', flat=True).order_by('name'))
     # Get ALL active delivery partners for dropdown
-    all_delivery_partners = DeliveryProfile.objects.select_related('user').filter(is_active=True).order_by('user__first_name')
+    all_delivery_partners = DeliveryProfile.objects.select_related('user', 'user__bank_details').filter(is_active=True).order_by('user__first_name')
     delivery_partners = DeliveryProfile.objects.select_related('user').annotate(
         active_deliveries=Count('user__assigned_orders', filter=Q(user__assigned_orders__status__in=['Pending', 'Shipped', 'On Way'])),
         completed_deliveries=Count('user__assigned_orders', filter=Q(user__assigned_orders__status='Delivered')),
@@ -464,6 +496,8 @@ def admin_dashboard(request):
     ]
     
     returns_pending_count = Return.objects.filter(status='Initiated').count()
+    salary_payments = SalaryPayment.objects.select_related('delivery_partner').order_by('-year', '-month', '-created_at')[:20]
+    salary_pending_count = SalaryPayment.objects.filter(status='Pending').count()
 
     context = {
         'stats': stats,
@@ -500,9 +534,157 @@ def admin_dashboard(request):
         'top_product_labels': json.dumps(top_product_labels),
         'top_product_values': json.dumps(top_product_values),
         'returns_pending_count': returns_pending_count,
+        'salary_payments': salary_payments,
+        'salary_pending_count': salary_pending_count,
     }
     
     return render(request, 'admin_dashboard.html', context)
+
+
+# --- ADMIN: SALARY PAYMENT ACTION ---
+@login_required
+@require_http_methods(["POST"])
+def process_salary_payment(request):
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+    def _error_response(message, redirect_to='/admin_dashboard/#salary', status=400):
+        if is_ajax:
+            return JsonResponse({'success': False, 'message': message}, status=status)
+        messages.error(request, message)
+        return redirect(redirect_to)
+
+    if not request.user.is_staff:
+        return _error_response('Access denied. You need admin privileges.', redirect_to='homepage', status=403)
+
+    partner_id = request.POST.get('delivery_partner_id')
+    month_raw = request.POST.get('month', '').strip()
+    year_raw = request.POST.get('year', '').strip()
+    payment_mode = (request.POST.get('payment_mode') or '').strip()
+    remarks = (request.POST.get('remarks') or '').strip()
+    allowed_payment_modes = {'Bank Transfer', 'UPI'}
+
+    if not partner_id or not month_raw or not year_raw or not payment_mode:
+        return _error_response('Delivery partner, month, year, and payment mode are required.')
+    if payment_mode not in allowed_payment_modes:
+        return _error_response('Invalid payment mode. Use Bank Transfer or UPI.')
+
+    try:
+        month = int(month_raw)
+        year = int(year_raw)
+        if month < 1 or month > 12:
+            raise ValueError
+    except ValueError:
+        return _error_response('Invalid salary period selected.')
+
+    partner = User.objects.filter(id=partner_id, role=User.DELIVERY).select_related('delivery_profile', 'bank_details').first()
+    if not partner or not hasattr(partner, 'delivery_profile'):
+        return _error_response('Selected delivery partner is invalid.')
+    partner_bank = getattr(partner, 'bank_details', None)
+    if payment_mode == 'Bank Transfer' and not partner_bank:
+        return _error_response('Bank details are missing for this partner. Ask the partner to add bank details first.')
+    if payment_mode == 'UPI':
+        if not partner_bank or not partner_bank.upi_id:
+            return _error_response('UPI ID is missing for this partner. Ask the partner to update bank details first.')
+
+    try:
+        base_salary_raw = request.POST.get('base_salary', '').strip()
+        bonus_raw = request.POST.get('bonus', '').strip() or '0'
+        deductions_raw = request.POST.get('deductions', '').strip() or '0'
+
+        base_salary = Decimal(base_salary_raw) if base_salary_raw else (partner.delivery_profile.salary or Decimal('0'))
+        bonus = Decimal(bonus_raw)
+        deductions = Decimal(deductions_raw)
+    except (InvalidOperation, TypeError):
+        return _error_response('Invalid salary amount values.')
+
+    if base_salary < 0 or bonus < 0 or deductions < 0:
+        return _error_response('Salary amounts cannot be negative.')
+
+    net_salary = base_salary + bonus - deductions
+    if net_salary < 0:
+        return _error_response('Net salary cannot be negative.')
+
+    existing_payment = SalaryPayment.objects.filter(
+        delivery_partner=partner,
+        month=month,
+        year=year,
+    ).first()
+    if existing_payment:
+        return _error_response(
+            f'Salary already processed for {existing_payment.get_period_display()}. '
+            'You cannot pay or modify the same month again.'
+        )
+
+    deliveries_completed = Order.objects.filter(
+        assigned_to=partner,
+        status='Delivered',
+        delivered_at__year=year,
+        delivered_at__month=month,
+    ).count()
+    returns_completed = Return.objects.filter(
+        assigned_to=partner,
+        status='Completed',
+        updated_at__year=year,
+        updated_at__month=month,
+    ).count()
+
+    transfer_account_holder_name = None
+    transfer_account_last4 = None
+    transfer_ifsc_code = None
+    transfer_bank_name = None
+    transfer_upi_id = None
+    if payment_mode == 'Bank Transfer' and partner_bank:
+        transfer_account_holder_name = partner_bank.account_holder_name
+        transfer_account_last4 = (partner_bank.account_number or '')[-4:] or None
+        transfer_ifsc_code = partner_bank.ifsc_code
+        transfer_bank_name = partner_bank.bank_name
+    elif payment_mode == 'UPI' and partner_bank:
+        transfer_upi_id = partner_bank.upi_id or None
+
+    payment = SalaryPayment.objects.create(
+        delivery_partner=partner,
+        month=month,
+        year=year,
+        base_salary=base_salary,
+        bonus=bonus,
+        deductions=deductions,
+        net_salary=net_salary,
+        deliveries_completed=deliveries_completed,
+        returns_completed=returns_completed,
+        status='Paid',
+        payment_mode=payment_mode,
+        transaction_reference=None,
+        transfer_account_holder_name=transfer_account_holder_name,
+        transfer_account_last4=transfer_account_last4,
+        transfer_ifsc_code=transfer_ifsc_code,
+        transfer_bank_name=transfer_bank_name,
+        transfer_upi_id=transfer_upi_id,
+        remarks=remarks or None,
+        paid_at=timezone.now(),
+        paid_by=request.user,
+    )
+
+    period_label = payment.get_period_display()
+    partner_name = partner.get_full_name() or partner.username
+    success_message = f'Salary processed for {partner_name} ({period_label}).'
+    if is_ajax:
+        return JsonResponse({
+            'success': True,
+            'message': success_message,
+            'salary': {
+                'partner_name': partner_name,
+                'period': period_label,
+                'base_salary': f"{payment.base_salary:.2f}",
+                'bonus': f"{payment.bonus:.2f}",
+                'deductions': f"{payment.deductions:.2f}",
+                'net_salary': f"{payment.net_salary:.2f}",
+                'payment_mode': payment.payment_mode or '-',
+                'transfer_destination': payment.get_transfer_destination_display(),
+                'status': payment.status,
+            }
+        })
+    messages.success(request, success_message)
+    return redirect('/admin_dashboard/#salary')
 
 
 # --- ADMIN: RETURN ACTIONS ---
@@ -951,6 +1133,10 @@ def create_inventory_product(request):
         if not name or not category_id or not thumbnail or not variants_json:
             return JsonResponse({'error': 'Missing required fields'}, status=400)
 
+        _validate_inventory_image(thumbnail, 'Thumbnail image')
+        for index, image in enumerate(gallery_files, start=1):
+            _validate_inventory_image(image, f'Gallery image {index}')
+
         try:
             variants = json.loads(variants_json)
         except json.JSONDecodeError:
@@ -1036,6 +1222,11 @@ def update_inventory_product(request, product_id):
 
         if not name or not category_id or not variants_json:
             return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        if thumbnail:
+            _validate_inventory_image(thumbnail, 'Thumbnail image')
+        for index, image in enumerate(gallery_files, start=1):
+            _validate_inventory_image(image, f'Gallery image {index}')
 
         try:
             variants = json.loads(variants_json)
@@ -1266,22 +1457,24 @@ def delivery_dashboard(request):
     delivered_count = deliveries.filter(status='Delivered', delivered_at__gte=month_start).count()
     pending_count = deliveries.filter(status__in=['Pending', 'Picked Up'], assigned_at__gte=month_start).count()
 
-    monthly_salary = profile.salary if profile else 0
+    monthly_salary = profile.salary if profile else Decimal('0')
+    salary_payments = SalaryPayment.objects.filter(delivery_partner=request.user).order_by('-year', '-month', '-created_at')
+    paid_salary_qs = salary_payments.filter(status='Paid')
+    current_salary_payment = paid_salary_qs.filter(month=now.month, year=now.year).first()
+    salary_paid = current_salary_payment.net_salary if current_salary_payment else Decimal('0')
+    total_salary_received = paid_salary_qs.aggregate(total=Sum('net_salary'))['total'] or Decimal('0')
+    last_salary_payment = paid_salary_qs.first()
 
-    if monthly_salary and monthly_salary > 0:
-        salary_paid = monthly_salary
-        salary_due = 0
-    else:
-        salary_paid = 0
-        salary_due = monthly_salary
+    bank_details = BankDetails.objects.filter(user=request.user).first()
 
     context = {
         'stats': {
             'monthly_salary': monthly_salary,
             'salary_paid': salary_paid,
-            'salary_due': salary_due,
+            'total_salary_received': total_salary_received,
             'pending_count': active_orders.count(),
             'total_delivered': delivered_orders.count(),
+            'pending_returns': assigned_returns.count(),
             'return_pickups': assigned_returns.count(),
         },
         'tasks': active_orders,
@@ -1294,6 +1487,10 @@ def delivery_dashboard(request):
         'delivery_reviews': delivery_reviews,
         'avg_delivery_rating': avg_delivery_rating,
         'rating_breakdown': rating_breakdown,
+        'salary_payments': salary_payments[:12],
+        'current_salary_payment': current_salary_payment,
+        'last_salary_payment': last_salary_payment,
+        'bank_details': bank_details,
     }
     return render(request, 'delivery_dashboard.html', context)
 
@@ -1378,6 +1575,42 @@ def update_delivery_profile(request):
 
     messages.success(request, 'Profile updated successfully.')
     return redirect('/delivery/dashboard/?tab=profile')
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_delivery_bank_details(request):
+    if getattr(request.user, 'role', None) != User.DELIVERY:
+        messages.error(request, 'Access denied.')
+        return redirect('homepage')
+
+    account_holder_name = (request.POST.get('account_holder_name') or '').strip()
+    account_number = (request.POST.get('account_number') or '').strip()
+    ifsc_code = (request.POST.get('ifsc_code') or '').strip().upper()
+    bank_name = (request.POST.get('bank_name') or '').strip()
+    upi_id = (request.POST.get('upi_id') or '').strip()
+
+    if not account_holder_name or not account_number or not ifsc_code or not bank_name:
+        messages.error(request, 'Account holder, account number, IFSC code, and bank name are required.')
+        return redirect('/delivery/dashboard/?tab=bank')
+
+    bank_details, _ = BankDetails.objects.get_or_create(user=request.user)
+    bank_details.account_holder_name = account_holder_name
+    bank_details.account_number = account_number
+    bank_details.ifsc_code = ifsc_code
+    bank_details.bank_name = bank_name
+    bank_details.upi_id = upi_id or None
+    bank_details.save(update_fields=[
+        'account_holder_name',
+        'account_number',
+        'ifsc_code',
+        'bank_name',
+        'upi_id',
+        'updated_at',
+    ])
+
+    messages.success(request, 'Bank details saved successfully. Admin can now use these details for salary transfer.')
+    return redirect('/delivery/dashboard/?tab=bank')
 
 
 @login_required
@@ -1472,6 +1705,16 @@ def profile_view(request):
                 messages.success(request, 'Your profile sanctuary has been updated!')
                 return redirect('/profile/?tab=edit')
             active_tab = 'edit'
+
+        # 1.1 Remove Profile Image
+        elif 'remove_profile_image' in request.POST:
+            current_image = getattr(request.user, 'profile_image', None)
+            if current_image and getattr(current_image, 'name', '') and current_image.name != 'default.jpg':
+                current_image.delete(save=False)
+            request.user.profile_image = 'default.jpg'
+            request.user.save(update_fields=['profile_image'])
+            messages.success(request, 'Profile picture removed successfully!')
+            return redirect('/profile/?tab=edit')
 
         # 2. Add/Update Address
         elif 'add_address' in request.POST:

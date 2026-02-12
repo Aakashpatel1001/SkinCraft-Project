@@ -1,8 +1,20 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
+import os
 from .models import *
 from .models import Address
+
+MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+MAX_PROFILE_IMAGE_SIZE_MB = 5
+ALLOWED_PROFILE_IMAGE_CONTENT_TYPES = {
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+}
+ALLOWED_PROFILE_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -84,8 +96,26 @@ class UserUpdateForm(forms.ModelForm):
             })
         # Special style for image upload
         self.fields['profile_image'].widget.attrs.update({
-            "class": "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#E8F3E8] file:text-[#2D5A27] hover:file:bg-[#dcfce7]"
+            "class": "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#E8F3E8] file:text-[#2D5A27] hover:file:bg-[#dcfce7]",
+            "accept": "image/jpeg,image/png,image/webp,image/gif",
         })
+
+    def clean_profile_image(self):
+        profile_image = self.cleaned_data.get('profile_image')
+        if not profile_image:
+            return profile_image
+
+        if profile_image.size > MAX_PROFILE_IMAGE_SIZE_BYTES:
+            raise ValidationError(f'Profile image must be {MAX_PROFILE_IMAGE_SIZE_MB}MB or smaller.')
+
+        content_type = (getattr(profile_image, 'content_type', '') or '').lower()
+        extension = os.path.splitext(getattr(profile_image, 'name', '') or '')[1].lower()
+        if content_type in ALLOWED_PROFILE_IMAGE_CONTENT_TYPES:
+            return profile_image
+        if extension in ALLOWED_PROFILE_IMAGE_EXTENSIONS:
+            return profile_image
+
+        raise ValidationError('Only JPG, JPEG, PNG, WEBP, and GIF images are allowed. PDF files are not allowed.')
 
 class AddressForm(forms.ModelForm):
     class Meta:

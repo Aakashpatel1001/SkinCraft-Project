@@ -596,9 +596,7 @@ class SalaryPayment(models.Model):
     
     PAYMENT_MODE_CHOICES = (
         ('Bank Transfer', 'Bank Transfer'),
-        ('Cash', 'Cash'),
         ('UPI', 'UPI'),
-        ('Cheque', 'Cheque'),
     )
     
     # Employee Information
@@ -625,6 +623,11 @@ class SalaryPayment(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODE_CHOICES, blank=True, null=True)
     transaction_reference = models.CharField(max_length=100, blank=True, null=True, help_text='Transaction ID or reference number')
+    transfer_account_holder_name = models.CharField(max_length=200, blank=True, null=True, help_text='Snapshot of account holder used for this transfer')
+    transfer_account_last4 = models.CharField(max_length=4, blank=True, null=True, help_text='Last 4 digits of account number used for this transfer')
+    transfer_ifsc_code = models.CharField(max_length=20, blank=True, null=True, help_text='Snapshot of IFSC used for this transfer')
+    transfer_bank_name = models.CharField(max_length=200, blank=True, null=True, help_text='Snapshot of bank name used for this transfer')
+    transfer_upi_id = models.CharField(max_length=100, blank=True, null=True, help_text='Snapshot of UPI ID used for this transfer')
     remarks = models.TextField(blank=True, null=True, help_text='Additional notes or remarks')
     
     # Timestamps
@@ -653,6 +656,44 @@ class SalaryPayment(models.Model):
         from datetime import date
         month_name = date(self.year, self.month, 1).strftime('%B')
         return f"{month_name} {self.year}"
+
+    def get_transfer_destination_display(self):
+        if self.payment_mode == 'UPI':
+            if self.transfer_upi_id:
+                return f"UPI: {self.transfer_upi_id}"
+            return '-'
+        if self.payment_mode == 'Bank Transfer':
+            parts = []
+            if self.transfer_account_holder_name:
+                parts.append(self.transfer_account_holder_name)
+            if self.transfer_bank_name:
+                parts.append(self.transfer_bank_name)
+            if self.transfer_ifsc_code:
+                parts.append(f"IFSC {self.transfer_ifsc_code}")
+            if self.transfer_account_last4:
+                parts.append(f"A/C ****{self.transfer_account_last4}")
+            return ' | '.join(parts) if parts else '-'
+        return '-'
+
+    def save(self, *args, **kwargs):
+        snapshot_empty = not any([
+            self.transfer_upi_id,
+            self.transfer_account_last4,
+            self.transfer_ifsc_code,
+            self.transfer_bank_name,
+            self.transfer_account_holder_name,
+        ])
+        if self.delivery_partner_id and self.payment_mode and snapshot_empty:
+            partner_bank = getattr(self.delivery_partner, 'bank_details', None)
+            if partner_bank:
+                if self.payment_mode == 'UPI':
+                    self.transfer_upi_id = partner_bank.upi_id or None
+                elif self.payment_mode == 'Bank Transfer':
+                    self.transfer_account_holder_name = partner_bank.account_holder_name
+                    self.transfer_bank_name = partner_bank.bank_name
+                    self.transfer_ifsc_code = partner_bank.ifsc_code
+                    self.transfer_account_last4 = (partner_bank.account_number or '')[-4:] or None
+        super().save(*args, **kwargs)
 
 # Signals for auto-assignment
 from django.db.models.signals import pre_save, post_save

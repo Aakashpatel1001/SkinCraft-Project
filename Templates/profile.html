@@ -1146,6 +1146,30 @@
             actionBtn.dataset.action = 'camera';
         }
     }
+    // check image size which have define in profile image 
+    const MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+    const MAX_PROFILE_IMAGE_SIZE_MB = 5;
+    const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const ALLOWED_PROFILE_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+    function validateProfileImageFile(file) {
+        if (!file) return '';
+
+        const fileType = (file.type || '').toLowerCase();
+        const fileName = (file.name || '').toLowerCase();
+        const hasValidType = ALLOWED_PROFILE_IMAGE_TYPES.includes(fileType);
+        const hasValidExtension = ALLOWED_PROFILE_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
+
+        if (file.size > MAX_PROFILE_IMAGE_SIZE_BYTES) {
+            return `Image is too large. Max allowed size is ${MAX_PROFILE_IMAGE_SIZE_MB}MB.`;
+        }
+
+        if (!hasValidType && !hasValidExtension) {
+            return 'Only JPG, JPEG, PNG, WEBP, and GIF images are allowed. PDF files are not allowed.';
+        }
+
+        return '';
+    }
 
     function setPincodeStatus(text, tone) {
         const statusEl = document.getElementById('pincodeStatus');
@@ -1255,6 +1279,9 @@
         const activeTab = params.get('tab') || 'edit';
         const actionBtn = document.getElementById('profileImageActionBtn');
         const fileInput = document.getElementById('id_profile_image');
+        if (fileInput) {
+            fileInput.setAttribute('accept', 'image/jpeg,image/png,image/webp,image/gif');
+        }
 
         if (actionBtn) {
             const hasImage = actionBtn.dataset.hasImage === 'true';
@@ -1277,6 +1304,17 @@
 
         if (fileInput) {
             fileInput.addEventListener('change', function() {
+                const selectedFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+                const validationError = validateProfileImageFile(selectedFile);
+                if (validationError) {
+                    alert(validationError);
+                    fileInput.value = '';
+                    if (actionBtn && actionBtn.dataset.hasImage !== 'true') {
+                        setProfileImageAction('camera');
+                    }
+                    return;
+                }
+
                 if (fileInput.files && fileInput.files.length > 0) {
                     setProfileImageAction('delete');
                 } else if (actionBtn && actionBtn.dataset.hasImage !== 'true') {
