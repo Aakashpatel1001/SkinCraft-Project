@@ -376,10 +376,7 @@
                     <i class="fa-solid fa-hands-holding-child text-2xl"></i>
                 </div>
                 <div>
-                    <div class="flex items-center justify-center">
-                        <h4 class="text-5xl font-serif text-white counter" data-target="10">0</h4>
-                        <span class="text-5xl font-serif text-ayur-gold ml-1">k+</span>
-                    </div>
+                    <h4 class="text-5xl font-serif text-white counter" data-target="{{ happy_customer_count|default:0 }}">0</h4>
                     <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Happy Customers</p>
                 </div>
             </div>
@@ -389,7 +386,7 @@
                     <i class="fa-solid fa-leaf text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="text-5xl font-serif text-white counter" data-target="200">0</h4>
+                    <h4 class="text-5xl font-serif text-white counter" data-target="{{ product_count|default:0 }}">0</h4>
                     <p class="text-ayur-gold font-bold text-[10px] uppercase tracking-[0.3em] mt-2">Pure Formulations
                     </p>
                 </div>

@@ -26,7 +26,7 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
 from django.urls import reverse
 from urllib.parse import quote
@@ -62,16 +62,229 @@ def _validate_inventory_image(file_obj, field_label):
     )
 
 
+def _parse_positive_variant_price(price):
+    try:
+        parsed_price = Decimal(str(price))
+    except (InvalidOperation, TypeError, ValueError):
+        raise ValueError('Variant price must be a valid number.')
+
+    if parsed_price <= 0:
+        raise ValueError('Variant price must be greater than 0.')
+
+    return parsed_price
+
+
 # --- REGISTRATION VIEW ---
+REGISTRATION_OTP_SESSION_KEY = 'registration_otp_payload'
+REGISTRATION_OTP_EXPIRY_SECONDS = 120
+
+
+def _registration_form_data(post_data):
+    return {
+        'username': post_data.get('username', '').strip(),
+        'first_name': post_data.get('first_name', '').strip(),
+        'last_name': post_data.get('last_name', '').strip(),
+        'email': post_data.get('email', '').strip(),
+        'phone': post_data.get('phone', '').strip(),
+        'gender': post_data.get('gender', '').strip(),
+        'password1': post_data.get('password1', ''),
+        'password2': post_data.get('password2', ''),
+    }
+
+
+def _send_registration_otp_email(email, otp):
+    subject = 'Verify your email - SkinCraft'
+    body = (
+        f'Your registration OTP is {otp}. '
+        f'It will expire in {REGISTRATION_OTP_EXPIRY_SECONDS // 60} minutes.'
+    )
+    EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[email],
+    ).send(fail_silently=False)
+
+
 def register_view(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if request.method == 'POST' and request.POST.get('otp_step') == '1':
+        payload = request.session.get(REGISTRATION_OTP_SESSION_KEY)
+
+        if not payload:
+            messages.error(request, 'OTP session expired. Please register again.')
+            form = UserRegistrationForm()
+            return render(request, 'register.html', {'form': form})
+
+        form_data = payload.get('form_data', {})
+        if request.POST.get('resend_otp') == '1':
+            current_expires_at = int(payload.get('expires_at', 0))
+            current_now_ts = int(timezone.now().timestamp())
+            if current_now_ts < current_expires_at:
+                form = UserRegistrationForm(form_data)
+                messages.error(request, 'You can resend OTP only after 2 minutes.')
+                return render(
+                    request,
+                    'register.html',
+                    {
+                        'form': form,
+                        'form_data': form_data,
+                        'otp_required': True,
+                        'otp_expires_at': current_expires_at,
+                    },
+                )
+
+            otp = f'{random.randint(100000, 999999)}'
+            expires_at = timezone.now() + timedelta(seconds=REGISTRATION_OTP_EXPIRY_SECONDS)
+            request.session[REGISTRATION_OTP_SESSION_KEY] = {
+                'form_data': form_data,
+                'otp': otp,
+                'expires_at': int(expires_at.timestamp()),
+            }
+
+            try:
+                _send_registration_otp_email(form_data.get('email', ''), otp)
+                messages.success(request, 'A new OTP has been sent. Please verify within 2 minutes.')
+            except Exception:
+                messages.error(request, 'Unable to resend OTP right now. Please try again.')
+
+            form = UserRegistrationForm(form_data)
+            return render(
+                request,
+                'register.html',
+                {
+                    'form': form,
+                    'form_data': form_data,
+                    'otp_required': True,
+                    'otp_expires_at': int(expires_at.timestamp()),
+                },
+            )
+
+        entered_otp = request.POST.get('otp_code', '').strip()
+        expires_at = int(payload.get('expires_at', 0))
+        now_ts = int(timezone.now().timestamp())
+
+        if now_ts > expires_at:
+            request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
+            messages.error(request, 'OTP expired. Please request a new OTP by registering again.')
+            form = UserRegistrationForm(form_data)
+            return render(
+                request,
+                'register.html',
+                {
+                    'form': form,
+                    'form_data': form_data,
+                },
+            )
+
+        if entered_otp != payload.get('otp'):
+            messages.error(request, 'Invalid OTP. Please try again.')
+            form = UserRegistrationForm(form_data)
+            return render(
+                request,
+                'register.html',
+                {
+                    'form': form,
+                    'form_data': form_data,
+                    'otp_required': True,
+                    'otp_expires_at': expires_at,
+                },
+            )
+
+        form = UserRegistrationForm(form_data)
+        if form.is_valid():
+            form.save()
+            request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Account created for {username}! Please log in.')
+            return redirect('login')
+
+        request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
+        messages.error(request, 'Registration details are no longer valid. Please submit again.')
+        return render(request, 'register.html', {'form': form, 'form_data': form_data})
+
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! Please log in.')
-            return redirect('login') 
+            form_data = _registration_form_data(request.POST)
+            otp = f'{random.randint(100000, 999999)}'
+            expires_at = timezone.now() + timedelta(seconds=REGISTRATION_OTP_EXPIRY_SECONDS)
+
+            request.session[REGISTRATION_OTP_SESSION_KEY] = {
+                'form_data': form_data,
+                'otp': otp,
+                'expires_at': int(expires_at.timestamp()),
+            }
+
+            try:
+                _send_registration_otp_email(form_data['email'], otp)
+            except Exception:
+                request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
+                if is_ajax:
+                    return JsonResponse(
+                        {'success': False, 'message': 'Unable to send OTP email right now. Please try again.'},
+                        status=500,
+                    )
+                messages.error(request, 'Unable to send OTP email right now. Please try again.')
+                return render(request, 'register.html', {'form': form, 'form_data': form_data})
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        'success': True,
+                        'message': 'OTP sent to your email. Please verify within 2 minutes.',
+                        'expires_at': int(expires_at.timestamp()),
+                    }
+                )
+
+            messages.success(request, 'OTP sent to your email. Please verify within 2 minutes.')
+            return render(
+                request,
+                'register.html',
+                {
+                    'form': form,
+                    'form_data': form_data,
+                    'otp_required': True,
+                    'otp_expires_at': int(expires_at.timestamp()),
+                },
+            )
+        if is_ajax:
+            error_message = 'Please check your input and try again.'
+            if form.errors:
+                first_error_list = next(iter(form.errors.values()))
+                if first_error_list:
+                    error_message = str(first_error_list[0])
+            errors = {field: [str(err) for err in error_list] for field, error_list in form.errors.items()}
+            return JsonResponse({'success': False, 'message': error_message, 'errors': errors}, status=400)
+        return render(
+            request,
+            'register.html',
+            {
+                'form': form,
+                'form_data': _registration_form_data(request.POST),
+            },
+        )
     else:
+        payload = request.session.get(REGISTRATION_OTP_SESSION_KEY)
+        if payload:
+            if request.GET.get('otp') == '1':
+                expires_at = int(payload.get('expires_at', 0))
+                now_ts = int(timezone.now().timestamp())
+                if now_ts <= expires_at:
+                    form_data = payload.get('form_data', {})
+                    form = UserRegistrationForm(form_data)
+                    return render(
+                        request,
+                        'register.html',
+                        {
+                            'form': form,
+                            'form_data': form_data,
+                            'otp_required': True,
+                            'otp_expires_at': expires_at,
+                        },
+                    )
+            request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
         form = UserRegistrationForm()
     
     return render(request, 'register.html', {'form': form})
@@ -1177,6 +1390,8 @@ def create_inventory_product(request):
                 if not unit_value or not batch_number or price is None or expiry_date is None:
                     raise ValueError('Invalid variant data')
 
+                price_value = _parse_positive_variant_price(price)
+
                 expiry_date_value = date.fromisoformat(expiry_date)
                 manufacturing_value = date.fromisoformat(manufacturing_date) if manufacturing_date else None
 
@@ -1184,7 +1399,7 @@ def create_inventory_product(request):
                     product=product,
                     unit_value=unit_value,
                     unit_type=unit_type,
-                    price=price,
+                    price=price_value,
                     stock=stock,
                     batch_number=batch_number,
                     expiry_date=expiry_date_value,
@@ -1272,6 +1487,8 @@ def update_inventory_product(request, product_id):
                 if not unit_value or not batch_number or price is None or expiry_date is None:
                     raise ValueError('Invalid variant data')
 
+                price_value = _parse_positive_variant_price(price)
+
                 expiry_date_value = date.fromisoformat(expiry_date)
                 manufacturing_value = date.fromisoformat(manufacturing_date) if manufacturing_date else None
 
@@ -1280,7 +1497,7 @@ def update_inventory_product(request, product_id):
                     ProductVariant.objects.filter(id=variant_id, product=product).update(
                         unit_value=unit_value,
                         unit_type=unit_type,
-                        price=price,
+                        price=price_value,
                         stock=stock,
                         batch_number=batch_number,
                         expiry_date=expiry_date_value,
@@ -1291,7 +1508,7 @@ def update_inventory_product(request, product_id):
                         product=product,
                         unit_value=unit_value,
                         unit_type=unit_type,
-                        price=price,
+                        price=price_value,
                         stock=stock,
                         batch_number=batch_number,
                         expiry_date=expiry_date_value,
@@ -1412,7 +1629,13 @@ def faq_view(request):
     return render(request, 'faq.html')
 
 def about_view(request):
-    return render(request, 'about.html')
+    happy_customer_count = User.objects.filter(role=User.CUSTOMER, is_active=True).count()
+    product_count = Product.objects.count()
+    context = {
+        'happy_customer_count': happy_customer_count,
+        'product_count': product_count,
+    }
+    return render(request, 'about.html', context)
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
@@ -3184,22 +3407,43 @@ def submit_product_review(request, product_id):
 
 
 # --- FORGOT PASSWORD VIEW ---
+FORGOT_PASSWORD_OTP_EXPIRY_SECONDS = 120
+
+
 def forgot_password(request):
     if request.method == 'POST':
         action = request.POST.get('action')
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
         # Step 1: Send OTP
         if action == 'send_otp':
-            email = request.POST.get('email')
+            email = request.POST.get('email', '').strip()
+            cache_email = email.lower()
+
+            if not email:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': 'Please enter your email address.'})
+                messages.error(request, 'Please enter your email address.')
+                return render(request, 'forgot_password.html')
             
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__iexact=email)
+                email = user.email
+                cache_email = email.lower()
                 
                 # Generate 6-digit OTP
                 otp = str(random.randint(100000, 999999))
+                otp_expires_at = timezone.now() + timedelta(seconds=FORGOT_PASSWORD_OTP_EXPIRY_SECONDS)
                 
-                # Store OTP in cache for 10 minutes
-                cache.set(f'password_reset_otp_{email}', otp, 600)
+                # Store OTP in cache for 2 minutes
+                cache.set(
+                    f'password_reset_otp_{cache_email}',
+                    {
+                        'otp': otp,
+                        'expires_at': int(otp_expires_at.timestamp()),
+                    },
+                    FORGOT_PASSWORD_OTP_EXPIRY_SECONDS,
+                )
                 
                 # Send OTP via email
                 subject = 'Password Reset OTP - SkinCraft'
@@ -3217,7 +3461,7 @@ def forgot_password(request):
                                 <p style="font-size: 14px; color: #666666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Your Verification Code</p>
                                 <p style="font-size: 36px; color: #1A3C34; font-weight: bold; letter-spacing: 8px; margin: 0;">{otp}</p>
                             </div>
-                            <p style="font-size: 14px; color: #666666; margin-bottom: 10px;">This code will expire in <strong>10 minutes</strong>.</p>
+                            <p style="font-size: 14px; color: #666666; margin-bottom: 10px;">This code will expire in <strong>2 minutes</strong>.</p>
                             <p style="font-size: 14px; color: #666666;">If you didn't request this, please ignore this email.</p>
                         </div>
                         <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
@@ -3237,71 +3481,104 @@ def forgot_password(request):
                 email_obj.attach_alternative(message, "text/html")
                 email_obj.send()
                 
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({'success': True, 'message': 'Verification code sent to your email!'})
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Verification code sent to your email! It expires in 2 minutes.',
+                        'expires_at': int(otp_expires_at.timestamp()),
+                    })
                 else:
-                    messages.success(request, 'Verification code sent to your email!')
+                    messages.success(request, 'Verification code sent to your email! It expires in 2 minutes.')
                     
             except User.DoesNotExist:
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if is_ajax:
                     return JsonResponse({'success': False, 'message': 'No account found with this email address.'})
                 else:
                     messages.error(request, 'No account found with this email address.')
+            except Exception as e:
+                cache.delete(f'password_reset_otp_{cache_email}')
+                debug_message = f' ({str(e)})' if settings.DEBUG else ''
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': f'Unable to send verification code right now. Please try again.{debug_message}'})
+                messages.error(request, f'Unable to send verification code right now. Please try again.{debug_message}')
         
         # Step 2: Verify OTP
         elif action == 'verify_otp':
-            email = request.POST.get('email')
+            email = request.POST.get('email', '').strip()
+            cache_email = email.lower()
             entered_otp = request.POST.get('otp')
             
-            stored_otp = cache.get(f'password_reset_otp_{email}')
-            
+            stored_data = cache.get(f'password_reset_otp_{cache_email}')
+            stored_otp = stored_data.get('otp') if isinstance(stored_data, dict) else stored_data
+            expires_at = int(stored_data.get('expires_at', 0)) if isinstance(stored_data, dict) else 0
+            now_ts = int(timezone.now().timestamp())
+
+            if expires_at and now_ts > expires_at:
+                cache.delete(f'password_reset_otp_{cache_email}')
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': 'Verification code expired. Please resend OTP.'})
+                else:
+                    messages.error(request, 'Verification code expired. Please resend OTP.')
+                    return render(request, 'forgot_password.html')
+
             if stored_otp and stored_otp == entered_otp:
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if is_ajax:
                     return JsonResponse({'success': True, 'message': 'Code verified successfully!'})
                 else:
                     messages.success(request, 'Code verified successfully!')
             else:
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if is_ajax:
                     return JsonResponse({'success': False, 'message': 'Invalid or expired verification code.'})
                 else:
                     messages.error(request, 'Invalid or expired verification code.')
         
         # Step 3: Reset Password
         elif action == 'reset_password':
-            email = request.POST.get('email')
+            email = request.POST.get('email', '').strip()
+            cache_email = email.lower()
             otp = request.POST.get('otp')
             password1 = request.POST.get('password1')
             password2 = request.POST.get('password2')
             
-            stored_otp = cache.get(f'password_reset_otp_{email}')
-            
-            if not stored_otp or stored_otp != otp:
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            stored_data = cache.get(f'password_reset_otp_{cache_email}')
+            stored_otp = stored_data.get('otp') if isinstance(stored_data, dict) else stored_data
+            expires_at = int(stored_data.get('expires_at', 0)) if isinstance(stored_data, dict) else 0
+            now_ts = int(timezone.now().timestamp())
+
+            if expires_at and now_ts > expires_at:
+                cache.delete(f'password_reset_otp_{cache_email}')
+                if is_ajax:
+                    return JsonResponse({'success': False, 'message': 'Verification code expired. Please resend OTP.'})
+                else:
+                    messages.error(request, 'Verification code expired. Please resend OTP.')
+                    return render(request, 'forgot_password.html')
+            elif not stored_otp or stored_otp != otp:
+                if is_ajax:
                     return JsonResponse({'success': False, 'message': 'Invalid verification code.'})
                 else:
                     messages.error(request, 'Invalid verification code.')
             elif password1 != password2:
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                if is_ajax:
                     return JsonResponse({'success': False, 'message': 'Passwords do not match.'})
                 else:
                     messages.error(request, 'Passwords do not match.')
             else:
                 try:
-                    user = User.objects.get(email=email)
+                    user = User.objects.get(email__iexact=email)
                     user.set_password(password1)
                     user.save()
                     
                     # Clear OTP from cache
-                    cache.delete(f'password_reset_otp_{email}')
+                    cache.delete(f'password_reset_otp_{cache_email}')
                     
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    if is_ajax:
                         return JsonResponse({'success': True, 'message': 'Password reset successfully! Redirecting to login...'})
                     else:
                         messages.success(request, 'Password reset successfully! Please login with your new password.')
                         return redirect('login')
                         
                 except User.DoesNotExist:
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    if is_ajax:
                         return JsonResponse({'success': False, 'message': 'User not found.'})
                     else:
                         messages.error(request, 'User not found.')

@@ -5,7 +5,7 @@
     <title>{% block title %}SkinCraft Ayurveda{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="{% static 'images/5.png' %}" type="image/png">
+    <link rel="icon" href="{% static 'images/img.png' %}" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <script>
@@ -378,24 +378,41 @@
                                 class="fa-brands fa-instagram"></i></a>
                         <a href="#"
                             class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-ayur-gold hover:text-ayur-dark transition-colors"><i
-                                class="fa-brands fa-facebook-f"></i></a>
-                        <a href="#"
-                            class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-ayur-gold hover:text-ayur-dark transition-colors"><i
-                                class="fa-brands fa-twitter"></i></a>
+                                class="fa-brands fa-whatsapp"></i></a>
+                        
                     </div>
                 </div>
                 <div>
                     <h4 class="font-serif font-bold text-lg mb-4 text-ayur-gold">Shop</h4>
                     <ul class="space-y-2 text-sm text-gray-400">
+                        {% for cat in categories %}
+                        {% if "skin" in cat.name|lower %}
                         <li>
-                            <a href="{% url 'product' %}" class="hover:text-white transition-colors">Skin Care</a>
+                            <a href="{% url 'product' %}?category={{ cat.id }}" class="hover:text-white transition-colors">Skin Care</a>
                         </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% for cat in categories %}
+                        {% if "body" in cat.name|lower %}
                         <li>
-                            <a href="{% url 'product' %}" class="hover:text-white transition-colors">Body Care</a>
+                            <a href="{% url 'product' %}?category={{ cat.id }}" class="hover:text-white transition-colors">Body Care</a>
                         </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% for cat in categories %}
+                        {% if "hair" in cat.name|lower %}
                         <li>
-                            <a href="{% url 'product' %}" class="hover:text-white transition-colors">Hair Oils</a>
+                            <a href="{% url 'product' %}?category={{ cat.id }}" class="hover:text-white transition-colors">Hair Care</a>
                         </li>
+                        {% endif %}
+                        {% endfor %}
+                        {% for cat in categories %}
+                        {% if "combo" in cat.name|lower or "pack" in cat.name|lower %}
+                        <li>
+                            <a href="{% url 'product' %}?category={{ cat.id }}" class="hover:text-white transition-colors">Combo Pack</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
                     </ul>
                 </div>
                 <div>

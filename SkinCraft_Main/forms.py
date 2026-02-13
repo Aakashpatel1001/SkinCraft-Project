@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
+import re
 import os
 from .models import *
 from .models import Address
@@ -46,6 +47,24 @@ class UserRegistrationForm(UserCreationForm):
             if field in ["email", "phone"] or "password" in field:
                 existing_class = self.fields[field].widget.attrs.get("class", "")
                 self.fields[field].widget.attrs["class"] = existing_class + " pl-10"
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError('This email is already registered. Please use another email.')
+        return email
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1', '')
+        if len(password) <= 6:
+            raise ValidationError('Password must be greater than 6 characters.')
+        if not re.search(r'[A-Za-z]', password):
+            raise ValidationError('Password must contain at least one letter.')
+        if not re.search(r'\d', password):
+            raise ValidationError('Password must contain at least one number.')
+        if not re.search(r'[^A-Za-z0-9]', password):
+            raise ValidationError('Password must contain at least one special character.')
+        return password
 
 class UserLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):

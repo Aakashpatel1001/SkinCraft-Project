@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import F
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 import os
 from datetime import date
@@ -357,6 +358,10 @@ class ProductVariant(models.Model):
 
     class Meta:
         unique_together = ('product', 'unit_value', 'unit_type', 'batch_number')
+
+    def clean(self):
+        if self.price is None or self.price <= 0:
+            raise ValidationError({'price': 'Price must be greater than 0.'})
 
     def is_expired(self):
         if self.expiry_date:
