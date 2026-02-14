@@ -34,14 +34,9 @@ from urllib.parse import quote
 MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 MAX_PRODUCT_IMAGE_SIZE_MB = 5
 ALLOWED_PRODUCT_IMAGE_CONTENT_TYPES = {
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/webp',
-    'image/gif',
+    'image/jpeg','image/jpg','image/png','image/webp','image/gif',
 }
 ALLOWED_PRODUCT_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
-
 
 def _validate_inventory_image(file_obj, field_label):
     if not file_obj:
@@ -61,7 +56,6 @@ def _validate_inventory_image(file_obj, field_label):
         f'{field_label} must be a valid image (JPG, JPEG, PNG, WEBP, GIF). PDF files are not allowed.'
     )
 
-
 def _parse_positive_variant_price(price):
     try:
         parsed_price = Decimal(str(price))
@@ -73,11 +67,9 @@ def _parse_positive_variant_price(price):
 
     return parsed_price
 
-
 # --- REGISTRATION VIEW ---
 REGISTRATION_OTP_SESSION_KEY = 'registration_otp_payload'
 REGISTRATION_OTP_EXPIRY_SECONDS = 120
-
 
 def _registration_form_data(post_data):
     return {
@@ -91,7 +83,6 @@ def _registration_form_data(post_data):
         'password2': post_data.get('password2', ''),
     }
 
-
 def _send_registration_otp_email(email, otp):
     subject = 'Verify your email - SkinCraft'
     body = (
@@ -104,7 +95,6 @@ def _send_registration_otp_email(email, otp):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[email],
     ).send(fail_silently=False)
-
 
 def register_view(request):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -286,7 +276,6 @@ def register_view(request):
                     )
             request.session.pop(REGISTRATION_OTP_SESSION_KEY, None)
         form = UserRegistrationForm()
-    
     return render(request, 'register.html', {'form': form})
 
 # --- LOGIN VIEW ---
@@ -334,9 +323,7 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     else:
         form = UserLoginForm()
-
     return render(request, 'login.html', {'form': form})
-
 
 # --- CUSTOM ADMIN ENTRY VIA URL ---
 def custom_admin_entry(request):
@@ -369,7 +356,6 @@ def custom_admin_entry(request):
             return redirect('admin_dashboard')
         else:
             messages.error(request, 'Invalid credentials or you are not an admin.')
-
     return render(request, 'admin_url_login.html')
 
 # --- LOGOUT VIEW ---
@@ -1111,6 +1097,7 @@ def get_order(request, order_id):
             'paymentStatus': payment_status_display,
             'timeline': timeline,
             'status': order.status,
+            'cancelReason': order.cancel_reason or '',
             'assignedDriver': order.assigned_to.get_full_name() if order.assigned_to else 'Not Assigned',
             'assignedDriverId': order.assigned_to.id if order.assigned_to else None,
             'driverRatingAvg': float(driver_rating_avg) if driver_rating_avg is not None else None,
@@ -1288,6 +1275,53 @@ def toggle_user_active(request, user_id):
         return JsonResponse({'success': True, 'is_active': user_obj.is_active})
     except User.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_user_account(request, user_id):
+    if not request.user.is_staff:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+    try:
+        user_obj = User.objects.get(id=user_id)
+        if user_obj.is_staff:
+            return JsonResponse({'success': False, 'error': 'Cannot delete staff accounts.'}, status=400)
+        if user_obj.id == request.user.id:
+            return JsonResponse({'success': False, 'error': 'Cannot delete your own account.'}, status=400)
+
+        with transaction.atomic():
+            user_obj.delete()
+
+        return JsonResponse({'success': True})
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'User not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_delivery_partner(request, partner_id):
+    if not request.user.is_staff:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+    try:
+        partner = DeliveryProfile.objects.select_related('user').get(id=partner_id)
+        user_obj = partner.user
+        if user_obj.is_staff:
+            return JsonResponse({'success': False, 'error': 'Cannot delete staff accounts.'}, status=400)
+        if user_obj.id == request.user.id:
+            return JsonResponse({'success': False, 'error': 'Cannot delete your own account.'}, status=400)
+
+        with transaction.atomic():
+            user_obj.delete()
+
+        return JsonResponse({'success': True})
+    except DeliveryProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Delivery partner not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -2075,6 +2109,11 @@ def cancel_order(request, order_id):
         messages.error(request, 'This order can no longer be cancelled.')
         return redirect('/profile/?tab=orders')
 
+    cancel_reason = (request.POST.get('cancel_reason') or '').strip()
+    if not cancel_reason:
+        messages.error(request, 'Please select a cancellation reason.')
+        return redirect('/profile/?tab=orders')
+
     with transaction.atomic():
         # Restock variants
         for item in order.items.all():
@@ -2082,8 +2121,9 @@ def cancel_order(request, order_id):
                 ProductVariant.objects.filter(id=item.variant.id).update(stock=F('stock') + item.quantity)
 
         order.status = 'Cancelled'
+        order.cancel_reason = cancel_reason
         order.assigned_to = None
-        order.save(update_fields=['status', 'assigned_to'])
+        order.save(update_fields=['status', 'cancel_reason', 'assigned_to'])
         transaction.on_commit(lambda: _send_order_cancellation_email(order))
 
     messages.success(request, f'Order {order.order_number} has been cancelled.')

@@ -79,7 +79,7 @@ class BankDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_number', 'user', 'status', 'payment_status', 'assigned_to', 'total_amount', 'created_at')
+    list_display = ('order_number', 'user', 'status', 'cancel_reason', 'payment_status', 'assigned_to', 'total_amount', 'created_at')
     list_filter = ('status', 'payment_status', 'created_at')
     search_fields = ('order_number', 'user__username', 'email', 'phone')
     readonly_fields = ('order_number', 'created_at', 'delivered_at')
@@ -89,7 +89,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('order_number', 'user', 'total_amount', 'created_at')
         }),
         ('Status', {
-            'fields': ('status', 'payment_status', 'assigned_to')
+            'fields': ('status', 'cancel_reason', 'payment_status', 'assigned_to')
         }),
         ('Customer Details', {
             'fields': ('full_name', 'email', 'phone')

@@ -218,6 +218,7 @@ class Order(models.Model):
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     coupon_code = models.CharField(max_length=50, blank=True, null=True)
+    cancel_reason = models.CharField(max_length=120, blank=True, null=True)
 
     def __str__(self):
         return self.order_number
@@ -445,7 +446,8 @@ class OrderItem(models.Model):
         return self.price_at_purchase * self.quantity
 
     def __str__(self):
-        return f"{self.product.name} - Order {self.order.order_number}"
+        product_name = self.product.name if self.product else "Deleted Product"
+        return f"{product_name} - Order {self.order.order_number}"
 
 class Review(models.Model):
     RATING_CHOICES = [
