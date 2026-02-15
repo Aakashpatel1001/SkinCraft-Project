@@ -950,17 +950,26 @@ def process_return_refund(request, return_id):
     except (InvalidOperation, ValueError, TypeError, json.JSONDecodeError):
         return JsonResponse({'status': 'error', 'message': 'Invalid refund amount.'}, status=400)
 
-    Refund.objects.update_or_create(
-        return_request=return_request,
-        defaults={
-            'order': return_request.order,
-            'amount': amount,
-            'damage_amount': damage_amount,
-            'status': 'Processed',
-            'processed_by': request.user,
-            'processed_at': timezone.now(),
-        }
-    )
+    with transaction.atomic():
+        existing_refund = Refund.objects.select_for_update().filter(return_request=return_request).first()
+        should_restock = existing_refund is None or existing_refund.status != 'Processed'
+
+        Refund.objects.update_or_create(
+            return_request=return_request,
+            defaults={
+                'order': return_request.order,
+                'amount': amount,
+                'damage_amount': damage_amount,
+                'status': 'Processed',
+                'processed_by': request.user,
+                'processed_at': timezone.now(),
+            }
+        )
+
+        # Restock only once: when refund becomes Processed for the first time.
+        if should_restock:
+            for item in return_request.order.items.filter(variant__isnull=False):
+                ProductVariant.objects.filter(id=item.variant_id).update(stock=F('stock') + item.quantity)
 
     if return_request.status != 'Completed':
         return_request.status = 'Completed'
@@ -1155,6 +1164,25 @@ def update_order(request, order_id):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# --- API: DELETE ORDER ---
+@login_required
+def delete_order(request, order_id):
+    if not request.user.is_staff:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+    try:
+        order = Order.objects.get(id=order_id)
+        order.delete()
+        return JsonResponse({'success': True, 'message': 'Order deleted successfully'})
+    except Order.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Order not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
@@ -1571,8 +1599,33 @@ def delete_inventory_product(request, product_id):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
     product = get_object_or_404(Product, id=product_id)
+    if OrderItem.objects.filter(product=product).exists():
+        return JsonResponse(
+            {'error': 'Cannot delete this product because customers already ordered it. Disable it instead.'},
+            status=400
+        )
     product.delete()
     return JsonResponse({'success': True})
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_inventory_product_active(request, product_id):
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    product = get_object_or_404(Product, id=product_id)
+    requested = (request.POST.get('is_active') or '').strip().lower()
+    if requested in ['true', '1', 'on']:
+        next_active = True
+    elif requested in ['false', '0', 'off']:
+        next_active = False
+    else:
+        next_active = not product.is_active
+
+    product.is_active = next_active
+    product.save(update_fields=['is_active'])
+    return JsonResponse({'success': True, 'product': _inventory_product_payload(product)})
 
 
 def _inventory_product_payload(product):
@@ -1894,6 +1947,9 @@ def update_delivery_status(request, order_id):
     return JsonResponse({'status': 'success'})
 
 
+DELIVERY_OTP_EXPIRY_SECONDS = 120
+
+
 @login_required
 def send_delivery_otp(request, order_id):
     if getattr(request.user, 'role', None) != User.DELIVERY:
@@ -1910,10 +1966,19 @@ def send_delivery_otp(request, order_id):
 
     if order.email:
         subject = f"Your Delivery OTP for Order {order.order_number}"
-        body = f"Your delivery OTP is {otp}. Please share it with the delivery partner to complete delivery."
+        body = (
+            f"Your delivery OTP is {otp}. "
+            f"It will expire in {DELIVERY_OTP_EXPIRY_SECONDS // 60} minutes. "
+            "Please share it with the delivery partner to complete delivery."
+        )
         EmailMultiAlternatives(subject=subject, body=body, from_email=settings.DEFAULT_FROM_EMAIL, to=[order.email]).send()
 
-    return JsonResponse({'status': 'success'})
+    expires_at = int((order.otp_created_at + timedelta(seconds=DELIVERY_OTP_EXPIRY_SECONDS)).timestamp())
+    return JsonResponse({
+        'status': 'success',
+        'message': 'OTP sent successfully.',
+        'expires_at': expires_at,
+    })
 
 
 @login_required
@@ -1927,7 +1992,16 @@ def complete_delivery(request, order_id):
     order = get_object_or_404(Order, id=order_id, assigned_to=request.user)
     otp = request.POST.get('otp')
 
-    if not order.delivery_otp or otp != order.delivery_otp:
+    if not order.delivery_otp or not order.otp_created_at:
+        return JsonResponse({'status': 'error', 'message': 'OTP missing. Please resend OTP.'}, status=400)
+
+    if timezone.now() > (order.otp_created_at + timedelta(seconds=DELIVERY_OTP_EXPIRY_SECONDS)):
+        order.delivery_otp = None
+        order.otp_created_at = None
+        order.save(update_fields=['delivery_otp', 'otp_created_at'])
+        return JsonResponse({'status': 'error', 'message': 'OTP expired. Please resend OTP.'}, status=400)
+
+    if otp != order.delivery_otp:
         return JsonResponse({'status': 'error', 'message': 'Invalid OTP.'}, status=400)
 
     order.status = 'Delivered'
@@ -1942,8 +2016,95 @@ def complete_delivery(request, order_id):
 
 
 @login_required
+def start_delivery_payment(request, order_id):
+    if getattr(request.user, 'role', None) != User.DELIVERY:
+        return JsonResponse({'status': 'error', 'message': 'Access denied.'}, status=403)
+
+    if request.method != 'GET':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request.'}, status=400)
+
+    order = get_object_or_404(Order, id=order_id, assigned_to=request.user)
+
+    if order.status != 'On Way':
+        return JsonResponse({'status': 'error', 'message': 'Online payment is allowed only when order is On Way.'}, status=400)
+
+    if order.payment_status == 'Paid':
+        return JsonResponse({'status': 'error', 'message': 'Order is already paid.'}, status=400)
+
+    amount_paise = int(Decimal(str(order.total_amount)) * 100)
+    receipt_id = f"SC-DP-{order.id}-{uuid.uuid4().hex[:8].upper()}"
+
+    client = get_razorpay_client()
+    rp_order = client.order.create({
+        'amount': amount_paise,
+        'currency': 'INR',
+        'receipt': receipt_id,
+        'payment_capture': 1,
+    })
+
+    order.razorpay_order_id = rp_order.get('id')
+    order.save(update_fields=['razorpay_order_id'])
+
+    return JsonResponse({
+        'status': 'success',
+        'key_id': settings.RAZORPAY_KEY_ID,
+        'amount': rp_order.get('amount'),
+        'razorpay_order_id': rp_order.get('id'),
+        'customer_name': (order.full_name or (order.user.get_full_name() if order.user else '') or '').strip(),
+        'customer_email': (order.email or (order.user.email if order.user else '') or '').strip(),
+        'customer_phone': (order.phone or (order.user.phone if order.user else '') or '').strip(),
+    })
+
+
+@login_required
+def verify_delivery_payment(request):
+    if getattr(request.user, 'role', None) != User.DELIVERY:
+        return JsonResponse({'status': 'error', 'message': 'Access denied.'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request.'}, status=400)
+
+    order_id = request.POST.get('delivery_id')
+    razorpay_payment_id = (request.POST.get('razorpay_payment_id') or '').strip()
+    razorpay_order_id = (request.POST.get('razorpay_order_id') or '').strip()
+    razorpay_signature = (request.POST.get('razorpay_signature') or '').strip()
+
+    if not (order_id and razorpay_payment_id and razorpay_order_id and razorpay_signature):
+        return JsonResponse({'status': 'error', 'message': 'Missing payment details.'}, status=400)
+
+    order = get_object_or_404(Order, id=order_id, assigned_to=request.user)
+
+    if order.status != 'On Way':
+        return JsonResponse({'status': 'error', 'message': 'Payment can be collected only when order is On Way.'}, status=400)
+
+    if order.payment_status == 'Paid':
+        return JsonResponse({'status': 'success', 'message': 'Order is already paid.'})
+
+    if order.razorpay_order_id != razorpay_order_id:
+        return JsonResponse({'status': 'error', 'message': 'Payment order mismatch. Please retry.'}, status=400)
+
+    client = get_razorpay_client()
+    try:
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature,
+        })
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Payment verification failed.'}, status=400)
+
+    order.payment_status = 'Paid'
+    order.payment_method = 'Razorpay'
+    order.razorpay_payment_id = razorpay_payment_id
+    order.razorpay_signature = razorpay_signature
+    order.save(update_fields=['payment_status', 'payment_method', 'razorpay_payment_id', 'razorpay_signature'])
+
+    return JsonResponse({'status': 'success', 'message': 'Payment verified successfully.'})
+
+
+@login_required
 def profile_view(request):
-    active_tab = request.GET.get('tab', 'edit')
+    active_tab = request.GET.get('tab', 'dashboard')
     edit_address_id = request.GET.get('edit', None)
     
     # Forms initialization
@@ -2080,6 +2241,21 @@ def profile_view(request):
             order.cancelled_refund_status_display = getattr(order, 'payment_status', 'Pending')
             order.refund_amount = Decimal('0')
     
+    total_orders = orders.count()
+    dashboard_status_counts = orders.aggregate(
+        pending=Count('id', filter=Q(status='Pending')),
+        shipped=Count('id', filter=Q(status='Shipped')),
+        on_way=Count('id', filter=Q(status='On Way')),
+        delivered=Count('id', filter=Q(status='Delivered')),
+        cancelled=Count('id', filter=Q(status='Cancelled')),
+        paid=Count('id', filter=Q(payment_status='Paid')),
+        unpaid=Count('id', filter=~Q(payment_status='Paid')),
+    )
+    total_spent = (
+        orders.filter(payment_status='Paid').aggregate(total=Sum('total_amount')).get('total')
+        or Decimal('0')
+    )
+
     context = {
         'orders': orders,
         'addresses': addresses,
@@ -2092,6 +2268,18 @@ def profile_view(request):
         # Passing model choices for dynamic icon handling
         'address_choices': Address.ADDRESS_TYPES,
         'delivery_review_map': delivery_review_map,
+        'dashboard_stats': {
+            'total_orders': total_orders,
+            'pending_orders': dashboard_status_counts.get('pending', 0) or 0,
+            'shipped_orders': dashboard_status_counts.get('shipped', 0) or 0,
+            'on_way_orders': dashboard_status_counts.get('on_way', 0) or 0,
+            'delivered_orders': dashboard_status_counts.get('delivered', 0) or 0,
+            'cancelled_orders': dashboard_status_counts.get('cancelled', 0) or 0,
+            'paid_orders': dashboard_status_counts.get('paid', 0) or 0,
+            'unpaid_orders': dashboard_status_counts.get('unpaid', 0) or 0,
+            'total_spent': total_spent,
+            'saved_addresses': addresses.count(),
+        },
     }
     return render(request, 'profile.html', context)
 
@@ -2422,10 +2610,15 @@ def add_to_cart(request, product_id):
 
     if request.method == 'POST':
         product = get_object_or_404(Product, id=product_id)
+        if not product.is_active:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': 'This product is currently unavailable.'}, status=400)
+            messages.error(request, 'This product is currently unavailable.')
+            return redirect('product')
         variant_id = request.POST.get('variant_id')
         
         # Validation: Ensure a variant exists
-        variant = get_object_or_404(ProductVariant, id=variant_id)
+        variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
 
         # Get or create cart
         cart, created = Cart.objects.get_or_create(user=request.user)
@@ -3129,6 +3322,8 @@ def get_order_items(request, order_id):
         items_data = []
         
         for item in order.items.all():
+            if not item.product:
+                continue
             # Check if user has already reviewed this product
             review = Review.objects.filter(
                 user=request.user,

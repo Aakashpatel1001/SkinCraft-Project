@@ -1,8 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib import messages
 from django.utils import timezone
 from .models import *
 
+admin.site.register(Category)
+admin.site.register(SubCategory)
+admin.site.register(ProductTag)
+admin.site.register(ProductVariant)
+admin.site.register(Wishlist)
+admin.site.register(Address)
 
 # Register Custom User model using UserAdmin
 @admin.register(User)
@@ -28,8 +35,6 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Additional Info', {'fields': ('phone', 'role', 'gender', 'email', 'first_name', 'last_name')}),
     )
-from django.contrib import admin
-from .models import ContactMessage
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
@@ -64,13 +69,40 @@ class ProductAdmin(admin.ModelAdmin):
     # Removed prepopulated_fields because there is no slug
     inlines = [ProductVariantInline, ProductImageInline]
 
-# 3. Register other models
-admin.site.register(Category)
-admin.site.register(SubCategory)
-admin.site.register(ProductTag)
-admin.site.register(ProductVariant)
-admin.site.register(Wishlist)
-admin.site.register(Address)
+    def _has_order_history(self, obj):
+        return obj.orderitem_set.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        has_perm = super().has_delete_permission(request, obj)
+        if not has_perm:
+            return False
+        if obj is None:
+            return True
+        return not self._has_order_history(obj)
+
+    def delete_model(self, request, obj):
+        if self._has_order_history(obj):
+            self.message_user(
+                request,
+                "This product cannot be deleted because customers have already ordered it. Disable it instead.",
+                level=messages.ERROR,
+            )
+            return
+        super().delete_model(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        blocked = queryset.filter(orderitem__isnull=False).distinct()
+        allowed = queryset.exclude(id__in=blocked.values('id'))
+
+        if blocked.exists():
+            self.message_user(
+                request,
+                f"{blocked.count()} product(s) were not deleted because customers already ordered them.",
+                level=messages.WARNING,
+            )
+        if allowed.exists():
+            super().delete_queryset(request, allowed)
+
 @admin.register(BankDetails)
 class BankDetailsAdmin(admin.ModelAdmin):
     list_display = ('user', 'account_holder_name', 'bank_name', 'account_number', 'ifsc_code', 'upi_id', 'updated_at')
@@ -196,7 +228,6 @@ class ReturnAdmin(admin.ModelAdmin):
             return self.readonly_fields
         return ('created_at', 'updated_at', 'picked_up_at', 'payment_details_display')
 
-
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('order', 'payment_method', 'amount', 'status', 'created_at')
@@ -222,7 +253,6 @@ class PaymentAdmin(admin.ModelAdmin):
         """Payments are only created by system/delivery partners"""
         return False
 
-
 @admin.register(Refund)
 class RefundAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'return_request', 'amount', 'damage_amount', 'status', 'processed_by', 'processed_at')
@@ -242,7 +272,6 @@ class RefundAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-
 
 @admin.register(SalaryPayment)
 class SalaryPaymentAdmin(admin.ModelAdmin):

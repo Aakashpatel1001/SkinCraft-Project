@@ -445,7 +445,13 @@
                                         </button>
                                     </form>
 
-                                    <div id="verify-otp-{{ task.id }}" {% if not task.delivery_otp %}style="display:none;"{% endif %}>
+                                    <div
+                                        id="verify-otp-{{ task.id }}"
+                                        data-expiry-seconds="120"
+                                        {% if task.otp_created_at %}data-created-at="{{ task.otp_created_at|date:'c' }}"{% endif %}
+                                        {% if not task.delivery_otp %}style="display:none;"{% endif %}
+                                    >
+                                        <p id="otp-timer-{{ task.id }}" style="margin:0 0 8px; font-size:0.8rem; font-weight:600; color:#b45309;"></p>
                                         <form class="ajax-form otp-verify-form" action="{% url 'complete_delivery' task.id %}" method="POST">
                                             {% csrf_token %}
                                             <div class="otp-group">
@@ -1135,6 +1141,63 @@
                 sortItems();
             }
 
+            const deliveryOtpIntervals = {};
+
+            function setDeliveryOtpInputState(taskId, isExpired) {
+                const verifyWrap = document.getElementById('verify-otp-' + taskId);
+                if (!verifyWrap) return;
+                const otpInput = verifyWrap.querySelector('.otp-input');
+                const verifyBtn = verifyWrap.querySelector('.otp-verify-form button[type="submit"]');
+                if (otpInput) otpInput.disabled = !!isExpired;
+                if (verifyBtn) verifyBtn.disabled = !!isExpired;
+            }
+
+            function startDeliveryOtpTimer(taskId, expiresAtTs) {
+                const verifyWrap = document.getElementById('verify-otp-' + taskId);
+                const timerEl = document.getElementById('otp-timer-' + taskId);
+                if (!verifyWrap || !timerEl || !expiresAtTs) return;
+
+                verifyWrap.dataset.expiresAt = String(expiresAtTs);
+
+                if (deliveryOtpIntervals[taskId]) {
+                    clearInterval(deliveryOtpIntervals[taskId]);
+                }
+
+                const tick = () => {
+                    const nowTs = Math.floor(Date.now() / 1000);
+                    const remaining = Math.max(0, expiresAtTs - nowTs);
+                    if (remaining <= 0) {
+                        timerEl.textContent = 'OTP expired. Please resend OTP.';
+                        timerEl.style.color = '#b91c1c';
+                        setDeliveryOtpInputState(taskId, true);
+                        clearInterval(deliveryOtpIntervals[taskId]);
+                        delete deliveryOtpIntervals[taskId];
+                        return;
+                    }
+
+                    const minutes = Math.floor(remaining / 60);
+                    const seconds = remaining % 60;
+                    timerEl.textContent = `OTP expires in ${minutes}:${String(seconds).padStart(2, '0')}`;
+                    timerEl.style.color = '#b45309';
+                    setDeliveryOtpInputState(taskId, false);
+                };
+
+                tick();
+                deliveryOtpIntervals[taskId] = setInterval(tick, 1000);
+            }
+
+            document.querySelectorAll('[id^="verify-otp-"]').forEach(verifyWrap => {
+                const id = verifyWrap.id.split('-')[2];
+                const createdAtIso = verifyWrap.dataset.createdAt;
+                const expirySeconds = Number(verifyWrap.dataset.expirySeconds || 120);
+                if (!id || !createdAtIso) return;
+
+                const createdTs = Math.floor(new Date(createdAtIso).getTime() / 1000);
+                if (!createdTs || Number.isNaN(createdTs)) return;
+
+                startDeliveryOtpTimer(id, createdTs + expirySeconds);
+            });
+
             document.body.addEventListener('submit', function(e) {
                 if (e.target.matches('.ajax-form')) {
                     e.preventDefault();
@@ -1166,7 +1229,20 @@
                                 const id = form.id.split('-')[2];
                                 form.style.display = 'none';
                                 document.getElementById('verify-otp-'+id).style.display = 'block';
-                                showToast('OTP Sent Successfully', 'success');
+                                if (data.expires_at) {
+                                    startDeliveryOtpTimer(id, Number(data.expires_at));
+                                }
+                                showToast(data.message || 'OTP Sent Successfully', 'success');
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            }
+                            else if (form.classList.contains('resend-form')) {
+                                const verifyWrap = form.closest('[id^="verify-otp-"]');
+                                const id = verifyWrap ? verifyWrap.id.split('-')[2] : '';
+                                if (id && data.expires_at) {
+                                    startDeliveryOtpTimer(id, Number(data.expires_at));
+                                }
+                                showToast(data.message || 'OTP resent successfully.', 'success');
                                 btn.innerHTML = originalText;
                                 btn.disabled = false;
                             }
@@ -1276,6 +1352,10 @@
         function verifyPayment(response, deliveryId, btn) {
             btn.innerHTML = 'Verifying...';
             const formData = new FormData();
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfInput && csrfInput.value) {
+                formData.append('csrfmiddlewaretoken', csrfInput.value);
+            }
             formData.append('razorpay_payment_id', response.razorpay_payment_id);
             formData.append('razorpay_order_id', response.razorpay_order_id);
             formData.append('razorpay_signature', response.razorpay_signature);

@@ -1041,6 +1041,7 @@
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Method</th>
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Cancelled On</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Action</th>
                             </tr>
                         </thead>
                         <tbody id="cancelledRefundsTableBody">
@@ -1060,10 +1061,28 @@
                                     {% endif %}
                                 </td>
                                 <td class="p-4 text-sm text-gray-700">{{ row.updated_at|date:"M d, Y h:i A" }}</td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button
+                                        class="refund-history-btn px-3 py-2 text-xs font-semibold text-white bg-ayur-dark rounded-lg transition-all duration-300 hover:bg-ayur-primary border-none cursor-pointer"
+                                        data-refund-kind="Cancelled Order Refund"
+                                        data-refund-id="{% if row.refund %}{{ row.refund.refund_id|default:row.refund.id }}{% else %}N/A{% endif %}"
+                                        data-order-number="{{ row.order.order_number }}"
+                                        data-customer="{{ row.order.full_name|default:row.order.user.get_full_name|default:row.order.user.username|default:'Customer' }}"
+                                        data-amount="{{ row.refund_amount|floatformat:2 }}"
+                                        data-damage="{% if row.refund %}{{ row.refund.damage_amount|floatformat:2 }}{% else %}0.00{% endif %}"
+                                        data-method="{{ row.order.payment_method|default:'Online' }}"
+                                        data-status="{{ row.display_status }}"
+                                        data-refund-date="{{ row.updated_at|date:'M d, Y h:i A' }}"
+                                        data-processed-by="{% if row.refund and row.refund.processed_by %}{{ row.refund.processed_by.get_full_name|default:row.refund.processed_by.username }}{% else %}System{% endif %}"
+                                        data-return-id="{% if row.refund and row.refund.return_request %}{{ row.refund.return_request.id }}{% else %}N/A{% endif %}"
+                                        data-notes="{% if row.refund and row.refund.notes %}{{ row.refund.notes|escape }}{% elif row.order.cancel_reason %}{{ row.order.cancel_reason|escape }}{% else %}-{% endif %}">
+                                        View
+                                    </button>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td class="p-6 text-sm text-gray-500" colspan="6">No cancelled order refunds found.</td>
+                                <td class="p-6 text-sm text-gray-500" colspan="7">No cancelled order refunds found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -1085,6 +1104,7 @@
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Damage</th>
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
                                 <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Processed On</th>
+                                <th class="text-left p-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Action</th>
                             </tr>
                         </thead>
                         <tbody id="refundsTableBody">
@@ -1107,14 +1127,66 @@
                                 <td class="p-4 text-sm text-gray-700">
                                     {% if refund.processed_at %}{{ refund.processed_at|date:"M d, Y h:i A" }}{% else %}{{ refund.created_at|date:"M d, Y h:i A" }}{% endif %}
                                 </td>
+                                <td class="p-4 text-sm text-gray-700">
+                                    <button
+                                        class="refund-history-btn px-3 py-2 text-xs font-semibold text-white bg-ayur-dark rounded-lg transition-all duration-300 hover:bg-ayur-primary border-none cursor-pointer"
+                                        data-refund-kind="Return Refund"
+                                        data-refund-id="{{ refund.refund_id|default:refund.id }}"
+                                        data-order-number="{{ refund.order.order_number }}"
+                                        data-customer="{{ refund.order.full_name|default:refund.order.user.get_full_name|default:refund.order.user.username|default:'Customer' }}"
+                                        data-amount="{{ refund.amount|floatformat:2 }}"
+                                        data-damage="{{ refund.damage_amount|floatformat:2 }}"
+                                        data-method="{{ refund.order.payment_method|default:'N/A' }}"
+                                        data-status="{{ refund.status }}"
+                                        data-refund-date="{% if refund.processed_at %}{{ refund.processed_at|date:'M d, Y h:i A' }}{% else %}{{ refund.created_at|date:'M d, Y h:i A' }}{% endif %}"
+                                        data-processed-by="{% if refund.processed_by %}{{ refund.processed_by.get_full_name|default:refund.processed_by.username }}{% else %}System{% endif %}"
+                                        data-return-id="{% if refund.return_request %}{{ refund.return_request.id }}{% else %}N/A{% endif %}"
+                                        data-notes="{{ refund.notes|default:'-'|escape }}">
+                                        View
+                                    </button>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td class="p-6 text-sm text-gray-500" colspan="7">No return refunds found.</td>
+                                <td class="p-6 text-sm text-gray-500" colspan="8">No return refunds found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- REFUND HISTORY DETAILS MODAL -->
+            <div id="refundHistoryModal"
+                class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center px-4 py-6">
+                <div
+                    class="bg-white rounded-3xl w-full md:w-[560px] max-h-[92vh] overflow-y-auto relative shadow-[0_20px_60px_rgba(14,27,20,0.2)]">
+                    <button id="closeRefundHistoryModal"
+                        class="absolute top-5 right-5 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition-all duration-300 border-none cursor-pointer">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                    <div class="p-6">
+                        <div class="bg-ayur-dark text-white rounded-2xl p-5 mb-5">
+                            <h3 class="text-xl font-serif font-bold m-0">Refund Details</h3>
+                            <p id="refundHistoryType" class="text-xs text-gray-200 mt-1 m-0">—</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-200 space-y-3">
+                            <div class="flex justify-between text-sm text-gray-600"><span>Refund ID</span><span id="refundHistoryId" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Order</span><span id="refundHistoryOrder" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Customer</span><span id="refundHistoryCustomer" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Refund Amount</span><span id="refundHistoryAmount" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Damage Amount</span><span id="refundHistoryDamage" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Method</span><span id="refundHistoryMethod" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Status</span><span id="refundHistoryStatus" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Return ID</span><span id="refundHistoryReturn" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Processed By</span><span id="refundHistoryProcessedBy" class="font-semibold text-gray-800">—</span></div>
+                            <div class="flex justify-between text-sm text-gray-600"><span>Refund Date</span><span id="refundHistoryDate" class="font-semibold text-gray-800">—</span></div>
+                            <div class="pt-2 border-t border-gray-200">
+                                <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Notes</p>
+                                <p id="refundHistoryNotes" class="text-sm text-gray-700 whitespace-pre-wrap">—</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1382,11 +1454,18 @@
                                         </div>
                                     </td>
                                     <td class="p-4 text-sm text-gray-700">
-                                        <button
-                                            class="order-view-btn px-4 py-2 text-xs font-semibold text-white bg-ayur-dark rounded-lg transition-all duration-300 hover:bg-ayur-primary border-none cursor-pointer"
-                                            data-order-id="{{ order.id }}" data-order="{{ order|safe }}">
-                                            View
-                                        </button>
+                                        <div class="flex items-center gap-2">
+                                            <button
+                                                class="order-view-btn px-4 py-2 text-xs font-semibold text-white bg-ayur-dark rounded-lg transition-all duration-300 hover:bg-ayur-primary border-none cursor-pointer"
+                                                data-order-id="{{ order.id }}" data-order="{{ order|safe }}">
+                                                View
+                                            </button>
+                                            <button
+                                                class="order-delete-btn px-3 py-2 text-xs font-semibold text-white bg-red-600 rounded-lg transition-all duration-300 hover:bg-red-700 border-none cursor-pointer"
+                                                data-order-id="{{ order.id }}">
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -3342,6 +3421,52 @@
                 });
         }
 
+        function handleOrderDeleteClick(button) {
+            const orderId = button.getAttribute('data-order-id');
+            if (!orderId) {
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+                return;
+            }
+
+            button.disabled = true;
+            fetch(`/api/order/${orderId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(res => res.json().then(data => ({ ok: res.ok, data })))
+                .then(({ ok, data }) => {
+                    if (!ok || !data.success) {
+                        throw new Error(data.error || 'Delete failed');
+                    }
+
+                    const row = document.querySelector(`.order-row[data-order-id="${orderId}"]`);
+                    if (row) {
+                        row.remove();
+                    }
+
+                    if (orderModal && orderModal.getAttribute('data-current-order-id') === String(orderId)) {
+                        orderModal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    applyAllFilters(true);
+                    refreshAdminSnapshot();
+                })
+                .catch(error => {
+                    alert(error.message || 'Failed to delete order.');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                });
+        }
+
         // Customer detail modal
         const customerModal = document.getElementById('customerModal');
         const closeCustomerModal = document.getElementById('closeCustomerModal');
@@ -3707,6 +3832,14 @@
             inventoryGrid.innerHTML = pageItems.map(item => {
                 const imageUrl = item.thumbnail || '/static/images/default-product.png';
                 const categoryText = item.subcategory ? `${item.category} > ${item.subcategory}` : item.category;
+                const statusClass = item.is_active
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-200 text-gray-700';
+                const statusLabel = item.is_active ? 'Active' : 'Disabled';
+                const toggleLabel = item.is_active ? 'Disable' : 'Enable';
+                const toggleClass = item.is_active
+                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                    : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200';
                 return `
                     <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-[0_10px_24px_rgba(14,27,20,0.08)]">
                         <div class="relative">
@@ -3723,6 +3856,10 @@
                             <p class="text-[10px] uppercase tracking-widest text-gray-400">${categoryText}</p>
                             <h4 class="mt-2 font-semibold text-gray-800">${item.name}</h4>
                             <p class="text-xs text-gray-500 mt-1">Buy Only</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-[11px] font-semibold px-2 py-1 rounded-full ${statusClass}">${statusLabel}</span>
+                                <button class="inventory-active-toggle text-[11px] font-semibold px-2 py-1 rounded-full transition-all ${toggleClass}" data-product-id="${item.id}" data-next-active="${item.is_active ? 'false' : 'true'}">${toggleLabel}</button>
+                            </div>
                             <div class="flex items-center justify-between mt-3">
                                 <span class="text-xs font-semibold text-ayur-primary">${item.variant_count} Variants</span>
                                 ${formatStockBadge(item.total_stock)}
@@ -3976,6 +4113,36 @@
 
         if (inventoryGrid) {
             inventoryGrid.addEventListener('click', event => {
+                const toggleButton = event.target.closest('.inventory-active-toggle');
+                if (toggleButton) {
+                    const productId = toggleButton.getAttribute('data-product-id');
+                    const nextActive = toggleButton.getAttribute('data-next-active') === 'true';
+                    const formData = new FormData();
+                    formData.append('is_active', nextActive ? 'true' : 'false');
+                    fetch(`/inventory/products/${productId}/toggle-active/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                throw new Error(data.error || 'Failed to update product status');
+                            }
+                            const index = inventoryData.findIndex(item => String(item.id) === String(data.product.id));
+                            if (index > -1) {
+                                inventoryData[index] = data.product;
+                            }
+                            applyInventoryFilters(true);
+                        })
+                        .catch(error => {
+                            alert(error.message || 'Failed to update product status.');
+                        });
+                    return;
+                }
+
                 const button = event.target.closest('.inventory-manage-btn');
                 if (button) {
                     const productId = button.getAttribute('data-product-id');
@@ -5039,6 +5206,45 @@
             });
         });
 
+        // Refund history/details modal
+        const refundHistoryModal = document.getElementById('refundHistoryModal');
+        const closeRefundHistoryModal = document.getElementById('closeRefundHistoryModal');
+
+        function openRefundHistoryModal(btn) {
+            if (!refundHistoryModal) return;
+            document.getElementById('refundHistoryType').textContent = btn.getAttribute('data-refund-kind') || '-';
+            document.getElementById('refundHistoryId').textContent = btn.getAttribute('data-refund-id') || '-';
+            document.getElementById('refundHistoryOrder').textContent = `#${btn.getAttribute('data-order-number') || '-'}`;
+            document.getElementById('refundHistoryCustomer').textContent = btn.getAttribute('data-customer') || '-';
+            document.getElementById('refundHistoryAmount').textContent = `₹${btn.getAttribute('data-amount') || '0.00'}`;
+            document.getElementById('refundHistoryDamage').textContent = `₹${btn.getAttribute('data-damage') || '0.00'}`;
+            document.getElementById('refundHistoryMethod').textContent = btn.getAttribute('data-method') || '-';
+            document.getElementById('refundHistoryStatus').textContent = btn.getAttribute('data-status') || '-';
+            document.getElementById('refundHistoryReturn').textContent = btn.getAttribute('data-return-id') || 'N/A';
+            document.getElementById('refundHistoryProcessedBy').textContent = btn.getAttribute('data-processed-by') || '-';
+            document.getElementById('refundHistoryDate').textContent = btn.getAttribute('data-refund-date') || '-';
+            document.getElementById('refundHistoryNotes').textContent = btn.getAttribute('data-notes') || '-';
+            refundHistoryModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeRefundHistoryModalFn() {
+            if (!refundHistoryModal) return;
+            refundHistoryModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        if (closeRefundHistoryModal) {
+            closeRefundHistoryModal.addEventListener('click', closeRefundHistoryModalFn);
+        }
+        if (refundHistoryModal) {
+            refundHistoryModal.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeRefundHistoryModalFn();
+                }
+            });
+        }
+
         if (closeReturnDetailsModal) {
             closeReturnDetailsModal.addEventListener('click', closeReturnDetailsModalFn);
         }
@@ -5465,6 +5671,12 @@
                 return;
             }
 
+            const orderDeleteBtn = event.target.closest('.order-delete-btn');
+            if (orderDeleteBtn) {
+                handleOrderDeleteClick(orderDeleteBtn);
+                return;
+            }
+
             const returnViewBtn = event.target.closest('.return-view-btn');
             if (returnViewBtn) {
                 openReturnDetailsModal(returnViewBtn);
@@ -5474,6 +5686,12 @@
             const refundBtn = event.target.closest('.return-refund-btn');
             if (refundBtn) {
                 openRefundInspectModal(refundBtn);
+                return;
+            }
+
+            const refundHistoryBtn = event.target.closest('.refund-history-btn');
+            if (refundHistoryBtn) {
+                openRefundHistoryModal(refundHistoryBtn);
                 return;
             }
         });

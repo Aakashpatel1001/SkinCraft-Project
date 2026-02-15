@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Alert Message Auto-Hide ---
     // Finds Django success/error messages and hides them after 5 seconds
-    const message = document.querySelector('.bg-green-50, .bg-red-50');
+    const message = document.querySelector('[data-auto-hide-message="true"]');
     if (message) {
         setTimeout(() => {
             message.style.transition = 'opacity 0.5s ease'; // Smooth fade out
